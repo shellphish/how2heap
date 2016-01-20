@@ -17,3 +17,4 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 Some good heap exploitation resources are:
 
 - Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
+- Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
