@@ -5,8 +5,8 @@ We came up with the idea during a hack meeting, and have implemented the followi
 
 | File | Technique |
 |------|-----------|
-| fastbin_dup.c | Tricking malloc into returning an already-allocated heap pointer by abusing the fastbin freelist. |
-| fastbin_dup_into_stack.c | Tricking malloc into returning a nearly-arbitrary pointer by abusing the fastbin freelist. |
+| [fastbin_dup.c](fastbin_dup.c) | Tricking malloc into returning an already-allocated heap pointer by abusing the fastbin freelist. |
+| [fastbin_dup_into_stack.c](fastbin_dup_into_stack.c) | Tricking malloc into returning a nearly-arbitrary pointer by abusing the fastbin freelist. |
 
 ## Other resources
 
