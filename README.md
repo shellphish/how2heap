@@ -12,6 +12,10 @@ Have a good example?
 Add it here!
 Try to inline the whole technique in a single `.c` -- it's a lot easier to learn that way.
 
+# Malloc Playground
+
+The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
+
 ## Other resources
 
 Some good heap exploitation resources are:
