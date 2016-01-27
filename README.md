@@ -18,12 +18,13 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
 
-## Other resources
+# Other resources
 
 Some good heap exploitation resources are:
 
 - Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
 - Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
-- Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advance heap exploitation
+- Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
 
-Note: there are a couple of "hardening" measures embedded in libc: `export MALLOC_CHECK_=1`, [mcheck()](http://www.gnu.org/software/libc/manual/html_node/Heap-Consistency-Checking.html), [mallopt()](http://www.gnu.org/software/libc/manual/html_node/Malloc-Tunable-Parameters.html]), ...
+### Hardening
+There are a couple of "hardening" measures embedded in libc: `export MALLOC_CHECK_=1`, [mcheck()](http://www.gnu.org/software/libc/manual/html_node/Heap-Consistency-Checking.html), [mallopt()](http://www.gnu.org/software/libc/manual/html_node/Malloc-Tunable-Parameters.html]), ...
