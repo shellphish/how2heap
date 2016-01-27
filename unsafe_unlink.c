@@ -18,6 +18,7 @@ void print_pointer_vectors(){
 int main()
 {
 	printf("Welcome to unsafe unlink 2.0!\n");
+	printf("Tested in Ubuntu 14.04 64bit.\n");
 	printf("This technique can be used when you have contiguous malloc'ed regions pointed by an array of pointers in a known location\n");
 
 	int malloc_size = 0x80; //we want to be big enough not to use fastbins
