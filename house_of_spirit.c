@@ -29,5 +29,5 @@ int main()
 	free(a);
 
 	printf("Now the next malloc will return the region of our fake chunk at %p, which will be %p!\n", &fake_chunks[1], &fake_chunks[2]);
-	printf("malloc(8): %p\n", malloc(0x30));
+	printf("malloc(0x30): %p\n", malloc(0x30));
 }
