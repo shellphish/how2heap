@@ -42,7 +42,7 @@ int main()
 	stack_var = 0x20;
 
 	printf("Now, we overwrite the first 8 bytes of the data at %p to point right after the 0x40.\n", a);
-	*d = ((char*)&stack_var) - sizeof(d);
+	*d = (unsigned long long) (((char*)&stack_var) - sizeof(d));
 
 	printf("3rd malloc(8): %p\n", malloc(8));
 	printf("4rd malloc(8): %p\n", malloc(8));

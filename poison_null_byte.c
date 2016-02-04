@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <malloc.h>
 
 
 int main()
@@ -23,9 +24,9 @@ int main()
 	int real_a_size = malloc_usable_size(a);
 	printf("Since we want to overflow 'a', we need to know the 'real' size of 'a' (it may be more than 0x100 because of rounding): %#x\n", real_a_size);
 
-    /* chunk size attribute cannot have a least significant byte with a value of 0x00.
-     * the least significant byte of this will be 0x10, because the size of the chunk includes
-     * the amount requested plus some amount required for the metadata. */
+	/* chunk size attribute cannot have a least significant byte with a value of 0x00.
+	 * the least significant byte of this will be 0x10, because the size of the chunk includes
+	 * the amount requested plus some amount required for the metadata. */
 	b = (uint8_t*) malloc(0x200);
 
 	printf("b: %p\n", b);
@@ -73,5 +74,5 @@ int main()
 
 	printf("New b2 content:\n%s\n",b2);
 
-    printf("Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf for the clear explanation of this technique.\n");
+	printf("Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf for the clear explanation of this technique.\n");
 }
