@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
 	char buffer[1000];
 	while (1) {
 		printf("> ");
-		gets(buffer);
+		fgets(buffer, sizeof(buffer), stdin);
 		char cmd[1000];
 		intptr_t arg1, arg2;
 		int num = sscanf(buffer, "%s %"SCNiPTR" %"SCNiPTR, cmd, &arg1, &arg2);
