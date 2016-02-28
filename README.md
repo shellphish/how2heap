@@ -28,6 +28,14 @@ Some good heap exploitation resources are:
 - Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
 - Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
 - Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
+- Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
+- The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
+- Yet another free() exploitation technique (http://phrack.org/issues/66/6.html)
+- The use of set_head to defeat the wilderness (http://phrack.org/issues/64/9.html)
+- The Malloc Maleficarum (http://seclists.org/bugtraq/2005/Oct/118)
+- OS X heap exploitation techniques (http://phrack.org/issues/63/5.html)
+- Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25)
+- Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html)
 
 ### Hardening
 There are a couple of "hardening" measures embedded in glibc, like `export MALLOC_CHECK_=1` (enables some checks), `export MALLOC_PERTURB_=1` (data is overwritten), `export MALLOC_MMAP_THRESHOLD_=1` (always use mmap()), ...
