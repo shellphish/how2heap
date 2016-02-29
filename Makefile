@@ -4,6 +4,8 @@ CFLAGS += -std=c99
 # Convenience to auto-call mcheck before the first malloc()
 #CFLAGS += -lmcheck
 
+house_of_lore: CFLAGS += -m32
+
 all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS)
