@@ -4,8 +4,6 @@ CFLAGS += -std=c99
 # Convenience to auto-call mcheck before the first malloc()
 #CFLAGS += -lmcheck
 
-overlapping_chunks: CFLAGS += -m32
-
 all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS)
