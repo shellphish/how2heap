@@ -23,14 +23,14 @@ The `malloc_playground.c` file given is the source for a program that prompts th
 
 # Other resources
 
-Some good heap exploitation resources are:
+Some good heap exploitation resources, roughly in order of their publication, are:
 
-- Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
-- Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
 - Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
 - Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
 - The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
+- Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
 - Yet another free() exploitation technique (http://phrack.org/issues/66/6.html)
+- Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
 - The use of set_head to defeat the wilderness (http://phrack.org/issues/64/9.html)
 - The Malloc Maleficarum (http://seclists.org/bugtraq/2005/Oct/118)
 - OS X heap exploitation techniques (http://phrack.org/issues/63/5.html)
