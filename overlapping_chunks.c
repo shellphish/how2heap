@@ -27,7 +27,7 @@ int main(int argc , char* argv[]){
 
 	memset(p1, '1', 0x100 - 8);
 	memset(p2, '2', 0x100 - 8);
-	memset(p3, '3', 0x100 - 8);
+	memset(p3, '3', 0x80 - 8);
 
 	printf("\nNow let's free the chunk p2\n");
 	free(p2);
@@ -43,8 +43,10 @@ int main(int argc , char* argv[]){
 
 	*(p2-1) = evil_chunk_size; // we are overwriting the "size" field of chunk p2
 
-	printf("\nNow let's allocate another chunk with a size equal to the data\nsize of the chunk p2 injected size\n");
-	printf("This malloc will be served from the previously freed chunk that\nis parked in the unsorted bin which size has been modified by us\n");
+	printf("\nNow let's allocate another chunk with a size equal to the data\n"
+	       "size of the chunk p2 injected size\n");
+	printf("This malloc will be served from the previously freed chunk that\n"
+	       "is parked in the unsorted bin which size has been modified by us\n");
 	p4 = malloc(evil_region_size);
 
 	printf("\np4 has been allocated at %p and ends at %p\n", p4, p4+evil_region_size);
