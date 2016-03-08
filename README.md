@@ -12,6 +12,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [house_of_spirit.c](house_of_spirit.c) | Frees a fake fastbin chunk to get malloc to return a nearly-arbitrary pointer. | [hack.lu CTF 2014-OREO](https://github.com/ctfs/write-ups-2014/tree/master/hack-lu-ctf-2014/oreo) |
 | [poison_null_byte.c](poison_null_byte.c) | Exploiting a single null byte overflow. | [PlaidCTF 2015-plaiddb](https://github.com/ctfs/write-ups-2015/tree/master/plaidctf-2015/pwnable/plaiddb) |
 | [house_of_lore.c](house_of_lore.c) | Tricking malloc into returning a nearly-arbitrary pointer by abusing the smallbin freelist. | |
+| [house_of_force.c](house_of_force.c) | Tricking malloc into returning a nearly-arbitrary pointer by abusing the top chunk. | |
 
 Have a good example?
 Add it here!
