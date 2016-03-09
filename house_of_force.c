@@ -5,7 +5,7 @@
    If RELRO is enabled you can always try to return a chunk on the stack as proposed in Malloc Des Maleficarum 
    ( http://phrack.org/issues/66/10.html )
 
-   Tested with Ubuntu 32 bits.
+   Tested in Ubuntu 14.04, 64bit.
 
 */
 
