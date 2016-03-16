@@ -48,7 +48,7 @@ int main(int argc, char * argv[]){
   printf("stack_buffer_2 at %p\n", (void*)stack_buffer_2);
 
   printf("Create a fake chunk on the stack");
-  printf("Set the fwd pointer to the victim_chunk and the bk pointer to stack_buffer_2");
+  printf("Set the fwd pointer to the victim_chunk and the bk pointer to stack_buffer_2\n");
   stack_buffer_1[0] = 0;
   stack_buffer_1[1] = 0;
   stack_buffer_1[2] = victim_chunk;
