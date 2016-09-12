@@ -36,14 +36,16 @@ int main()
 
 	printf("1st malloc(8): %p\n", d);
 	printf("2nd malloc(8): %p\n", malloc(8));
-	printf("Now, we are writing a fake free size (in this case, 0x20) to the stack,\n"
+	printf("Now the free list has [ %p ].\n", a);
+	printf("Now, we have access to %p while it remains at the head of the free list.\n"
+	       "so now we are writing a fake free size (in this case, 0x20) to the stack,\n"
 	       "so that malloc will think there is a free chunk there and agree to\n"
-	       "return a pointer to it.\n");
+	       "return a pointer to it.\n", a);
 	stack_var = 0x20;
 
 	printf("Now, we overwrite the first 8 bytes of the data at %p to point right after the 0x20.\n", a);
 	*d = (unsigned long long) (((char*)&stack_var) - sizeof(d));
 
-	printf("3rd malloc(8): %p\n", malloc(8));
+	printf("3rd malloc(8): %p, putting the stack address on the free list\n", malloc(8));
 	printf("4rd malloc(8): %p\n", malloc(8));
 }
