@@ -20,7 +20,15 @@ Have a good example?
 Add it here!
 Try to inline the whole technique in a single `.c` -- it's a lot easier to learn that way.
 
-# Malloc Playground
+# Heap Exploitation Tools
+
+There are some heap exploitation tools floating around.
+
+## libheap
+
+Examine the glibc heap in gdb: https://github.com/cloudburst/libheap
+
+## Malloc Playground
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
 
@@ -28,6 +36,7 @@ The `malloc_playground.c` file given is the source for a program that prompts th
 
 Some good heap exploitation resources, roughly in order of their publication, are:
 
+- A malloc diagram, from libheap: https://raw.githubusercontent.com/cloudburst/libheap/master/heap.png
 - Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
 - Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
 - The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
@@ -40,7 +49,7 @@ Some good heap exploitation resources, roughly in order of their publication, ar
 - Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25)
 - Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html)
 
-### Hardening
+# Hardening
 There are a couple of "hardening" measures embedded in glibc, like `export MALLOC_CHECK_=1` (enables some checks), `export MALLOC_PERTURB_=1` (data is overwritten), `export MALLOC_MMAP_THRESHOLD_=1` (always use mmap()), ...
 
 More info: [mcheck()](http://www.gnu.org/software/libc/manual/html_node/Heap-Consistency-Checking.html), [mallopt()](http://www.gnu.org/software/libc/manual/html_node/Malloc-Tunable-Parameters.html).
