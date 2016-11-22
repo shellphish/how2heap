@@ -1,7 +1,7 @@
 /*
 
  A simple tale of overlapping chunk.
- This technique is taken from 
+ This technique is taken from
  http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf
 
 */
@@ -18,7 +18,7 @@ int main(int argc , char* argv[]){
 
 	printf("\nThis is a simple chunks overlapping problem\n\n");
 	printf("Let's start to allocate 3 chunks on the heap\n");
-	
+
 	p1 = malloc(0x100 - 8);
 	p2 = malloc(0x100 - 8);
 	p3 = malloc(0x80 - 8);
@@ -58,7 +58,7 @@ int main(int argc , char* argv[]){
 	printf("Let's run through an example. Right now, we have:\n");
 	printf("p4 = %s\n", (char *)p4);
 	printf("p3 = %s\n", (char *)p3);
-			
+
 	printf("\nIf we memset(p4, '4', %d), we have:\n", evil_region_size);
 	memset(p4, '4', evil_region_size);
 	printf("p4 = %s\n", (char *)p4);
