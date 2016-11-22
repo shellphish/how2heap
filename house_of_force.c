@@ -58,7 +58,7 @@ int main(int argc , char* argv[])
 	printf("\nThe value we want to write to at %p, and the top chunk is at %p, so accounting for the header size,\n"
 	   "we will malloc %#lx bytes.\n", bss_var, ptr_top, evil_size);
 	void *new_ptr = malloc(evil_size);
-	printf("As expected, the new pointer is at the same place as the old top chunk: %p", new_ptr);
+	printf("As expected, the new pointer is at the same place as the old top chunk: %p\n", new_ptr);
 
 	void* ctr_chunk = malloc(100);
 	printf("\nNow, the next chunk we overwrite will point at our target buffer.\n");
