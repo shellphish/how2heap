@@ -22,7 +22,8 @@ int main()
 	a = (uint8_t*) malloc(0x100);
 	printf("a: %p\n", a);
 	int real_a_size = malloc_usable_size(a);
-	printf("Since we want to overflow 'a', we need to know the 'real' size of 'a' (it may be more than 0x100 because of rounding): %#x\n", real_a_size);
+	printf("Since we want to overflow 'a', we need to know the 'real' size of 'a' "
+		"(it may be more than 0x100 because of rounding): %#x\n", real_a_size);
 
 	/* chunk size attribute cannot have a least significant byte with a value of 0x00.
 	 * the least significant byte of this will be 0x10, because the size of the chunk includes
@@ -50,8 +51,10 @@ int main()
 	b1 = malloc(0x100);
 
 	printf("b1: %p\n",b1);
-	printf("Now we malloc 'b1'. It will be placed where 'b' was. At this point c.prev_size should have been updated, but it was not: %lx\n",*c_prev_size_ptr);
-	printf("Interestingly, the updated value of c.prev_size has been written 0x10 bytes before c.prev_size: %lx\n",*(((uint64_t*)c)-4));
+	printf("Now we malloc 'b1'. It will be placed where 'b' was. "
+		"At this point c.prev_size should have been updated, but it was not: %lx\n",*c_prev_size_ptr);
+	printf("Interestingly, the updated value of c.prev_size has been written 0x10 bytes "
+		"before c.prev_size: %lx\n",*(((uint64_t*)c)-4));
 	printf("We malloc 'b2', our 'victim' chunk.\n");
 
 	b2 = malloc(0x80);
@@ -74,5 +77,6 @@ int main()
 
 	printf("New b2 content:\n%s\n",b2);
 
-	printf("Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf for the clear explanation of this technique.\n");
+	printf("Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf "
+		"for the clear explanation of this technique.\n");
 }
