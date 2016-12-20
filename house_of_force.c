@@ -75,11 +75,11 @@ int main(int argc , char* argv[])
 	// some further discussion:
 	//printf("This controlled malloc will be called with a size parameter of evil_size = malloc_got_address - 8 - p2_guessed\n\n");
 	//printf("This because the main_arena->top pointer is setted to current av->top + malloc_size "
-		"and we \nwant to set this result to the address of malloc_got_address-8\n\n");
+	//	"and we \nwant to set this result to the address of malloc_got_address-8\n\n");
 	//printf("In order to do this we have malloc_got_address-8 = p2_guessed + evil_size\n\n");
 	//printf("The av->top after this big malloc will be setted in this way to malloc_got_address-8\n\n");
 	//printf("After that a new call to malloc will return av->top+8 ( +8 bytes for the header ),"
-		"\nand basically return a chunk at (malloc_got_address-8)+8 = malloc_got_address\n\n");
+	//	"\nand basically return a chunk at (malloc_got_address-8)+8 = malloc_got_address\n\n");
 
 	//printf("The large chunk with evil_size has been allocated here 0x%08x\n",p2);
 	//printf("The main_arena value av->top has been setted to malloc_got_address-8=0x%08x\n",malloc_got_address);
