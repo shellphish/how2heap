@@ -29,10 +29,10 @@ int main()
     printf("Since we want to overflow 'a', we need the 'real' size of 'a' after rounding: %#x\n", real_a_size);
 
     // create a fake chunk
-    printf("\nWe create a fake chunk whereever we want, in this case we'll create the chunk on the stack\n");
-    printf("However, you can also create the chunk in the heap or the bss, as long as you know it's address\n");
+    printf("\nWe create a fake chunk wherever we want, in this case we'll create the chunk on the stack\n");
+    printf("However, you can also create the chunk in the heap or the bss, as long as you know its address\n");
     printf("We set our fwd and bck pointers to point at the fake_chunk in order to pass the unlink checks\n");
-    printf("(although we could do the unsafe unlink technique here in some senarios)\n");
+    printf("(although we could do the unsafe unlink technique here in some scenarios)\n");
 
     size_t fake_chunk[6];
 
@@ -60,8 +60,8 @@ int main()
     c = malloc(0x60);
 	printf("c: %p\n", c);
 
-    /* this technique works by overwriting the size metadata of an allocated chunk as well as the prev_inuse bit*/
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
+    /* This technique works by overwriting the size metadata of an allocated chunk as well as the prev_inuse bit*/
 
 	printf("\nb.size: %#lx\n", *b_size_ptr);
 	printf("b.size is: (0x100) | prev_inuse = 0x101\n");
@@ -69,12 +69,12 @@ int main()
 	a[real_a_size] = 0; 
 	printf("b.size: %#lx\n", *b_size_ptr);
     printf("This is easiest if b.size is a multiple of 0x100 so you "
-           "don't change the size of b, only it's prev_inuse bit\n");
+           "don't change the size of b, only its prev_inuse bit\n");
     printf("If it had been modified, we would need a fake chunk inside "
            "b where it will try to consolidate the next chunk\n");
 
     // Write a fake prev_size to the end of a
-    printf("\nWe write a fake prev_size to the last %lu bytes of a so that"
+    printf("\nWe write a fake prev_size to the last %lu bytes of a so that "
            "it will consolidate with our fake chunk\n", sizeof(size_t));
     size_t fake_size = (size_t)((b-sizeof(size_t)*2) - (uint8_t*)fake_chunk);
     printf("Our fake prev_size will be %p - %p = %#lx\n", b-sizeof(size_t)*2, fake_chunk, fake_size);
