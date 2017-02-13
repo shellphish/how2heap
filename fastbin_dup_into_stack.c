@@ -44,7 +44,7 @@ int main()
 		"return a pointer to it.\n", a);
 	stack_var = 0x20;
 
-	printf("Now, we overwrite the first 8 bytes of the data at %p to point right after the 0x20.\n", a);
+	printf("Now, we overwrite the first 8 bytes of the data at %p to point right before the 0x20.\n", a);
 	*d = (unsigned long long) (((char*)&stack_var) - sizeof(d));
 
 	printf("3rd malloc(8): %p, putting the stack address on the free list\n", malloc(8));
