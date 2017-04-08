@@ -25,6 +25,10 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 
 There are some heap exploitation tools floating around.
 
+## shadow
+
+jemalloc exploitation framework: https://github.com/CENSUS/shadow
+
 ## libheap
 
 Examine the glibc heap in gdb: https://github.com/cloudburst/libheap
