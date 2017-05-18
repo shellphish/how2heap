@@ -35,7 +35,7 @@ int main()
 	printf("We need to make sure the 'size' of our fake chunk matches the 'previous_size' of the next chunk (fd->prev_size)\n");
 	printf("With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False\n");
 	chunk0_ptr[1] = chunk0_ptr[-3];
-	printf("Therefore, we set the 'size' of our fake chunk to the value of chunk_ptr[-3]: 0x%08x\n", chunk0_ptr[1]);
+	printf("Therefore, we set the 'size' of our fake chunk to the value of chunk0_ptr[-3]: 0x%08x\n", chunk0_ptr[1]);
 	printf("You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30\n\n");
 
 	printf("We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.\n");
