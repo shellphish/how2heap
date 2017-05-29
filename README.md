@@ -41,8 +41,9 @@ The `malloc_playground.c` file given is the source for a program that prompts th
 
 Some good heap exploitation resources, roughly in order of their publication, are:
 
-- ptmalloc fanzine, a set of resources and examples related to meta-data attacks on ptmalloc: http://tukan.farm/2016/07/26/ptmalloc-fanzine/
-- A malloc diagram, from libheap: https://raw.githubusercontent.com/cloudburst/libheap/master/heap.png
+- glibc in-depth tutorial (https://heap-exploitation.dhavalkapil.com/) - book and exploit samples
+- ptmalloc fanzine, a set of resources and examples related to meta-data attacks on ptmalloc (http://tukan.farm/2016/07/26/ptmalloc-fanzine/)
+- A malloc diagram, from libheap (https://raw.githubusercontent.com/cloudburst/libheap/master/heap.png)
 - Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
 - Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
 - The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
