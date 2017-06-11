@@ -64,7 +64,7 @@ int main()
 	// will detect the heap corruption now.
 	// The check is this: chunksize(P) != prev_size (next_chunk(P)) where
 	// P == b-0x10, chunksize(P) == *(b-0x10+0x8) == 0x200 (was 0x210 before the overflow)
-	// next_chunk(P) == b-0x10+0x200 == 0x1f0
+	// next_chunk(P) == b-0x10+0x200 == b+0x1f0
 	// prev_size (next_chunk(P)) == *(b+0x1f0) == 0x200
 	printf("We will pass the check since chunksize(P) == %#lx == %#lx == prev_size (next_chunk(P))\n",
 		*((size_t*)(b-0x8)), *(size_t*)(b-0x10 + *((size_t*)(b-0x8))));
