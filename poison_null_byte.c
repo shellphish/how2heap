@@ -59,7 +59,7 @@ int main()
 	uint64_t* c_prev_size_ptr = ((uint64_t*)c)-2;
 	printf("c.prev_size is %#lx\n",*c_prev_size_ptr);
 
-	// This malloc will lead to call unlink on the chunk were b was.
+	// This malloc will result in a call to unlink on the chunk where b was.
 	// The added check (commit id: 17f487b), if not properly handled as we did before,
 	// will detect the heap corruption now.
 	// The check is this: chunksize(P) != prev_size (next_chunk(P)) where
