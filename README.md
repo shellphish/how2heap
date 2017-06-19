@@ -56,6 +56,7 @@ Some good heap exploitation resources, roughly in order of their publication, ar
 - Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25)
 - Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html)
 - GDB Enhanced Features (GEF) Heap Exploration Tools (https://gef.readthedocs.io/en/latest/commands/heap/)
+- Painless intro to the Linux userland heap (https://sensepost.com/blog/2017/painless-intro-to-the-linux-userland-heap/)
 
 # Hardening
 There are a couple of "hardening" measures embedded in glibc, like `export MALLOC_CHECK_=1` (enables some checks), `export MALLOC_PERTURB_=1` (data is overwritten), `export MALLOC_MMAP_THRESHOLD_=1` (always use mmap()), ...
