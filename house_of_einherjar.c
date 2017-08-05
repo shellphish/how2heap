@@ -80,8 +80,8 @@ int main()
     printf("Our fake prev_size will be %p - %p = %#lx\n", b-sizeof(size_t)*2, fake_chunk, fake_size);
     *(size_t*)&a[real_a_size-sizeof(size_t)] = fake_size;
 
-    //Change the fake chunk's previous address to reflect b's new size
-    printf("\nModify fake chunk's size to reflect b's new size\n");
+    //Change the fake chunk's size to reflect b's new prev_size
+    printf("\nModify fake chunk's size to reflect b's new prev_size\n");
     fake_chunk[1] = fake_size;
 
     // free b and it will consolidate with our fake chunk
