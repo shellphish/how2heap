@@ -88,7 +88,6 @@ int main()
     printf("Now we free b and this will consolidate with our fake chunk since b prev_inuse is not set\n");
     free(b);
     printf("Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", fake_chunk[1]);
-    
 
     //if we allocate another chunk before we free b we will need to 
     //two things: 
