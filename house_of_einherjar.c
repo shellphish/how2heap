@@ -90,7 +90,7 @@ int main()
     printf("Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", fake_chunk[1]);
 
     //if we allocate another chunk before we free b we will need to 
-    //two things: 
+    //do two things: 
     //1) We will need to adjust the size of our fake chunk so that
     //fake_chunk + fake_chunk's size points to an area we control
     //2) we will need to write the size of our fake chunk
