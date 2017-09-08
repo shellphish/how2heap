@@ -15,7 +15,6 @@ int winner ( char *ptr);
 
 int main()
 {
-<<<<<<< HEAD
     /*
       The House of Orange starts with the assumption that a buffer oveflow exists on the heap
       using which the Top (also called the Wilderness) chunk can be corrupted.
@@ -31,8 +30,6 @@ int main()
       If the size requested is smaller than 0x21000, then the former is followed.
     */
 
-=======
->>>>>>> upstream/master
     char *p1, *p2;
     size_t io_list_all, *top;
 
@@ -45,7 +42,6 @@ int main()
     /* 
        The heap is usually allocated with a top chunk of size 0x21000
        Since we've allocate a chunk of size 0x400 already,
-<<<<<<< HEAD
        what's left is 0x20c00 with the PREV_INUSE bit set => 0x20c01.
 
        The heap boundaries are page aligned. Since the Top chunk is the last chunk on the heap,
@@ -59,20 +55,17 @@ int main()
        2) Top chunk's prev_inuse bit has to be set.
       
       We can satisfy both of these conditions if we set the size of the Top chunk to be 0xc00 | PREV_INUSE.
-=======
        what's left is 0x20c01
 
        Now, let's satisfy the conditions
        1) Top chunk + size has to be page aligned
        2) Top chunk's prev_inuse bit has to be set.
->>>>>>> upstream/master
     */
 
     top = (size_t *) ( (char *) p1 + 0x400 - 16);
     top[1] = 0xc01;
 
     /* 
-<<<<<<< HEAD
        Now we request a chunk of size larger than the size of the Top chunk.
        Malloc tries to service this request by extending the Top chunk
        This forces sysmalloc to be invoked.
@@ -102,24 +95,19 @@ int main()
        And the old Top chunk gets freed.
        Since the size of the Top chunk, when it is freed, is larger than the fastbin sizes,
        it gets added to list of unsorted bins.
-=======
        Now we request a chunk of size larger than the size of the top chunk.
        This forces sysmalloc to be invoked.
        And ultimately invokes _int_free
->>>>>>> upstream/master
     */
 
     p2 = malloc(0x1000);
     /*
-<<<<<<< HEAD
       Note that the above chunk will be allocated in a different page
       that gets mmapped. It will be placed after the old heap's end
 
       Now we are left with the old Top chunk that is freed and has been added into the list of unsorted bins
-=======
       Note that this chunk will be allocated in a different page
       that gets mmapped. It will be placed after the old heap's end
->>>>>>> upstream/master
       
       The idea is to overwrite the _IO_list_all pointer with a fake file pointer.
       The address of the pointer can be calculated from the fd and bk of the free chunk.
@@ -128,22 +116,16 @@ int main()
     io_list_all = top[2] + 0x9a8;
 
     /*
-<<<<<<< HEAD
       We plan to overwrite the fd and bk pointers of this old top 
-=======
       We plan to overwrite the fd and bk pointers of the old top 
       which has now been added to the unsorted bins.
->>>>>>> upstream/master
      
       When malloc tries to satisfy a request by splitting this free chunk
       the value at chunk->bk->fd gets overwritten with an address in the arena.
 
-<<<<<<< HEAD
       This happens only when the size requested is of smallbin size.
       Note that this overwrite occurs before the sanity check and therefore will occur.
 
-=======
->>>>>>> upstream/master
       Here, we require that chunk->bk->fd to be the value of _IO_list_all.
       So, we should set chunk->bk to be io_list_all - 16
     */
