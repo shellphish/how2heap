@@ -136,8 +136,8 @@ int main()
       _IO_flush_all_lockp. Eventually, walking through the linked list in
       _IO_list_all and calling _IO_OVERFLOW on them.
 
-      The idea is to overwrite the _IO_list_all pointer with a fake file pointer.
-      _IO_OVERLOW points to system and whose first 8 bytes we set to '/bin/sh', so
+      The idea is to overwrite the _IO_list_all pointer with a fake file pointer, whose
+      _IO_OVERLOW points to system and whose first 8 bytes are set to '/bin/sh', so
       that calling _IO_OVERFLOW(fp, EOF) translates to system('/bin/sh').
       More about file-pointer exploitation can be found here:
       https://outflux.net/blog/archives/2011/12/22/abusing-the-file-structure/
