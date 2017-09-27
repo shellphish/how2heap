@@ -5,6 +5,7 @@
 /*
   The House of Orange uses an overflow in the heap to corrupt the _IO_list_all pointer
   It requires a leak of the heap and the libc
+  Credit: http://4ngelboy.blogspot.com/2016/10/hitcon-ctf-qual-2016-house-of-orange.html
 */
 
 /*
@@ -16,7 +17,7 @@ int winner ( char *ptr);
 int main()
 {
     /*
-      The House of Orange starts with the assumption that a buffer oveflow exists on the heap
+      The House of Orange starts with the assumption that a buffer overflow exists on the heap
       using which the Top (also called the Wilderness) chunk can be corrupted.
       
       At the beginning of execution, the entire heap is part of the Top chunk.
@@ -26,7 +27,7 @@ int main()
       there are two possibilities:
        1) Extend the Top chunk
        2) Mmap a new page
-      
+
       If the size requested is smaller than 0x21000, then the former is followed.
     */
 
@@ -39,7 +40,7 @@ int main()
 
     p1 = malloc(0x400-16);
 
-    /* 
+    /*
        The heap is usually allocated with a top chunk of size 0x21000
        Since we've allocate a chunk of size 0x400 already,
        what's left is 0x20c00 with the PREV_INUSE bit set => 0x20c01.
@@ -50,12 +51,12 @@ int main()
        Also, if a chunk that is adjacent to the Top chunk is to be freed,
        then it gets merged with the Top chunk. So the PREV_INUSE bit of the Top chunk is always set.
 
-      So that means that there are two conditions that must always be true.
-       1) Top chunk + size has to be page aligned
-       2) Top chunk's prev_inuse bit has to be set.
-      
-      We can satisfy both of these conditions if we set the size of the Top chunk to be 0xc00 | PREV_INUSE.
-       what's left is 0x20c01
+       So that means that there are two conditions that must always be true.
+        1) Top chunk + size has to be page aligned
+        2) Top chunk's prev_inuse bit has to be set.
+
+       We can satisfy both of these conditions if we set the size of the Top chunk to be 0xc00 | PREV_INUSE.
+       What's left is 0x20c01
 
        Now, let's satisfy the conditions
        1) Top chunk + size has to be page aligned
@@ -69,26 +70,26 @@ int main()
        Now we request a chunk of size larger than the size of the Top chunk.
        Malloc tries to service this request by extending the Top chunk
        This forces sysmalloc to be invoked.
-       
+
        In the usual scenario, the heap looks like the following
-          |--------------|-----------|------...----|
-          |      chunk   |    chunk  |Top   ...    |
-          |--------------|-----------|------...----|
-      heap start                                heap end
+          |------------|------------|------...----|
+          |    chunk   |    chunk   | Top  ...    |
+          |------------|------------|------...----|
+      heap start                              heap end
 
        And the new area that gets allocated is contiguous to the old heap end.
        So the new size of the Top chunk is the sum of the old size and the newly allocated size.
 
-       In order to keep track of this change in size, malloc uses a fencepost chunk.
+       In order to keep track of this change in size, malloc uses a fencepost chunk,
        which is basically a temporary chunk.
 
        After the size of the Top chunk has been updated, this chunk gets freed.
 
        In our scenario however, the heap looks like
-         |------------|------------|------..--|--...--|---------|
-         |    chunk   |    chunk   | Top  ..  |  ...  | new Top |
-         |------------|------------|------..--|--...--|---------|
-     heap start                                   heap end
+          |------------|------------|------..--|--...--|---------|
+          |    chunk   |    chunk   | Top  ..  |  ...  | new Top |
+          |------------|------------|------..--|--...--|---------|
+     heap start                            heap end
 
        In this situation, the new Top will be starting from an address that is adjacent to the heap end.
        So the area between the second chunk and the heap end is unused.
@@ -98,6 +99,15 @@ int main()
        Now we request a chunk of size larger than the size of the top chunk.
        This forces sysmalloc to be invoked.
        And ultimately invokes _int_free
+
+       Finally the heap looks like this:
+          |------------|------------|------..--|--...--|---------|
+          |    chunk   |    chunk   | free ..  |  ...  | new Top |
+          |------------|------------|------..--|--...--|---------|
+     heap start                                             new heap end
+
+
+
     */
 
     p2 = malloc(0x1000);
@@ -106,28 +116,51 @@ int main()
       that gets mmapped. It will be placed after the old heap's end
 
       Now we are left with the old Top chunk that is freed and has been added into the list of unsorted bins
-      Note that this chunk will be allocated in a different page
-      that gets mmapped. It will be placed after the old heap's end
-      
-      The idea is to overwrite the _IO_list_all pointer with a fake file pointer.
-      The address of the pointer can be calculated from the fd and bk of the free chunk.
+
+
+      Here starts phase two of the attack. We assume that we have an overflow into the old
+      top chunk so we could overwrite the chunk's size.
+      For the second phase we utilize this overflow again to overwrite the fd and bk pointer
+      of this chunk in the unsorted bin list.
+      There are two common ways to exploit the current state:
+        - Get an allocation in an *arbitrary* location by setting the pointers accordingly (requires at least two allocations)
+        - Use the unlinking of the chunk for an *where*-controlled write of the
+          libc's main_arena unsorted-bin-list. (requires at least one allocation)
+
+      The former attack is pretty straight forward to exploit, so we will only elaborate
+      on a variant of the latter, developed by Angelboy in the blog post linked above.
+
+      The attack is pretty stunning, as it exploits the abort call itself, which
+      is triggered when the libc detects any bogus state of the heap.
+      Whenever abort is triggered, it will flush all the file pointers by calling
+      _IO_flush_all_lockp. Eventually, walking through the linked list in
+      _IO_list_all and calling _IO_OVERFLOW on them.
+
+      The idea is to overwrite the _IO_list_all pointer with a fake file pointer, whose
+      _IO_OVERLOW points to system and whose first 8 bytes are set to '/bin/sh', so
+      that calling _IO_OVERFLOW(fp, EOF) translates to system('/bin/sh').
+      More about file-pointer exploitation can be found here:
+      https://outflux.net/blog/archives/2011/12/22/abusing-the-file-structure/
+
+      The address of the _IO_list_all can be calculated from the fd and bk of the free chunk, as they
+      currently point to the libc's main_arena.
     */
-    
+
     io_list_all = top[2] + 0x9a8;
 
     /*
-      We plan to overwrite the fd and bk pointers of this old top 
-      We plan to overwrite the fd and bk pointers of the old top 
+      We plan to overwrite the fd and bk pointers of the old top,
       which has now been added to the unsorted bins.
-     
-      When malloc tries to satisfy a request by splitting this free chunk
-      the value at chunk->bk->fd gets overwritten with an address in the arena.
 
-      This happens only when the size requested is of smallbin size.
-      Note that this overwrite occurs before the sanity check and therefore will occur.
+      When malloc tries to satisfy a request by splitting this free chunk
+      the value at chunk->bk->fd gets overwritten with the address of the unsorted-bin-list
+      in libc's main_arena.
+
+      Note that this overwrite occurs before the sanity check and therefore, will occur in any
+      case.
 
       Here, we require that chunk->bk->fd to be the value of _IO_list_all.
-      So, we should set chunk->bk to be io_list_all - 16
+      So, we should set chunk->bk to be _IO_list_all - 16
     */
  
     top[3] = io_list_all - 0x10;
@@ -140,26 +173,47 @@ int main()
     memcpy( ( char *) top, "/bin/sh\x00", 8);
 
     /*
-      The function _IO_flush_all_lockp iterates through every file pointer.
+      The function _IO_flush_all_lockp iterates through the file pointer linked-list
+      in _IO_list_all.
+      Since we can only overwrite this address with main_arena's unsorted-bin-list,
+      the idea is to get control over the memory at the corresponding fd-ptr.
       The address of the next file pointer is located at base_address+0x68.
+      This corresponds to smallbin-4, which holds all the smallbins of
+      sizes between 90 and 98. For further information about the libc's bin organisation
+      see: https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/
 
-      Since we can only overwrite _IO_list_all with the address of the main_arena+88
-      we can try to make sure that main_arena+192 is under our control.
-       
-      This can be done if the size of the chunk that is to be splitted is of size 0x61.
+      Since we overflow the old top chunk, we also control it's size field.
+      Here it gets a little bit tricky, currently the old top chunk is in the
+      unsortedbin list. For each allocation, malloc tries to serve the chunks
+      in this list first, therefore, iterates over the list.
+      Furthermore, it will sort all non-fitting chunks into the corresponding bins.
+      If we set the size to 0x61 (97) (prev_inuse bit has to be set)
+      and trigger an non fitting smaller allocation, malloc will sort the old chunk into the
+      smallbin-4. Since this bin is currently empty the old top chunk will be the new head,
+      therefore, occupying the smallbin[4] location in the main_arena and
+      eventually representing the fake file pointer's fd-ptr.
+
+      In addition to sorting, malloc will also perform certain size checks on them,
+      so after sorting the old top chunk and following the bogus fd pointer
+      to _IO_list_all, it will check the corresponding size field, detect
+      that the size is smaller than MINSIZE "size <= 2 * SIZE_SZ"
+      and finally triggering the abort call that gets our chain rolling.
+      Here is the corresponding code in the libc:
+      https://code.woboq.org/userspace/glibc/malloc/malloc.c.html#3717
     */
 
     top[1] = 0x61;
-   
+
     /*
-      Now comes the part where we satisfy the constraints required by the function
-      _IO_flush_all_lockp.
-       
+      Now comes the part where we satisfy the constraints on the fake file pointer
+      required by the function _IO_flush_all_lockp and tested here:
+      https://code.woboq.org/userspace/glibc/libio/genops.c.html#813
+
        1) base_address+0xc0 == 1
     */
 
     top[24] = 1;
-    
+
     /*
       2) We require two integers such that they are adjacent and the first is smaller
     */
@@ -181,7 +235,7 @@ int main()
 
     top[15] = (size_t) &winner;
     top[27] = (size_t ) &top[12];
-    
+
     /* Finally, trigger the whole chain by calling malloc */
     malloc(10);
 
