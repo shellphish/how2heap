@@ -37,7 +37,7 @@ int main(int argc , char* argv[])
 
 	fprintf(stderr, "\nNow the heap is composed of two chunks: the one we allocated and the top chunk/wilderness.\n");
 	int real_size = malloc_usable_size(p1);
-	fprintf(stderr, "Real size (aligned and all that jazz) of our allocated chunk is %d.\n", real_size + sizeof(long)*2);
+	fprintf(stderr, "Real size (aligned and all that jazz) of our allocated chunk is %ld.\n", real_size + sizeof(long)*2);
 
 	fprintf(stderr, "\nNow let's emulate a vulnerability that can overwrite the header of the Top Chunk\n");
 
@@ -55,6 +55,15 @@ int main(int argc , char* argv[])
 	   "Next, we will allocate a chunk that will get us right up against the desired region (with an integer\n"
 	   "overflow) and will then be able to allocate a chunk right over the desired region.\n");
 
+	/*
+	 * The evil_size is calulcated as (nb is the number of bytes requested + space for metadata):
+	 * new_top = old_top + nb
+	 * nb = new_top - old_top
+	 * req + 2sizeof(long) = new_top - old_top
+	 * req = new_top - old_top - 2sizeof(long)
+	 * req = dest - 2sizeof(long) - old_top - 2sizeof(long)
+	 * req = dest - old_top - 4*sizeof(long)
+	 */
 	unsigned long evil_size = (unsigned long)bss_var - sizeof(long)*4 - (unsigned long)ptr_top;
 	fprintf(stderr, "\nThe value we want to write to at %p, and the top chunk is at %p, so accounting for the header size,\n"
 	   "we will malloc %#lx bytes.\n", bss_var, ptr_top, evil_size);
