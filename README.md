@@ -37,6 +37,10 @@ jemalloc exploitation framework: https://github.com/CENSUS/shadow
 
 Examine the glibc heap in gdb: https://github.com/cloudburst/libheap
 
+## heap-viewer
+
+Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
+
 ## Malloc Playground
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
