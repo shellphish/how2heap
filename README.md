@@ -19,7 +19,8 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [unsorted_bin_attack.c](unsorted_bin_attack.c) | Exploiting the overwrite of a freed chunk on unsorted bin freelist to write a large value into arbitrary address  | [0ctf 2016-zerostorage](https://github.com/ctfs/write-ups-2016/tree/master/0ctf-2016/exploit/zerostorage-6) |
 | [house_of_einherjar.c](house_of_einherjar.c) | Exploiting a single null byte overflow to trick malloc into returning a controlled pointer  | [Seccon 2016-tinypad](https://gist.github.com/hhc0null/4424a2a19a60c7f44e543e32190aaabf) |
 | [house_of_orange.c](house_of_orange.c) | Exploiting the Top Chunk (Wilderness) in order to gain arbitrary code execution   | [Hitcon 2016 houseoforange](https://github.com/ctfs/write-ups-2016/tree/master/hitcon-ctf-2016/pwn/house-of-orange-500) |
-
+| [tcache_dup.c](tcache_dup.c) | Tricking malloc into returning an already-allocated heap pointer by abusing the tcache freelist. | |
+| [tcache_poisoning.c](tcache_poisoning.c) | Tricking malloc into returning a completely arbitrary pointer by abusing the tcache freelist. | |
 
 Have a good example?
 Add it here!
