@@ -5,7 +5,7 @@ BUILD="./glibc_build"
 VERSION="./glibc_versions"
 
 if [[ $# < 2 ]]; then
-    echo "Usage: $0 <version> <#make-threads>"
+    echo "Usage: $0 version #make-threads <-disable-tcache>"
     exit 1
 fi
 
@@ -30,16 +30,24 @@ git checkout "release/$1/master"
 cd -
 
 # Build
+if [ $# == 3 ] && [ "$3" = "-disable-tcache" ]; then
+    TCACHE_OPT="--disable-experimental-malloc"
+    SUFFIX="-no-tcache"
+else
+    TCACHE_OPT=""
+    SUFFIX=""
+fi
+
 mkdir -p "$BUILD"
 cd "$BUILD" && rm -rf ./*
-../"$SRC"/configure --prefix=/usr
+../"$SRC"/configure --prefix=/usr "$TCACHE_OPT"
 make -j "$2"
 cd -
 
 # Copy to version folder
 mkdir -p "$VERSION"
-cp "$BUILD/libc.so" "$VERSION/libc-$1.so"
-cp "$BUILD/elf/ld.so" "$VERSION/ld-$1.so"
+cp "$BUILD/libc.so" "$VERSION/libc-$1$SUFFIX.so"
+cp "$BUILD/elf/ld.so" "$VERSION/ld-$1$SUFFIX.so"
 
 
 
