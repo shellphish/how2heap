@@ -21,6 +21,10 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [house_of_einherjar.c](house_of_einherjar.c) | Exploiting a single null byte overflow to trick malloc into returning a controlled pointer  | < 2.26 | [Seccon 2016-tinypad](https://gist.github.com/hhc0null/4424a2a19a60c7f44e543e32190aaabf) |
 | [house_of_orange.c](house_of_orange.c) | Exploiting the Top Chunk (Wilderness) in order to gain arbitrary code execution  | < 2.26 | [Hitcon 2016 houseoforange](https://github.com/ctfs/write-ups-2016/tree/master/hitcon-ctf-2016/pwn/house-of-orange-500) |
 
+The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
+Consequently, these checks regularly break some of the techniques and require adjusments to bypass them (if possible).
+We address this issue by keeping muliple versions of the same technique for each glibc-release that required an adjustment.
+The structure is `glibc_<version>/technique.c`.
 
 Have a good example?
 Add it here!
