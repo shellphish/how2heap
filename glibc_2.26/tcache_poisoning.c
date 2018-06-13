@@ -18,7 +18,7 @@ int main()
 	free(a);
 
 	fprintf(stderr, "Now the tcache list has [ %p ].\n", a);
-	fprintf(stderr, "We overwrite the first %d bytes (fd/next pointer) of the data at %p\n"
+	fprintf(stderr, "We overwrite the first %lu bytes (fd/next pointer) of the data at %p\n"
 		"to point to the location to control (%p).\n", sizeof(intptr_t), a, &stack_var);
 	a[0] = (intptr_t)&stack_var;
 
