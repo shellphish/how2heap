@@ -73,7 +73,7 @@ int main()
 
 	fprintf(stderr, "b1: %p\n",b1);
 	fprintf(stderr, "Now we malloc 'b1'. It will be placed where 'b' was. "
-		"At this point c.prev_size should have been updated, but it was not: %lx\n",*c_prev_size_ptr);
+		"At this point c.prev_size should have been updated, but it was not: %#lx\n",*c_prev_size_ptr);
 	fprintf(stderr, "Interestingly, the updated value of c.prev_size has been written 0x10 bytes "
 		"before c.prev_size: %lx\n",*(((uint64_t*)c)-4));
 	fprintf(stderr, "We malloc 'b2', our 'victim' chunk.\n");
