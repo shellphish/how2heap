@@ -17,6 +17,7 @@ int main()
 	uint8_t* b1;
 	uint8_t* b2;
 	uint8_t* d;
+	void *barrier;
 
 	fprintf(stderr, "We allocate 0x100 bytes for 'a'.\n");
 	a = (uint8_t*) malloc(0x100);
@@ -34,6 +35,10 @@ int main()
 
 	c = (uint8_t*) malloc(0x100);
 	fprintf(stderr, "c: %p\n", c);
+
+	barrier =  malloc(0x100);
+	fprintf(stderr, "We allocate a barrier at %p, so that c is not consolidated with the top-chunk when freed.\n"
+		"The barrier is not strictly necessary, but makes things less confusing\n", barrier);
 
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
 
