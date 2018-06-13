@@ -34,6 +34,9 @@ int main()
     char *p1, *p2;
     size_t io_list_all, *top;
 
+    fprintf(stderr, "The attack vector of this technique was removed by changing the behavior of malloc_printerr, "
+        "which is no longer calling _IO_flush_all_lockp, in 91e7cf982d0104f0e71770f5ae8e3faf352dea9f (2.26).\n");
+
     /*
       Firstly, lets allocate a chunk on the heap.
     */
