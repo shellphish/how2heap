@@ -49,7 +49,7 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "stack_buffer_1 at %p\n", (void*)stack_buffer_1);
   fprintf(stderr, "stack_buffer_2 at %p\n", (void*)stack_buffer_2);
 
-  fprintf(stderr, "Create a fake chunk on the stack");
+  fprintf(stderr, "Create a fake chunk on the stack\n");
   fprintf(stderr, "Set the fwd pointer to the victim_chunk in order to bypass the check of small bin corrupted"
          "in second to the last malloc, which putting stack address on smallbin list\n");
   stack_buffer_1[0] = 0;

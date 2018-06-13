@@ -6,7 +6,7 @@
 
 /*
    Credit to st4g3r for publishing this technique
-   The House of Enherjar uses an off-by-one overflow with a null byte to control the pointers returned by malloc()
+   The House of Einherjar uses an off-by-one overflow with a null byte to control the pointers returned by malloc()
    This technique may result in a more powerful primitive than the Poison Null Byte, but it has the additional requirement of a heap leak. 
 */
 

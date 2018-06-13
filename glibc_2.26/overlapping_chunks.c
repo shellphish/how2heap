@@ -53,8 +53,8 @@ int main(int argc , char* argv[]){
 	       "is parked in the unsorted bin which size has been modified by us\n");
 	p4 = malloc(evil_region_size);
 
-	fprintf(stderr, "\np4 has been allocated at %p and ends at %p\n", p4, p4+evil_region_size);
-	fprintf(stderr, "p3 starts at %p and ends at %p\n", p3, p3+80);
+	fprintf(stderr, "\np4 has been allocated at %p and ends at %p\n", (char *)p4, (char *)p4+evil_region_size);
+	fprintf(stderr, "p3 starts at %p and ends at %p\n", (char *)p3, (char *)p3+0x80-8);
 	fprintf(stderr, "p4 should overlap with p3, in this case p4 includes all p3.\n");
 
 	fprintf(stderr, "\nNow everything copied inside chunk p4 can overwrites data on\nchunk p3,"
