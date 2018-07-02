@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,6 +22,9 @@ void report_mcheck_fail(enum mcheck_status s)
 #endif
 
 int main(int argc, char ** argv) {
+
+	fprintf(stderr, "pid: %d\n", getpid());
+
 	char buffer[1000];
 	while (1) {
 		fprintf(stderr, "> ");
