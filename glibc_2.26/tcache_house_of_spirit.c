@@ -8,7 +8,7 @@ int main()
 	fprintf(stderr, "You can see this in malloc.c in function _int_free that tcache_put is called without checking if next chunk's size and prev_inuse are sane.\n");
 	fprintf(stderr, "(Search for strings \"invalid next size\" and \"double free or corruption\")\n\n");
 
-	fprintf(stderr, "Ok. Let's start with the example!.\n\n");//todo
+	fprintf(stderr, "Ok. Let's start with the example!.\n\n");
 
 
 	fprintf(stderr, "Calling malloc() once so that it sets up its memory.\n");
