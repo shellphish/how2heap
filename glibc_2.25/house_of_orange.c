@@ -36,6 +36,9 @@ int main()
 
     fprintf(stderr, "The attack vector of this technique was removed by changing the behavior of malloc_printerr, "
         "which is no longer calling _IO_flush_all_lockp, in 91e7cf982d0104f0e71770f5ae8e3faf352dea9f (2.26).\n");
+  
+    fprintf(stderr, "Since glibc 2.24 _IO_FILE vtable are checked against a whitelist breaking this exploit,"
+        "https://sourceware.org/git/?p=glibc.git;a=commit;h=db3476aff19b75c4fdefbe65fcd5f0a90588ba51\n");
 
     /*
       Firstly, lets allocate a chunk on the heap.
