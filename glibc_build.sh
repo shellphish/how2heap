@@ -20,13 +20,13 @@ else
 fi
 
 # Checkout release
-git rev-parse --verify --quiet "release/$1/master"
+git rev-parse --verify --quiet "origin/release/$1/master"
 if [[ $? != 0 ]]; then
     echo "Error: Glib version does not seem to exists"
     exit 1
 fi
 
-git checkout "release/$1/master"
+git checkout "release/$1/master" -f
 cd -
 
 # Build
