@@ -33,5 +33,5 @@ int main()
 	strcpy(c, "this is C!");
 	fprintf(stderr, "3rd allocation %p points to %s\n", c, c);
 	fprintf(stderr, "first allocation %p points to %s\n", a, a);
-	fprintf(stderr, "If we reuse the first allocation, it now holds the data from the third allocation.");
+	fprintf(stderr, "If we reuse the first allocation, it now holds the data from the third allocation.\n");
 }
