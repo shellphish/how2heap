@@ -34,7 +34,7 @@
  
 int main()
 {
-    fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
+    fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see glibc_build.sh for build instructions.\n");
     fprintf(stderr, "This file demonstrates large bin attack by writing a large unsigned long value into stack\n");
     fprintf(stderr, "In practice, large bin attack is generally prepared for further attacks, such as rewriting the "
            "global variable global_max_fast in libc for further fastbin attack\n\n");
