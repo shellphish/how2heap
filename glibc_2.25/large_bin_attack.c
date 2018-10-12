@@ -22,6 +22,9 @@
     fwd->bk = victim;
     bck->fd = victim;
 
+    For more details on how large-bins are handled and sorted by ptmalloc,
+    please check the Background section in the aforementioned link.
+
     [...]
 
  */
@@ -66,15 +69,17 @@ int main()
     free(p1);
     free(p2);
     fprintf(stderr, "We free the first and second large chunks now and they will be inserted in the unsorted bin:"
-           " %p --> %p\n\n", (void *)(p2 - 2), (void *)(p1 - 2));
+           " [ %p <--> %p ]\n\n", (void *)(p2 - 2), (void *)(p2[0]));
 
     malloc(0x90);
     fprintf(stderr, "Now, we allocate a chunk with a size smaller than the freed first large chunk. This will move the"
             " freed second large chunk into the large bin freelist, use parts of the freed first large chunk for allocation"
             ", and reinsert the remaining of the freed first large chunk into the unsorted bin:"
-            " %p\n\n", (void *)((char *)p1 + 0x90));
+            " [ %p ]\n\n", (void *)((char *)p1 + 0x90));
 
     free(p3);
+    fprintf(stderr, "Now, we free the third large chunk and it will be inserted in the unsorted bin:"
+           " [ %p <--> %p ]\n\n", (void *)(p3 - 2), (void *)(p3[0]));
  
     //------------VULNERABILITY-----------
 
