@@ -26,7 +26,7 @@ if [[ $? != 0 ]]; then
     exit 1
 fi
 
-git checkout "release/$1/master"
+git checkout "release/$1/master" -f
 cd -
 
 # Build
