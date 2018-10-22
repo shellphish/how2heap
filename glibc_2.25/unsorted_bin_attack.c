@@ -29,7 +29,7 @@ int main(){
 	//------------------------------------
 
 	malloc(400);
-	fprintf(stderr, "Let's malloc again to get the chunk we just free. During this time, target should has already been "
-		   "rewrite:\n");
+	fprintf(stderr, "Let's malloc again to get the chunk we just free. During this time, the target should have already been "
+		   "rewritten:\n");
 	fprintf(stderr, "%p: %p\n", &stack_var, (void*)stack_var);
 }
