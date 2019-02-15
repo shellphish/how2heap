@@ -104,6 +104,6 @@ int main()
 
 	fprintf(stderr, "New b2 content:\n%s\n",b2);
 
-	fprintf(stderr, "Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf "
+	fprintf(stderr, "Thanks to https://www.contextis.com/resources/white-papers/glibc-adventures-the-forgotten-chunks"
 		"for the clear explanation of this technique.\n");
 }
