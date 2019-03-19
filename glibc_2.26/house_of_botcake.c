@@ -41,8 +41,8 @@ int main()
     puts("Allocating a padding to prevent consolidation.\n");
     malloc(0x10);
     
-    // cause double free
-    puts("Now we want to cause double free");
+    // cause chunk overlapping
+    puts("Now we are able to cause chunk overlapping");
     puts("Step 1: fill up tcache list");
     for(int i=0; i<7; i++){
         free(x[i]);
