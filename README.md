@@ -50,6 +50,10 @@ Examine the glibc heap in gdb: https://github.com/cloudburst/libheap
 
 Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
 
+## heapinspect
+
+A Python based heap playground with good visualization for educational purposes: https://github.com/matrix1001/heapinspect
+
 ## Malloc Playground
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
