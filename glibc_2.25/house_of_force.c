@@ -33,7 +33,7 @@ int main(int argc , char* argv[])
 
 	fprintf(stderr, "\nLet's allocate the first chunk, taking space from the wilderness.\n");
 	intptr_t *p1 = malloc(256);
-	fprintf(stderr, "The chunk of 256 bytes has been allocated at %p.\n", p1 - sizeof(long)*2);
+	fprintf(stderr, "The chunk of 256 bytes has been allocated at %p.\n", p1 - 2);
 
 	fprintf(stderr, "\nNow the heap is composed of two chunks: the one we allocated and the top chunk/wilderness.\n");
 	int real_size = malloc_usable_size(p1);
