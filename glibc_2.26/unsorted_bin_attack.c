@@ -2,7 +2,9 @@
 #include <stdlib.h>
 
 int main(){
-	fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
+	fprintf(stderr, "This technique only works with buffers not going into tcache, either because the tcache-option for "
+		    "glibc was disabled, or because the buffers are bigger than 0x408 bytes. See build_glibc.sh for build "
+		    "instructions.\n");
 	fprintf(stderr, "This file demonstrates unsorted bin attack by write a large unsigned long value into stack\n");
 	fprintf(stderr, "In practice, unsorted bin attack is generally prepared for further attacks, such as rewriting the "
 		   "global variable global_max_fast in libc for further fastbin attack\n\n");
@@ -11,7 +13,7 @@ int main(){
 	fprintf(stderr, "Let's first look at the target we want to rewrite on stack:\n");
 	fprintf(stderr, "%p: %ld\n\n", &stack_var, stack_var);
 
-	unsigned long *p=malloc(400);
+	unsigned long *p=malloc(0x410);
 	fprintf(stderr, "Now, we allocate first normal chunk on the heap at: %p\n",p);
 	fprintf(stderr, "And allocate another normal chunk in order to avoid consolidating the top chunk with"
            "the first one during the free()\n\n");
@@ -29,7 +31,7 @@ int main(){
 
 	//------------------------------------
 
-	malloc(400);
+	malloc(0x410);
 	fprintf(stderr, "Let's malloc again to get the chunk we just free. During this time, the target should have already been "
 		   "rewritten:\n");
 	fprintf(stderr, "%p: %p\n", &stack_var, (void*)stack_var);
