@@ -6,6 +6,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | File | Technique | Glibc-Version |Applicable CTF Challenges |
 |------|-----------|---------------|--------------------------|
 | [first_fit.c](first_fit.c) | Demonstrating glibc malloc's first-fit behavior. | | |
+| [calc_tcache_idx.c](calc_tcache_idx.c) | Demonstrating glibc's tcache index calculation. | | |
 | [fastbin_dup.c](fastbin_dup.c) | Tricking malloc into returning an already-allocated heap pointer by abusing the fastbin freelist. | | |
 | [fastbin_dup_into_stack.c](glibc_2.25/fastbin_dup_into_stack.c) | Tricking malloc into returning a nearly-arbitrary pointer by abusing the fastbin freelist. | latest | [9447-search-engine](https://github.com/ctfs/write-ups-2015/tree/master/9447-ctf-2015/exploitation/search-engine), [0ctf 2017-babyheap](http://uaf.io/exploitation/2017/03/19/0ctf-Quals-2017-BabyHeap2017.html) |
 | [fastbin_dup_consolidate.c](glibc_2.25/fastbin_dup_consolidate.c) | Tricking malloc into returning an already-allocated heap pointer by putting a pointer on both fastbin freelist and unsorted bin freelist. | latest | [Hitcon 2016 SleepyHolder](https://github.com/mehQQ/public_writeup/tree/master/hitcon2016/SleepyHolder) |
