@@ -24,11 +24,11 @@ int main()
 	fprintf(stderr, "Freeing the first one...\n");
 	free(a);
 
-	fprintf(stderr, "We don't need to free anything again. As long as we allocate less than 512, it will end up at %p\n", a);
+	fprintf(stderr, "We don't need to free anything again. As long as we allocate something between 505 and 520, it will end up at %p\n", a);
 
-	fprintf(stderr, "So, let's allocate 500 bytes\n");
-	c = malloc(500);
-	fprintf(stderr, "3rd malloc(500): %p\n", c);
+	fprintf(stderr, "So, let's allocate 506 bytes\n");
+	c = malloc(506);
+	fprintf(stderr, "3rd malloc(506): %p\n", c);
 	fprintf(stderr, "And put a different string here, \"this is C!\"\n");
 	strcpy(c, "this is C!");
 	fprintf(stderr, "3rd allocation %p points to %s\n", c, c);
