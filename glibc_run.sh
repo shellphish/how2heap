@@ -13,4 +13,12 @@ if [ ! -e "$VERSION/libc-$1.so" ]; then
     echo "./build_glibc $1 <#make-threads"
 fi
 
-LD_PRELOAD="$VERSION/libc-$1.so" "$VERSION/ld-$1.so" "$2"
+curr_interp=$(readelf -l "$2" | grep 'Requesting' | cut -d':' -f2 | tr -d ' ]')
+target_interp="$VERSION/ld-$1.so"
+
+if [[ $curr_interp != $target_interp ]];
+then
+    patchelf --set-interpreter "$target_interp" "$2"
+fi
+
+LD_PRELOAD="$VERSION/libc-$1.so" "$2"
