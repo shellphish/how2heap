@@ -27,7 +27,7 @@ int main()
 	fprintf(stderr, "We don't need to free anything again. As long as we allocate smaller than 0x512, it will end up at %p\n", a);
 
 	fprintf(stderr, "So, let's allocate 0x500 bytes\n");
-	c = malloc(506);
+	c = malloc(0x500);
 	fprintf(stderr, "3rd malloc(0x500): %p\n", c);
 	fprintf(stderr, "And put a different string here, \"this is C!\"\n");
 	strcpy(c, "this is C!");
