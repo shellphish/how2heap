@@ -66,7 +66,7 @@ Some good heap exploitation resources, roughly in order of their publication, ar
 - glibc in-depth tutorial (https://heap-exploitation.dhavalkapil.com/) - book and exploit samples
 - ptmalloc fanzine, a set of resources and examples related to meta-data attacks on ptmalloc (http://tukan.farm/2016/07/26/ptmalloc-fanzine/)
 - A malloc diagram, from libheap (https://raw.githubusercontent.com/cloudburst/libheap/master/heap.png)
-- Glibc Adventures: The Forgotten Chunk (http://www.contextis.com/documents/120/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
+- Glibc Adventures: The Forgotten Chunk (https://go.contextis.com/rs/140-OCV-459/images/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
 - Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
 - The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
 - Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
@@ -77,7 +77,7 @@ Some good heap exploitation resources, roughly in order of their publication, ar
 - OS X heap exploitation techniques (http://phrack.org/issues/63/5.html)
 - Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25)
 - Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html)
-- GDB Enhanced Features (GEF) Heap Exploration Tools (https://gef.readthedocs.io/en/latest/commands/heap/)
+- GDB Enhanced Features (GEF) Heap Exploration Tools (https://gef.readthedocs.io/en/master/commands/heap/)
 - Painless intro to the Linux userland heap (https://sensepost.com/blog/2017/painless-intro-to-the-linux-userland-heap/)
 
 # Hardening
