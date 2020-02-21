@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <assert.h>
 
+
 int main()
 {
     /*
@@ -10,9 +11,9 @@ int main()
      * https://sourceware.org/git/?p=glibc.git;a=commit;h=bcdaad21d4635931d1bd3b54a7894276925d081d
      * If the libc does not include the restriction, you can simply double free the victim and do a
      * simple tcache poisoning
-     */
+     * And thanks to @anton00b and @subwire for the weird name of this technique */
 
-    // disable buffering and make _FILE_IO does not interfere with our heap
+    // disable buffering so _IO_FILE does not interfere with our heap
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
