@@ -60,6 +60,10 @@ A Python based heap playground with good visualization for educational purposes:
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
 
+## Pwngdb
+
+Examine the glibc heap in gdb: https://github.com/scwuaptx/Pwngdb
+
 # Other resources
 
 Some good heap exploitation resources, roughly in order of their publication, are:
