@@ -50,17 +50,17 @@ int main()
     unsigned long long tidx;
 	fprintf(stderr, "This file doesn't demonstrate an attack, but calculates the tcache idx for a given chunk size.\n");
 	fprintf(stderr, "The basic formula is as follows:\n");
-    fprintf(stderr, "\t(IDX = CHUNKSIZE - MINSIZE + MALLOC_ALIGNMENT - 1) / MALLOC_ALIGNMENT\n");
+    fprintf(stderr, "\tIDX = (CHUNKSIZE - MINSIZE + MALLOC_ALIGNMENT - 1) / MALLOC_ALIGNMENT\n");
     fprintf(stderr, "\tOn a 64 bit system the current values are:\n");
     fprintf(stderr, "\t\tMINSIZE: 0x%lx\n", MINSIZE);
     fprintf(stderr, "\t\tMALLOC_ALIGNMENT: 0x%lx\n", MALLOC_ALIGNMENT);
     fprintf(stderr, "\tSo we get the following equation:\n");
-    fprintf(stderr, "\t(IDX = CHUNKSIZE - 0x%lx) / 0x%lx\n\n", MINSIZE-MALLOC_ALIGNMENT+1, MALLOC_ALIGNMENT);
+    fprintf(stderr, "\tIDX = (CHUNKSIZE - 0x%lx) / 0x%lx\n\n", MINSIZE-MALLOC_ALIGNMENT+1, MALLOC_ALIGNMENT);
     fprintf(stderr, "BUT be AWARE that CHUNKSIZE is not the x in malloc(x)\n");
     fprintf(stderr, "It is calculated as follows:\n");
-    fprintf(stderr, "\tIF x < MINSIZE(0x%lx) CHUNKSIZE = MINSIZE (0x%lx)\n", MINSIZE, MINSIZE);
+    fprintf(stderr, "\tIF x + SIZE_SZ + MALLOC_ALIGN_MASK < MINSIZE(0x%lx) CHUNKSIZE = MINSIZE (0x%lx)\n", MINSIZE, MINSIZE);
     fprintf(stderr, "\tELSE: CHUNKSIZE = (x + SIZE_SZ + MALLOC_ALIGN_MASK) & ~MALLOC_ALIGN_MASK) \n");
-    fprintf(stderr, "\t=> CHUNKSIZE = (x + 0x%lx + 0x%lx) & ~0x%lx)\n\n\n", SIZE_SZ, MALLOC_ALIGN_MASK, MALLOC_ALIGN_MASK);
+    fprintf(stderr, "\t=> CHUNKSIZE = (x + 0x%lx + 0x%lx) & ~0x%lx\n\n\n", SIZE_SZ, MALLOC_ALIGN_MASK, MALLOC_ALIGN_MASK);
     while(1) {
         fprintf(stderr, "[CTRL-C to exit] Please enter a size x (malloc(x)) in hex (e.g. 0x10): ");
         scanf("%llx", &req);
