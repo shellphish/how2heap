@@ -26,7 +26,7 @@ else
 #include <string.h>
 #include <stdint.h>
 
-void jackpot(){ puts("Nice jump d00d"); exit(0); }
+void jackpot(){ fprintf(stderr, "Nice jump d00d\n"); exit(0); }
 
 int main(int argc, char * argv[]){
 
