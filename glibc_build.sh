@@ -77,8 +77,6 @@ fi
 
 # Prepare output dir
 OUTPUT_DIR=`pwd`/glibc_versions/"$GLIBC_VERSION/${DIR_HOST}_${DIR_TCACHE}"
-mkdir -p $OUTPUT_DIR/etc
-touch $OUTPUT_DIR/etc/ld.so.conf
 
 # Get glibc source
 if [ ! -d "$SRC" ]; then
