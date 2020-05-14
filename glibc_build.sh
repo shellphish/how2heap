@@ -76,7 +76,7 @@ if [ -z $GLIBC_VERSION ]; then
 fi
 
 # Prepare output dir
-OUTPUT_DIR="$VERSION/$GLIBC_VERSION/${DIR_HOST}_${DIR_TCACHE}"
+OUTPUT_DIR=`pwd`/glibc_versions/"$GLIBC_VERSION/${DIR_HOST}_${DIR_TCACHE}"
 
 # Get glibc source
 if [ ! -d "$SRC" ]; then
@@ -105,19 +105,8 @@ else
     echo "  -> Clearing build directory"
     rm -rf ./*
 fi
-eval ../"$SRC"/configure --prefix=/usr $BUILD_OPTS
+eval ../"$SRC"/configure --prefix=$OUTPUT_DIR $BUILD_OPTS
 echo "$OUTPUT_DIR" > ./how2heap_build_cmd
 make -j "$make_threads"
-cd -
-
-# Save compiled
-if [ "$(ls -A $OUTPUT_DIR 2>/dev/null)" ]; then
-    echo "  -> Directory \"$OUTPUT_DIR\" exists and is not empty, skipping copy step"
-    exit
-fi
-mkdir -p "$OUTPUT_DIR"
-
-echo "  -> Copying libraries to $OUTPUT_DIR"
-cd "$BUILD"
-find . \( -name '*.so' -or -name '*.a' \) -exec rsync -aR "{}" "../$OUTPUT_DIR" \;
+make install
 cd -
