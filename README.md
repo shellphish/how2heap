@@ -27,6 +27,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [tcache_house_of_spirit.c](glibc_2.26/tcache_house_of_spirit.c) | Frees a fake chunk to get malloc to return a nearly-arbitrary pointer. | > 2.25 | |
 | [house_of_botcake.c](glibc_2.26/house_of_botcake.c) | Bypass double free restriction on tcache. | > 2.25 | |
 | [tcache_stashing_unlink_attack.c](glibc_2.26/tcache_stashing_unlink_attack.c) | Exploiting the overwrite of a freed chunk on small bin freelist to trick malloc into returning an arbitrary pointer and write a large value into arbitraty address with the help of calloc. | > 2.25 | [Hitcon 2019 one punch man](https://github.com/xmzyshypnc/xz_files/tree/master/hitcon2019_one_punch_man) |
+| [fastbin_reverse_into_tcache.c](glibc_2.26/fastbin_reverse_into_tcache.c) | Exploiting the overwrite of a freed chunk in the fastbin to write a large value into an arbitrary address. | > 2.25 | |
 
 The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
 Consequently, these checks regularly break some of the techniques and require adjustments to bypass them (if possible).
