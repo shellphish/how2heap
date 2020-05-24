@@ -24,4 +24,4 @@ then
     patchelf --set-interpreter "$target_interp" "$2"
 fi
 
-LD_PRELOAD="$OUTPUT_DIR/libc-$1.so" "$2"
+"$2"
