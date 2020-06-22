@@ -45,8 +45,8 @@ int main()
     // <Vulneribilty>
     printf("Now we change the size of the chunk in tcache_bins either by overflow or realloc function\n");
     // this overflow could also be done by adjusent chunk
-    victim_chunk_header[1] = 0x51;
-    // victim_chunk = realloc(victim_chunk, 0x50);
+    // victim_chunk_header[1] = 0x51;
+    victim_chunk = realloc(victim_chunk, 0x40);
     //</Vulneribilty>
 
     printf("Freeing the overflowen chunk\n");
