@@ -12,17 +12,21 @@ all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS)
 
+define test_poc =
+echo $(poc)
+for i in $$(seq 0 4);\
+do\
+	$(poc) 1>/dev/null 2>&1 0>&1;\
+	if [ "$$?" = "0" ]; then break; fi;\
+	if [ "$$i" = "4" ]; then exit 1; fi;\
+done
+echo "success"
+endef
+
+#if [ "$$i" == "5" ]; then exit 1; fi;\
+
 test:
-	if [ -z "$(target)" ] || [ -z "$(V$(target))" ];\
+	@if [ -z "$(target)" ] || [ -z "$(V$(target))" ];\
 	then echo "run 'make test target=<target_version>' to test existing techniques"; exit 1; fi;
 
-	for poc in $(V$(target));\
-	do \
-		echo $$poc;\
-		$$poc 1>/dev/null 2>&1 0>&1;\
-		if [ "$$?" != "0" ];\
-		then \
-			exit 1;\
-		fi;\
-		echo good;\
-	done;
+	@$(foreach poc,$(V$(target)),$(call test_poc,$(poc));)
