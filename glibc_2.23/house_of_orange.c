@@ -1,6 +1,9 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 /*
   The House of Orange uses an overflow in the heap to corrupt the _IO_list_all pointer
@@ -264,5 +267,6 @@ int main()
 int winner(char *ptr)
 { 
     system(ptr);
+    syscall(SYS_exit, 0);
     return 0;
 }

