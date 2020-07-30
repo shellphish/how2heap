@@ -31,6 +31,7 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include<assert.h>
  
 int main()
 {
@@ -45,21 +46,21 @@ int main()
     fprintf(stderr, "stack_var1 (%p): %ld\n", &stack_var1, stack_var1);
     fprintf(stderr, "stack_var2 (%p): %ld\n\n", &stack_var2, stack_var2);
 
-    unsigned long *p1 = malloc(0x320);
+    unsigned long *p1 = malloc(0x420);
     fprintf(stderr, "Now, we allocate the first large chunk on the heap at: %p\n", p1 - 2);
 
     fprintf(stderr, "And allocate another fastbin chunk in order to avoid consolidating the next large chunk with"
            " the first large chunk during the free()\n\n");
     malloc(0x20);
 
-    unsigned long *p2 = malloc(0x400);
+    unsigned long *p2 = malloc(0x500);
     fprintf(stderr, "Then, we allocate the second large chunk on the heap at: %p\n", p2 - 2);
 
     fprintf(stderr, "And allocate another fastbin chunk in order to avoid consolidating the next large chunk with"
            " the second large chunk during the free()\n\n");
     malloc(0x20);
 
-    unsigned long *p3 = malloc(0x400);
+    unsigned long *p3 = malloc(0x500);
     fprintf(stderr, "Finally, we allocate the third large chunk on the heap at: %p\n", p3 - 2);
  
     fprintf(stderr, "And allocate another fastbin chunk in order to avoid consolidating the top chunk with"
@@ -104,6 +105,10 @@ int main()
 
     fprintf(stderr, "stack_var1 (%p): %p\n", &stack_var1, (void *)stack_var1);
     fprintf(stderr, "stack_var2 (%p): %p\n", &stack_var2, (void *)stack_var2);
+
+    // sanity check
+    assert(stack_var1 != 0);
+    assert(stack_var2 != 0);
 
     return 0;
 }
