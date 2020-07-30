@@ -11,3 +11,18 @@ CFLAGS += -std=c99 -g
 all: $(PROGRAMS)
 clean:
 	rm -f $(PROGRAMS)
+
+test:
+	if [ -z "$(target)" ] || [ -z "$(V$(target))" ];\
+	then echo "run 'make test target=<target_version>' to test existing techniques"; exit 1; fi;
+
+	for poc in $(V$(target));\
+	do \
+		echo $$poc;\
+		$$poc 1>/dev/null 2>&1 0>&1;\
+		if [ "$$?" != "0" ];\
+		then \
+			exit 1;\
+		fi;\
+		echo good;\
+	done;
