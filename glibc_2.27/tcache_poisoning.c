@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 int main()
 {
@@ -40,5 +41,6 @@ int main()
 	printf("2nd malloc(128): %p\n", c);
 	printf("We got the control\n");
 
+	assert((long)&stack_var == c);
 	return 0;
 }
