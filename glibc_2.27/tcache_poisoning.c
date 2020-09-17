@@ -41,6 +41,6 @@ int main()
 	printf("2nd malloc(128): %p\n", c);
 	printf("We got the control\n");
 
-	assert((long)&stack_var == c);
+	assert((long)&stack_var == (long)c);
 	return 0;
 }
