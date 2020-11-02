@@ -10,7 +10,7 @@ int main(){
     setbuf(stdout, NULL);
 
     printf("This file demonstrates the stashing unlink attack on tcache.\n\n");
-    printf("This poc has been tested on both glibc 2.27 and glibc 2.29.\n\n");
+    printf("This poc has been tested on both glibc-2.27, glibc-2.29 and glibc-2.31.\n\n");
     printf("This technique can be used when you are able to overwrite the victim->bk pointer. Besides, it's necessary to alloc a chunk with calloc at least once. Last not least, we need a writable address to bypass check in glibc\n\n");
     printf("The mechanism of putting smallbin into tcache in glibc gives us a chance to launch the attack.\n\n");
     printf("This technique allows us to write a libc addr to wherever we want and create a fake chunk wherever we need. In this case we'll create the chunk on the stack.\n\n");
