@@ -132,6 +132,5 @@ int main(int argc, char * argv[]){
   memcpy((p4+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
 
   // sanity check
-  assert((long)stack_buffer_1 - 0x100 < (long)p4);
-  assert((long)stack_buffer_1 + 0x100 > (long)p4);
+  assert((long)__builtin_return_address(0) == (long)jackpot);
 }
