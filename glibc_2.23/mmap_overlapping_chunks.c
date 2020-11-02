@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 /*
 Technique should work on all versions of GLibC
@@ -135,4 +136,5 @@ int main(){
 	printf("Second chunk value (after write): 0x%llx\n", mmap_chunk_2[0]);
 	printf("Overlapped chunk value: 0x%llx\n\n", overlapping_chunk[distance]);
 	printf("Boom! The new chunk has been overlapped with a previous mmaped chunk\n");
+	assert(mmap_chunk_2[0] == overlapping_chunk[distance]);
 }

