@@ -40,7 +40,7 @@ int main()
 	printf("We shrink the size of chunk0 (saved as 'previous_size' in chunk1) so that free will think that chunk0 starts where we placed our fake chunk.\n");
 	printf("It's important that our fake chunk begins exactly where the known pointer points and that we shrink the chunk accordingly\n");
 	chunk1_hdr[0] = malloc_size;
-	printf("If we had 'normally' freed chunk0, chunk1.previous_size would have been 0x90, however this is its new value: %p\n",(void*)chunk1_hdr[0]);
+	printf("If we had 'normally' freed chunk0, chunk1.previous_size would have been 0x430, however this is its new value: %p\n",(void*)chunk1_hdr[0]);
 	printf("We mark our fake chunk as free by setting 'previous_in_use' of chunk1 as False.\n\n");
 	chunk1_hdr[1] &= ~1;
 
