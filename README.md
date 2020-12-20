@@ -60,6 +60,10 @@ Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
 
 A Python based heap playground with good visualization for educational purposes: https://github.com/matrix1001/heapinspect
 
+## Forkever
+
+Debugger that lets you set "checkpoints" as well as view and edit the heap using a hexeditor: https://github.com/haxkor/forkever
+
 ## Malloc Playground
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
