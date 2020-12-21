@@ -19,7 +19,7 @@ int main()
 	void *tmp = malloc(0x1);
 	void *heap_base = (void *)((long)tmp & (~0xfff));
 	printf("heap address: %p\n", heap_base);
-	size_t size = 0x10000 - (long)tmp&0xffff - 0x30;
+	size_t size = 0x10000 - ((long)tmp&0xffff) - 0x20;
 	printf("Calculate padding chunk size: 0x%lx\n", size);
 	puts("Allocate the padding. This is required to avoid a 4-bit bruteforce because we are going to overwrite least significant two bytes.");
 	void *padding= malloc(size);
