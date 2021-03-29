@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <assert.h>
 
 /*
 
@@ -218,4 +219,5 @@ int main(){
 
 	// For this particular fastbin chunk size, the offset is 0x28. 
 	printf("Target Write at %p: 0x%llx\n", target_loc, *((unsigned long long*) (target_loc)));
+	assert(*((unsigned long *) (target_loc)) != 0);
 }
