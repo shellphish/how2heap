@@ -1,6 +1,9 @@
 # Educational Heap Exploitation
 
 This repo is for learning various heap exploitation techniques.
+We use Ubuntu's Libc releases as the gold-standard. Each technique is verified to work on corresponding Ubuntu releases.
+You can run `apt source libc6` to download the source code of the Libc your are using on Debian-based operating system.
+
 We came up with the idea during a hack meeting, and have implemented the following techniques:
 
 | File | Technique | Glibc-Version | Patch | Applicable CTF Challenges |
