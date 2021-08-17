@@ -79,7 +79,7 @@ int main()
     
     // note
     puts("Note:");
-    puts("And the wonderful thing about this exploitation is that: you can free b, victim again and modify the fwd pointer of victim");
+    puts("And the wonderful thing about this exploitation is that: you can free victim again and modify the fwd pointer of victim");
     puts("In that case, once you have done this exploitation, you can have many arbitary writes very easily.");
 
     return 0;
