@@ -36,7 +36,7 @@ char target[0x60];
 void init(){
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stdin, NULL, _IONBF, 0);
-        clearenv();
+        // clearenv();
 }
 
 // Get the AMOUNT to shift over for size and the offset on the largebin.

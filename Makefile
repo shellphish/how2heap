@@ -4,7 +4,7 @@ V2.27 = glibc_2.27/unsafe_unlink glibc_2.27/house_of_lore glibc_2.27/overlapping
 V2.31 = glibc_2.31/unsafe_unlink glibc_2.31/overlapping_chunks glibc_2.31/house_of_einherjar glibc_2.31/tcache_poisoning glibc_2.31/tcache_house_of_spirit glibc_2.31/house_of_botcake glibc_2.31/tcache_stashing_unlink_attack glibc_2.31/fastbin_reverse_into_tcache glibc_2.31/mmap_overlapping_chunks glibc_2.31/fastbin_dup glibc_2.31/large_bin_attack glibc_2.31/house_of_mind_fastbin glibc_2.31/house_of_lore
 V2.32 = glibc_2.32/unsafe_unlink glibc_2.32/overlapping_chunks glibc_2.32/house_of_einherjar glibc_2.32/tcache_poisoning glibc_2.32/tcache_house_of_spirit glibc_2.32/house_of_botcake glibc_2.32/tcache_stashing_unlink_attack fastbin_reverse_into_tcache glibc_2.32/mmap_overlapping_chunks glibc_2.32/fastbin_dup glibc_2.32/large_bin_attack glibc_2.32/house_of_mind_fastbin glibc_2.32/house_of_lore
 PROGRAMS = $(BASE) $(V2.23) $(V2.27) $(V2.31) $(V2.32)
-CFLAGS += -std=c99 -g
+CFLAGS += -std=c99 -g -Wno-unused-result
 LDLIBS += -ldl
 
 # Convenience to auto-call mcheck before the first malloc()
