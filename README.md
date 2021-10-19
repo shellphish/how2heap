@@ -35,6 +35,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [fastbin_reverse_into_tcache.c](glibc_2.31/fastbin_reverse_into_tcache.c) | Exploiting the overwrite of a freed chunk in the fastbin to write a large value into an arbitrary address. | > 2.25 | | |
 | [house_of_mind_fastbin.c](glibc_2.23/house_of_mind_fastbin.c) | Exploiting a single byte overwrite with arena handling to write a large value (heap pointer) to an arbitrary address | latest | | |
 | [house_of_storm.c](glibc_2.23/house_of_storm.c) | Exploiting a use after free on both a large and unsorted bin chunk to return an arbitrary chunk from malloc| < 2.29 | | |
+| [decrypt_safe_linking.c](glibc_2.32/decrypt_safe_linking.c) | Decrypt the poisoned value in linked list to recover the actual pointer | >= 2.32 | | |
 
 The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
 Consequently, these checks regularly break some of the techniques and require adjustments to bypass them (if possible).
