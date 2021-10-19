@@ -77,6 +77,10 @@ The `malloc_playground.c` file given is the source for a program that prompts th
 
 Examine the glibc heap in gdb: https://github.com/scwuaptx/Pwngdb
 
+## heaptrace
+
+Helps you visualize heap operations by replacing addresses with symbols: https://github.com/Arinerron/heaptrace
+
 # Other resources
 
 Some good heap exploitation resources, roughly in order of their publication, are:
