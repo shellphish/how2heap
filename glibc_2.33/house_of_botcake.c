@@ -62,14 +62,14 @@ int main()
     /*VULNERABILITY*/
 
     puts("Now we have the chunk overlapping primitive:");
-	int prev_size = prev[-1] & 0xff0;
-	int a_size = a[-1] & 0xff0;
+    int prev_size = prev[-1] & 0xff0;
+    int a_size = a[-1] & 0xff0;
     printf("prev @ %p, size: %#x, end @ %p\n", prev, prev_size, (void *)prev+prev_size);
     printf("victim @ %p, size: %#x, end @ %p\n", a, a_size, (void *)a+a_size);
-	a = malloc(0x100);
-	memset(a, 0, 0x100);
-	prev[0x110/sizeof(intptr_t)] = 0x41414141;
-	assert(a[0] == 0x41414141);
+    a = malloc(0x100);
+    memset(a, 0, 0x100);
+    prev[0x110/sizeof(intptr_t)] = 0x41414141;
+    assert(a[0] == 0x41414141);
 
     return 0;
 }
