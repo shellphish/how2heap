@@ -27,7 +27,6 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [house_of_einherjar.c](glibc_2.31/house_of_einherjar.c) | Exploiting a single null byte overflow to trick malloc into returning a controlled pointer  | latest | | [Seccon 2016-tinypad](https://gist.github.com/hhc0null/4424a2a19a60c7f44e543e32190aaabf) |
 | [house_of_orange.c](glibc_2.23/house_of_orange.c) | Exploiting the Top Chunk (Wilderness) in order to gain arbitrary code execution  | < 2.26 | unknown | [Hitcon 2016 houseoforange](https://github.com/ctfs/write-ups-2016/tree/master/hitcon-ctf-2016/pwn/house-of-orange-500) |
 | [house_of_roman.c](glibc_2.23/house_of_roman.c) | Leakless technique in order to gain remote code execution via fake fastbins, the unsorted\_bin attack and relative overwrites. |< 2.29 |[patch](https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=b90ddd08f6dd688e651df9ee89ca3a69ff88cd0c) |
-| [tcache_dup.c](glibc_2.27/tcache_dup.c) | Tricking malloc into returning an already-allocated heap pointer by abusing the tcache freelist. | 2.26 - 2.28 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=bcdaad21d4635931d1bd3b54a7894276925d081d) | |
 | [tcache_poisoning.c](glibc_2.31/tcache_poisoning.c) | Tricking malloc into returning a completely arbitrary pointer by abusing the tcache freelist. (requires heap leak on and after 2.32) | > 2.25  | [patch](https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=a1a486d70ebcc47a686ff5846875eacad0940e41) | |
 | [tcache_house_of_spirit.c](glibc_2.31/tcache_house_of_spirit.c) | Frees a fake chunk to get malloc to return a nearly-arbitrary pointer. | > 2.25 | | | 
 | [house_of_botcake.c](glibc_2.31/house_of_botcake.c) | Bypass double free restriction on tcache. Make `tcache_dup` great again. | > 2.25 | | |
@@ -36,6 +35,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [house_of_mind_fastbin.c](glibc_2.23/house_of_mind_fastbin.c) | Exploiting a single byte overwrite with arena handling to write a large value (heap pointer) to an arbitrary address | latest | | |
 | [house_of_storm.c](glibc_2.23/house_of_storm.c) | Exploiting a use after free on both a large and unsorted bin chunk to return an arbitrary chunk from malloc| < 2.29 | | |
 | [decrypt_safe_linking.c](glibc_2.32/decrypt_safe_linking.c) | Decrypt the poisoned value in linked list to recover the actual pointer | >= 2.32 | | |
+| [tcache_dup.c](obsolete/glibc_2.27/tcache_dup.c)(obsolete) | Tricking malloc into returning an already-allocated heap pointer by abusing the tcache freelist. | 2.26 - 2.28 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=bcdaad21d4635931d1bd3b54a7894276925d081d) | |
 
 The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
 Consequently, these checks regularly break some of the techniques and require adjustments to bypass them (if possible).
