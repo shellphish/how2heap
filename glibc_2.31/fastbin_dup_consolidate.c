@@ -4,7 +4,7 @@
 
 void main() {
 
-	printf("Fill up the tcache list, to force the fastbin usage.\n");
+	printf("Fill up the tcache list to force the fastbin usage...\n");
 
 	void *ptr[7];
 
@@ -14,21 +14,27 @@ void main() {
 		free(ptr[i]);
 
 	void* p1 = calloc(1,0x40);
-  	void* p2 = calloc(1,0x40);
 
-	printf("Subsequently, we allocated two chunks of the same size p1=%p p2=%p\n", p1, p2);
-  	printf("Thus, freeing p1 and p2 will add them to the fastbin list!\n");
+	printf("Allocate another chunk of the same size p1=%p \n", p1);
+  	printf("Freeing p1 will add this chunk to the fastbin list...\n\n");
   	free(p1);
-	free(p2);
-  	void* p3 = malloc(0x400);
 
-	printf("Allocated large bin to trigger malloc_consolidate(): p3=%p\n", p3);
-  	printf("Triggering the double free vulnerability!\n");
+  	void* p3 = malloc(0x400);
+	printf("Allocating a tcache-sized chunk (p3=%p)\n", p3);
+	printf("will trigger the malloc_consolidate and merge\n");
+	printf("the fastbin chunks into the top chunk, thus\n");
+	printf("p1 and p3 are now pointing to the same chunk !\n\n");
+
+	assert(p1 == p3);
+
+  	printf("Triggering the double free vulnerability!\n\n");
 	free(p1);
 
-
 	void *p4 = malloc(0x400);
+
 	assert(p4 == p3);
 
-	printf("The double free added p1 to the tcache, thus the next similar-size malloc will point to p3:\np3=%p, p4=%p\n",p3, p4);
+	printf("The double free added the chunk referenced by p1 \n");
+	printf("to the tcache thus the next similar-size malloc will\n");
+	printf("point to p3: p3=%p, p4=%p\n\n",p3, p4);
 }
