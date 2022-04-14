@@ -3,7 +3,8 @@
 #include <assert.h>
 
 void main() {
-
+	// reference: https://valsamaras.medium.com/the-toddlers-introduction-to-heap-exploitation-fastbin-dup-consolidate-part-4-2-ce6d68136aa8
+	puts("This is a powerful technique that bypasses the double free check in tcachebin.");
 	printf("Fill up the tcache list to force the fastbin usage...\n");
 
 	void *ptr[7];
