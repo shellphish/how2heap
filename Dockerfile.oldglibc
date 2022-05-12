@@ -1,0 +1,24 @@
+FROM 64bit/ubuntu:16.04
+
+RUN sed -i 's/xenial/bionic/g' /etc/apt/sources.list && \
+    sed -i '$d' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y \
+    wget \
+    gcc \
+    make \
+    gawk \
+    libgetopt-argvfile-perl \
+    bison && \
+    rm -rf /var/lib/apt/list/*
+
+# Create non-root user
+RUN useradd -m how2heap && echo "secret:secret" | chpasswd
+
+# Initilise base user
+USER how2heap
+WORKDIR /home/how2heap
+ENV HOME /home/how2heap
+
+# Base command for container
+CMD ["/bin/bash"]
