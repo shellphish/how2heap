@@ -96,7 +96,7 @@ if [ "$RELOAD" == "X" ] || [ ! -d glibc-all-in-one/libs/$libc ]; then
 fi
 
 if [ ! -f "$OUTPUT_DIR/libc-$GLIBC_VERSION.so" ]; then
-    cp -r glibc-all-in-one/libs/$libc/* $OUTPUT_DIR/
+    cp -r glibc-all-in-one/libs/$libc/. $OUTPUT_DIR
 fi
 
 curr_interp=$(patchelf --print-interpreter "$TARGET")
@@ -117,7 +117,7 @@ then
 fi
 
 if [ "$GDB" == 'X' ]; then
-    gdb $TARGET
+    gdb $TARGET --symbols $OUTPUT_DIR --se $TARGET
 elif [ "$RADARE2" == 'X' ]; then
     r2 -d $TARGET
 elif [ "$NOT_EXECUTION" == ''  ]; then
