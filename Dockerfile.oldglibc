@@ -1,4 +1,6 @@
-FROM 64bit/ubuntu:16.04
+FROM ubuntu:16.04
+
+ENV DEBIAN_FRONTEND noninteractive
 
 RUN sed -i 's/xenial/bionic/g' /etc/apt/sources.list && \
     sed -i '$d' /etc/apt/sources.list && \
@@ -9,16 +11,25 @@ RUN sed -i 's/xenial/bionic/g' /etc/apt/sources.list && \
     make \
     gawk \
     libgetopt-argvfile-perl \
-    bison && \
+    bison \
+    git \
+    less \
+    grep \
+    sudo && \
     rm -rf /var/lib/apt/list/*
 
 # Create non-root user
-RUN useradd -m how2heap && echo "secret:secret" | chpasswd
+RUN useradd -m how2heap && usermod -aG sudo how2heap
+
+# New added for disable sudo password
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Initilise base user
 USER how2heap
 WORKDIR /home/how2heap
 ENV HOME /home/how2heap
+
+ENV DEBIAN_FRONTEND teletype
 
 # Base command for container
 CMD ["/bin/bash"]
