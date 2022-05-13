@@ -17,15 +17,13 @@ FORCE_TARGET_INTERPRETER=''
 # Handle arguments
 function show_help {
     #echo "Usage: $0 <version> <target> [-h] [-disable-tcahe] [-i686] [-u] [-r] [-g [-r2] [-p]"
-    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-g [-r2] [-p] [-si] [-ti]"
+    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-g [-r2] [-p]"
     echo "-i686 - use x32 bits libc"
     echo "-u - update libc list in glibc-sll-in-one"
     echo "-r - download libc in glibc-all-in-one"
     echo "-g - start target in GDB"
     echo "-r2 - start target in radare2"
     echo "-p - just set interpreter and rpath in target without execution"
-    #echo "-si - set system interpreter"
-    echo "-ti - force to set target interpreter"
 }
 
 if [[ $# < 2 ]]; then
@@ -59,10 +57,7 @@ function copy_glibc (){
 }
 
 function set_interpreter (){
-    
     local curr_interp=$(patchelf --print-interpreter "$TARGET")
-    #local target_interp="$OUTPUT_DIR/ld-$GLIBC_VERSION.so"
-    #local target_interp=$(ls glibc_versions/2.34/x64/lib | grep ld)
     
     if [[ $curr_interp != $1 ]];
     then
@@ -150,22 +145,8 @@ if [ -z "$(ls -A $OUTPUT_DIR)" ]; then
 fi
 target_interpreter="$OUTPUT_DIR/$(ls $OUTPUT_DIR | grep ld)"
 
-if [[ "$GLIBC_MAJOR" < "$SYSTEM_GLIBC_MAJOR" ]];
-then
-    set_interpreter $target_interpreter
-    set_rpath
-else
-    if [[ "$GLIBC_MINOR" < "$SYSTEM_GLIBC_MINOR" ]];
-    then
-        set_interpreter $target_interpreter
-        set_rpath
-    else
-	if [ ! -z $FORCE_TARGET_INTERPRETER ]; then
-            set_interpreter $target_interpreter
-	fi
-        set_rpath
-    fi
-fi
+set_interpreter $target_interpreter
+set_rpath
 
 if [ "$GDB" == 'X' ];
 then
