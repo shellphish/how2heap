@@ -151,7 +151,7 @@ fi
 
 if [ "$GDB" == 'X' ];
 then
-    gdb $TARGET --symbols $OUTPUT_DIR --se $TARGET
+   gdb $TARGET -iex "set debug-file-directory $OUTPUT_DIR/.debug"
 elif [ "$RADARE2" == 'X' ];
 then
     r2 -d $TARGET
