@@ -85,7 +85,7 @@ if [ "$UPDATE" == "X" ] || [ ! -f glibc-all-in-one/list ]; then
     cd -
 fi
 
-libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | tail -n 1)
+libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
 
 if [ "$RELOAD" == "X" ] || [ ! -d glibc-all-in-one/libs/$libc ]; then
     cd glibc-all-in-one
