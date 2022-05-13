@@ -41,15 +41,16 @@ function update_glibc (){
 function download_glibc (){
     if [ "$RELOAD" == "X" ] || [ ! -d glibc-all-in-one/libs/$libc ]; then
         cd glibc-all-in-one
-        rm -rf libs/$libc debs/$libc
-        ./download $libc
+        rm -rf libs/$1 debs/$1
+        ./download $1
         cd -
     fi
 }
 
 function copy_glibc (){
     if [ ! -f "$OUTPUT_DIR/libc-$GLIBC_VERSION.so" ]; then
-        cp -r glibc-all-in-one/libs/$libc/. $OUTPUT_DIR
+        cp -rP glibc-all-in-one/libs/$1/* $OUTPUT_DIR
+        cp -rP glibc-all-in-one/libs/$1/.debug $OUTPUT_DIR
     fi
 }
 
@@ -130,10 +131,9 @@ then
 fi
 
 update_glibc
-download_glibc
-copy_glibc
-
 libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
+download_glibc $libc
+copy_glibc $libc
 
 if [[ "$GLIBC_MAJOR" < "$SYSTEM_GLIBC_MAJOR" ]];
 then
