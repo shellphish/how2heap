@@ -114,8 +114,8 @@ while :; do
             NOT_EXECUTION='X'
         ;;
         -ti)
-	    FORCE_TARGET_INTERPRETER='X'
-	;;
+            FORCE_TARGET_INTERPRETER='X'
+        ;;
         '')
             break
         ;;
@@ -145,12 +145,18 @@ if [ -z "$(ls -A $OUTPUT_DIR)" ]; then
 fi
 target_interpreter="$OUTPUT_DIR/$(ls $OUTPUT_DIR | grep ld)"
 
-set_interpreter $target_interpreter
-set_rpath
+if [[ $GLIBC_MAJOR != $SYSTEM_GLIBC_MAJOR ]] || [[ $GLIBC_MINOR != $SYSTEM_GLIBC_MINOR ]]; then
+    set_interpreter $target_interpreter
+    set_rpath
+fi
 
 if [ "$GDB" == 'X' ];
 then
-   gdb $TARGET -iex "set debug-file-directory $OUTPUT_DIR/.debug"
+    if [[ $GLIBC_VERSION != $SYSTEM_GLIBC_VERSION ]]; then
+        gdb $TARGET -iex "set debug-file-directory $OUTPUT_DIR/.debug"
+    else
+        gdb $TARGET
+    fi
 elif [ "$RADARE2" == 'X' ];
 then
     r2 -d $TARGET
