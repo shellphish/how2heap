@@ -5,10 +5,11 @@ DIR_TCACHE='tcache'
 DIR_HOST='x64'
 GLIBC_VERSION=''
 TARGET=''
+USING_GDB=0
 
 # Handle arguments
 function show_help {
-    echo "Usage: $0 <version> <target> [-h] [-disable-tcache] [-i686]"
+    echo "Usage: $0 <version> <target> [-h] [-disable-tcache] [-i686] [-gdb]"
 }
 
 if [[ $# < 2 ]]; then
@@ -30,6 +31,9 @@ while :; do
             ;;
         -i686)
             DIR_HOST='i686'
+            ;;
+        -gdb)
+            USING_GDB=1
             ;;
         '')
             break
@@ -54,4 +58,8 @@ then
     patchelf --set-interpreter "$target_interp" "$TARGET"
 fi
 
-"$TARGET"
+if [ $USING_GDB -eq 1 ]; then
+  gdb "$TARGET"
+else
+  "$TARGET"
+fi
