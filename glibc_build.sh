@@ -19,7 +19,7 @@ fi
 
 DIR_TCACHE='tcache'
 DIR_HOST='x64'
-BUILD_OPTS=''
+BUILD_OPTS=$OPTS
 GLIBC_VERSION=''
 
 while :; do

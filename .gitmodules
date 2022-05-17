@@ -1,0 +1,4 @@
+[submodule "glibc-all-in-one"]
+	path = glibc-all-in-one
+	#url = https://github.com/matrix1001/glibc-all-in-one.git
+	url = https://github.com/fr0ster/glibc-all-in-one.git
