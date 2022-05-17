@@ -16,12 +16,11 @@ FORCE_TARGET_INTERPRETER=''
 
 # Handle arguments
 function show_help {
-    #echo "Usage: $0 <version> <target> [-h] [-disable-tcahe] [-i686] [-u] [-r] [-g [-r2] [-p]"
-    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-g [-r2] [-p]"
+    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-gdb | -r2 | -p]"
     echo "-i686 - use x32 bits libc"
     echo "-u - update libc list in glibc-sll-in-one"
     echo "-r - download libc in glibc-all-in-one"
-    echo "-g - start target in GDB"
+    echo "-gdb - start target in GDB"
     echo "-r2 - start target in radare2"
     echo "-p - just set interpreter and rpath in target without execution"
 }
@@ -113,7 +112,7 @@ while :; do
         -r)
             RELOAD='X'
         ;;
-        -g)
+        -gdb)
             GDB='X'
         ;;
         -r2)
