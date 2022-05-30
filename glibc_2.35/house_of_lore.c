@@ -38,7 +38,7 @@ int main(int argc, char * argv[]){
 
   fprintf(stderr, "\nWelcome to the House of Lore\n");
   fprintf(stderr, "This is a revisited version that bypass also the hardening check introduced by glibc malloc\n");
-  fprintf(stderr, "This is tested against Ubuntu 20.04.2 - 64bit - glibc-2.31\n\n");
+  fprintf(stderr, "This is tested against Ubuntu 22.04 - 64bit - glibc-2.35\n\n");
 
   fprintf(stderr, "Allocating the victim chunk\n");
   intptr_t *victim = malloc(0x100);
@@ -89,7 +89,7 @@ int main(int argc, char * argv[]){
   fprintf(stderr, "Freeing the chunk %p, it will be inserted in the unsorted bin\n", victim);
   free((void*)victim);
 
-  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are nil\n");
+  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are the unsorted bin's header address (libc addresses)\n");
   fprintf(stderr, "victim->fwd: %p\n", (void *)victim[0]);
   fprintf(stderr, "victim->bk: %p\n\n", (void *)victim[1]);
 
