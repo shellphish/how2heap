@@ -33,7 +33,7 @@ int main(int argc, char * argv[]){
 
 
   intptr_t* stack_buffer_1[4] = {0};
-  intptr_t* stack_buffer_2[3] = {0};
+  intptr_t* stack_buffer_2[4] = {0};
   void* fake_freelist[7][4];
 
   fprintf(stderr, "\nWelcome to the House of Lore\n");
