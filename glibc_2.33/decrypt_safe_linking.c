@@ -32,8 +32,7 @@ int main()
 	 * and the key (ASLR slide) is the same to the pointer's leading bits.
 	 * As a result, as long as the chunk where the pointer is stored is at the same page
 	 * of the pointer itself, the value of the pointer can be fully recovered.
-	 * Otherwise, you need to recover the values with some additional information, such as
-	 * the page offset and in-page offset(last 12bits).
+	 * Otherwise, you can recover the pointer with page_offset which is a more general way. 
 	 */
 
 	setbuf(stdin, NULL);
