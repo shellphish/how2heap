@@ -32,7 +32,10 @@ int main()
 	 * and the key (ASLR slide) is the same to the pointer's leading bits.
 	 * As a result, as long as the chunk where the pointer is stored is at the same page
 	 * of the pointer itself, the value of the pointer can be fully recovered.
-	 * Otherwise, a little bit of bruteforce is required.
+	 * Otherwise, we can also recover the pointer with the page-offset between the storer
+	 * and the pointer. What we demonstrate here is a special case whose page-offset is 0. 
+	 * For demonstrations of other more general cases, plz refer to 
+	 * https://github.com/n132/Dec-Safe-Linking
 	 */
 
 	setbuf(stdin, NULL);
