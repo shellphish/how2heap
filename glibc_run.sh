@@ -148,7 +148,13 @@ then
 fi
 
 update_glibc $UPDATE
-libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
+libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1) 
+
+if [ -z "$libc" ]
+then
+    libc=$(cat glibc-all-in-one/old_list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
+fi
+
 download_glibc $libc $RELOAD
 copy_glibc $libc
 if [ -z "$(ls -A $OUTPUT_DIR)" ]; then
