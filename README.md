@@ -83,6 +83,10 @@ Examine the glibc heap in gdb: https://github.com/scwuaptx/Pwngdb
 
 Helps you visualize heap operations by replacing addresses with symbols: https://github.com/Arinerron/heaptrace
 
+## Heap Search
+
+Search for applicable heap exploitation techniques based on primitive requirements: https://kissprogramming.com/heap/heap-search
+
 # Other resources
 
 Some good heap exploitation resources, roughly in order of their publication, are:
