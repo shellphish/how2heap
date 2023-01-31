@@ -38,7 +38,7 @@
  * from zero to arbitrary code execution within only 10 to 11 allocations, here
  * is the original document I've written
  *
- *     https://github.com/Milo-D/house-of-gods/blob/master/HOUSE_OF_GODS.TXT
+ *     https://github.com/Milo-D/house-of-gods/blob/master/rev2/HOUSE_OF_GODS.TXT
  *
  * I recommend reading this document while experimenting with
  * the how2heap PoC.
