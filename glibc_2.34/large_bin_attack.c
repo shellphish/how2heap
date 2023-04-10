@@ -78,7 +78,7 @@ int main(){
   printf("Finally, allocate another chunk larger than [p2] (%p) to place [p2] (%p) into large bin\n", p2-2, p2-2);
   printf("Since glibc does not check chunk->bk_nextsize if the new inserted chunk is smaller than smallest,\n");
   printf("  the modified p1->bk_nextsize does not trigger any error\n");
-  printf("Upon inserting [p2] (%p) into largebin, [p1](%p)->bk_nextsize->fd->nexsize is overwritten to address of [p2] (%p)\n", p2-2, p1-2, p2-2);
+  printf("Upon inserting [p2] (%p) into largebin, [p1](%p)->bk_nextsize->fd_nextsize is overwritten to address of [p2] (%p)\n", p2-2, p1-2, p2-2);
 
   printf("\n");
 
