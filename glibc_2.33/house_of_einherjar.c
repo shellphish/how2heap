@@ -7,7 +7,7 @@
 int main()
 {
 	/*
-	 * This modification to The House of Enherjar works with the tcache-option enabled on glibc-2.32.
+	 * This modification to The House of Enherjar, made by Huascar Tejeda - @htejeda, works with the tcache-option enabled on glibc-2.32.
 	 * The House of Einherjar uses an off-by-one overflow with a null byte to control the pointers returned by malloc().
 	 * It has the additional requirement of a heap leak.
 	 * 
