@@ -18,7 +18,7 @@ FORCE_TARGET_INTERPRETER=''
 function show_help {
     echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-gdb | -r2 | -p]"
     echo "-i686 - use x32 bits libc"
-    echo "-u - update libc list in glibc-sll-in-one"
+    echo "-u - update libc list in glibc-all-in-one"
     echo "-r - download libc in glibc-all-in-one"
     echo "-gdb - start target in GDB"
     echo "-r2 - start target in radare2"
