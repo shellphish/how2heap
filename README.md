@@ -49,6 +49,18 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 
 # Get Started
 
+## Quick Setup
+
+- make sure you have the following packages/tools installed: `patchelf zstd wget` (of course also `build-essential` or similar for compilers, `make`, ...)
+- also, `/usr/bin/python` must be/point to your `python` binary (e. g. `/usr/bin/python3`)
+
+```shell
+https://github.com/shellphish/how2heap
+cd how2heap
+make clean all
+./glibc_run.sh 2.30 ./malloc_playground -u -r
+```
+
 ## Complete Setup
 
 This creates a Docker-based environment to get started with `pwndbg` and `pwntools`.
@@ -77,19 +89,6 @@ readelf -d -W malloc_playground | grep RUNPATH # or use checksec
 readelf -l -W malloc_playground | grep interpreter
 gdb -q -ex "start" ./malloc_playground
 ```
-
-## Quick Setup
-
-- make sure you have the following packages/tools installed: `patchelf zstd wget` (of course also `build-essential` or similar for compilers, `make`, ...)
-- also, `/usr/bin/python` must be/point to your `python` binary (e. g. `/usr/bin/python3`)
-
-```shell
-https://github.com/shellphish/how2heap
-cd how2heap
-make clean all
-./glibc_run.sh 2.30 ./malloc_playground -u -r
-```
-
 
 # Heap Exploitation Tools
 
