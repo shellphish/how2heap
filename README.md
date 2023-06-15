@@ -47,6 +47,49 @@ Have a good example?
 Add it here!
 Try to inline the whole technique in a single `.c` -- it's a lot easier to learn that way.
 
+# Get Started
+
+## Quick Setup
+
+- make sure you have the following packages/tools installed: `patchelf zstd wget` (of course also `build-essential` or similar for compilers, `make`, ...)
+- also, `/usr/bin/python` must be/point to your `python` binary (e. g. `/usr/bin/python3`)
+
+```shell
+https://github.com/shellphish/how2heap
+cd how2heap
+make clean all
+./glibc_run.sh 2.30 ./malloc_playground -u -r
+```
+
+## Complete Setup
+
+This creates a Docker-based environment to get started with `pwndbg` and `pwntools`.
+
+```shell
+## on your host
+https://github.com/shellphish/how2heap
+cd how2heap
+git clone https://github.com/pwndbg/pwndbg
+docker build -t how2heap-pwndbg pwndbg 
+docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v $(pwd):/io:Z --name how2heap how2heap-pwndbg
+
+## inside the docker container
+apt update
+apt -y install patchelf zstd python-is-python3 wget
+python -m pip install pwntools
+export PATH="$PATH:$(python -c 'import site; print(site.getsitepackages()[0])')/bin"
+cd /io
+git config --global --add safe.directory "*"
+make clean all
+./glibc_run.sh 2.30 ./malloc_playground -u -r
+
+## debugging
+# check modified RUNPATH and interpreter
+readelf -d -W malloc_playground | grep RUNPATH # or use checksec
+readelf -l -W malloc_playground | grep interpreter
+gdb -q -ex "start" ./malloc_playground
+```
+
 # Heap Exploitation Tools
 
 There are some heap exploitation tools floating around.
