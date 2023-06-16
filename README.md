@@ -55,7 +55,7 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 - also, `/usr/bin/python` must be/point to your `python` binary (e. g. `/usr/bin/python3`)
 
 ```shell
-https://github.com/shellphish/how2heap
+git clone https://github.com/shellphish/how2heap
 cd how2heap
 make clean all
 ./glibc_run.sh 2.30 ./malloc_playground -u -r
@@ -67,7 +67,7 @@ This creates a Docker-based environment to get started with `pwndbg` and `pwntoo
 
 ```shell
 ## on your host
-https://github.com/shellphish/how2heap
+git clone https://github.com/shellphish/how2heap
 cd how2heap
 git clone https://github.com/pwndbg/pwndbg
 docker build -t how2heap-pwndbg pwndbg 
