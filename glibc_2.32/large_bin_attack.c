@@ -82,7 +82,7 @@ int main(){
 
   printf("\n");
 
-  printf("In out case here, target is now overwritten to address of [p2] (%p), [target] (%p)\n", p2-2, (void *)target);
+  printf("In our case here, target is now overwritten to address of [p2] (%p), [target] (%p)\n", p2-2, (void *)target);
   printf("Target (%p) : %p\n",&target,(size_t*)target);
 
   printf("\n");
