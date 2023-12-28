@@ -13,6 +13,8 @@ GDB=''
 RADARE2=''
 NOT_EXECUTION=''
 FORCE_TARGET_INTERPRETER=''
+glibc_all_in_one_path='/home/k3ppf0r/glibc'
+
 
 # Handle arguments
 function show_help {
@@ -35,16 +37,16 @@ function init_glibc(){
 }
 
 function update_glibc (){
-    if [ "$1" == "X" ] || [ ! -f glibc-all-in-one/list ]; then
-        cd glibc-all-in-one
+    if [ "$1" == "X" ] || [ ! -f $glibc_all_in_one_path/list ]; then
+        cd $glibc_all_in_one_path
         ./update_list
         cd -
     fi
 }
 
 function download_glibc (){
-    if [ "$2" == "X" ] || [ ! -d glibc-all-in-one/libs/$libc ]; then
-        cd glibc-all-in-one
+    if [ "$2" == "X" ] || [ ! -d $glibc_all_in_one_path/libs/$libc ]; then
+        cd $glibc_all_in_one_path
         rm -rf libs/$1 debs/$1
         ./download $1
         ./download_old $1
@@ -54,8 +56,8 @@ function download_glibc (){
 
 function copy_glibc (){
     if [ ! -f "$OUTPUT_DIR/libc-$GLIBC_VERSION.so" ]; then
-        cp -r glibc-all-in-one/libs/$1/* $OUTPUT_DIR
-        cp -r glibc-all-in-one/libs/$1/.debug $OUTPUT_DIR
+        cp -r $glibc_all_in_one_path/libs/$1/* $OUTPUT_DIR
+        cp -r $glibc_all_in_one_path/libs/$1/.debug $OUTPUT_DIR
     fi
 }
 
@@ -132,7 +134,7 @@ while :; do
 done
 
 
-if [ ! -d ./glibc-all-in-one/LICENSE ]; then
+if [ ! -d $glibc_all_in_one_path/LICENSE ]; then
     init_glibc
 fi
 
@@ -148,11 +150,11 @@ then
 fi
 
 update_glibc $UPDATE
-libc=$(cat glibc-all-in-one/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1) 
+libc=$(cat $glibc_all_in_one_path/list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1) 
 
 if [ -z "$libc" ]
 then
-    libc=$(cat glibc-all-in-one/old_list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
+    libc=$(cat $glibc_all_in_one_path/old_list | grep "$GLIBC_VERSION" | grep "$LIB_HOST" | head -n 1)
 fi
 
 download_glibc $libc $RELOAD
