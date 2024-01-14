@@ -2,3 +2,15 @@ glibc_build
 glibc_src
 glibc_versions
 .gdb_history
+
+# ignore binaries in root
+calc_tcache_idx
+first_fit
+malloc_playground
+
+# ignore all built binaries
+glibc_2.*/*
+!glibc_2.*/*.*
+
+# general
+**.swp
