@@ -1,4 +1,4 @@
-y# Educational Heap Exploitation
+# Educational Heap Exploitation
 
 This repo is for learning various heap exploitation techniques.
 We use Ubuntu's Libc releases as the gold-standard. Each technique is verified to work on corresponding Ubuntu releases.
