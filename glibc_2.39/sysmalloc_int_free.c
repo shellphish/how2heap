@@ -138,10 +138,10 @@ int main() {
          "|          OLD          |\n"
          "| AAAAAAAAAAAAAAAAAAAAA |\n"
          "----- %-14p ----\n"
-         "|       FENCEPOST       |   <- just some architecture depending padding\n"
-         "----- %-14p ----\n"
          "|         FREED         |   <- old top got freed because it couldn't be merged\n"
          "|     SIZE (0x%05lx)    |\n"
+         "----- %-14p ----\n"
+         "|       FENCEPOST       |   <- just some architecture depending padding\n"
          "----- %-14p ----   <- still page aligned\n"
          "|          ...          |\n"
          "----- %-14p ----   <- end of previous heap page\n"
@@ -152,8 +152,8 @@ int main() {
          "-------------------------   <- end of current heap page\n\n",
          old - 2,
          top_size_ptr - 1,
-         top_size_ptr - 1 + (FENCEPOST / SIZE_SZ),
          freed_top_size,
+         top_size_ptr - 1 + (CHUNK_FREED_SIZE/SIZE_SZ),
          top_size_ptr - 1 + (new_top_size / SIZE_SZ),
          new - 2);
 
@@ -178,6 +178,6 @@ int main() {
          "|          ...          |\n"
          "-------------------------   <- end of current heap page\n",
          new - 2,
-         top_size_ptr - 1 + (FENCEPOST / SIZE_SZ),
+         top_size_ptr - 1 + (CHUNK_FREED_SIZE / SIZE_SZ),
          old - 2);
 }
