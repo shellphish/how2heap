@@ -58,7 +58,7 @@ int main() {
   printf("fencepost size \t\t= 0x%lx\n", FENCEPOST);
   printf("freed size \t\t= 0x%lx\n", FREED_SIZE);
 
-  printf("target top chunk size \t= 0x%lx\n", CHUNK_FREED_SIZE + FENCEPOST);
+  printf("target top chunk size \t= 0x%lx\n", CHUNK_HDR_SZ + MALLOC_ALIGN + CHUNK_FREED_SIZE);
 
   // probe the current size of the top_chunk,
   // can be skipped if it is already known or predictable

@@ -66,7 +66,7 @@ int main() {
   printf("fencepost size = 0x%lx\n", FENCEPOST);
   printf("size_1 = 0x%lx\n", SIZE_1);
 
-  printf("target tcache top size = 0x%lx\n", CHUNK_SIZE_1 + FENCEPOST);
+  printf("target tcache top size = 0x%lx\n", CHUNK_HDR_SZ + MALLOC_ALIGN + CHUNK_SIZE_1);
 
   // target is malloc chunk aligned 0x10 for x86_64
   target = ((size_t) win + (MALLOC_ALIGN - 1)) & MALLOC_MASK;
