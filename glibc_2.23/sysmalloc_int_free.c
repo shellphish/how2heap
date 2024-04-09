@@ -72,7 +72,7 @@ int main() {
   puts("1. create initial malloc that will be used to corrupt the top_chunk (wilderness)");
   new = malloc(allocated_size);
 
-  // use BOF or OOB to corrupt to the top_chunk
+  // use BOF or OOB to corrupt the top_chunk
   top_size_ptr = &new[(allocated_size / SIZE_SZ)-1 + (MALLOC_ALIGN / SIZE_SZ)];
 
   top_size = *top_size_ptr;
@@ -114,13 +114,13 @@ int main() {
          top_size_ptr - 1 + (top_size / SIZE_SZ));
 
 
+  puts("3. create an allocation larger than the remaining top chunk, to trigger heap growth");
+  puts("The now corrupt top_chunk triggers sysmalloc to call _init_free on it");
+
   // remove fencepost from top_chunk, to get size that will be freed
   // https://elixir.bootlin.com/glibc/glibc-2.39/source/malloc/malloc.c#L2895
   freed_top_size = (new_top_size - FENCEPOST) & MALLOC_MASK;
   assert(freed_top_size == CHUNK_FREED_SIZE);
-
-  puts("3. create an allocation larger than the remaining top chunk, to trigger heap growth");
-  puts("The now corrupt top_chunk triggers sysmalloc to call _init_free on it");
 
   old = new;
   new = malloc(CHUNK_FREED_SIZE + 0x10);
@@ -151,12 +151,13 @@ int main() {
 
   puts("...\n");
 
+  puts("?. reallocated into the freed chunk");
+
   old = new;
   new = malloc(FREED_SIZE);
 
   assert((size_t) old > (size_t) new);
 
-  puts("?. reallocated into the freed chunk");
   printf(""
          "----- %-14p ----\n"
          "|          NEW          |   <- allocated into the freed chunk\n"
