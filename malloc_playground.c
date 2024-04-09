@@ -26,17 +26,6 @@ void report_mcheck_fail(enum mcheck_status s)
 
 char **ptrArray;
 
-int mystrlen(char *s){
-	int res;
-	while (s  && *s != 0x0a){
-		res += 1;
-		s += 1;
-	}
-	s -= res;
-	return res;
-}
-
-
 int main(int argc, char ** argv) {
 
 	int ptrNumber = -1;
@@ -53,16 +42,14 @@ int main(int argc, char ** argv) {
 		char cmd[1000];
 		char arg1[100] = {0};
 		char arg2[100] = {0};
-		printf("%s\n", buffer);
 		int num = sscanf(buffer, "%s %s %s\n", cmd, arg1, arg2);
-		printf("%d\n", num);
 		if (strcmp(cmd, "malloc") == 0) {
 			int tmpArg = atoi((const char *) &arg1);
 			void *result = malloc(tmpArg);
 			ptrNumber++;
 			ptrArray[ptrNumber] = result;
 			strcpy(result, "none");
-			fprintf(stderr, "==> %p\n", result);
+			fprintf(stderr, "==> OK, %p\n", result);
 		} else if (strcmp(cmd, "free") == 0) {
 			if (num == 1){
 				free((void*) ptrArray[ptrNumber]);
