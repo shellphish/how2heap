@@ -31,7 +31,6 @@
  *  + GLIBC 2.34 (x86_64, x86 & aarch64)
  *  + GLIBC 2.31 (x86_64, x86 & aarch64)
  *  + GLIBC 2.27 (x86_64, x86 & aarch64)
- *  + GLIBC 2.23 (x86_64 & aarch64)
  *
  * sysmalloc allows us to free() the top chunk of heap to create nearly arbitrary bins,
  * which can be used to corrupt heap without needing to call free() directly.
