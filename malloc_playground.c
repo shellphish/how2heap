@@ -21,31 +21,108 @@ void report_mcheck_fail(enum mcheck_status s)
 }
 #endif
 
+
+#define MAX_PTR_NUM 20;
+
+char **ptrArray;
+
+int mystrlen(char *s){
+	int res;
+	while (s  && *s != 0x0a){
+		res += 1;
+		s += 1;
+	}
+	s -= res;
+	return res;
+}
+
+
 int main(int argc, char ** argv) {
 
+	int ptrNumber = -1;
+	int maxPtr = MAX_PTR_NUM;
 	fprintf(stderr, "pid: %d\n", getpid());
-
+	ptrArray = malloc(sizeof(char*) * 20);
+	for (int i = 0; i < maxPtr; i++){
+		ptrArray[i] = 0;
+	}
 	char buffer[1000];
 	while (1) {
 		fprintf(stderr, "> ");
 		fgets(buffer, sizeof(buffer), stdin);
 		char cmd[1000];
-		intptr_t arg1, arg2;
-		int num = sscanf(buffer, "%s %"SCNiPTR" %"SCNiPTR, cmd, &arg1, &arg2);
+		char arg1[100] = {0};
+		char arg2[100] = {0};
+		printf("%s\n", buffer);
+		int num = sscanf(buffer, "%s %s %s\n", cmd, arg1, arg2);
+		printf("%d\n", num);
 		if (strcmp(cmd, "malloc") == 0) {
-			void* result = malloc(arg1);
+			int tmpArg = atoi((const char *) &arg1);
+			void *result = malloc(tmpArg);
+			ptrNumber++;
+			ptrArray[ptrNumber] = result;
+			strcpy(result, "none");
 			fprintf(stderr, "==> %p\n", result);
 		} else if (strcmp(cmd, "free") == 0) {
-			free((void*) arg1);
+			if (num == 1){
+				free((void*) ptrArray[ptrNumber]);
+				fprintf(stderr, "==> ok\n");
+				ptrNumber -= 1;
+			}
+			else if (num == 2){
+				if (ptrNumber > -1){
+					int tmpArg = atoi((const char *) &arg1);
+					ptrArray[tmpArg] = 0;
+					free((void *) ptrArray[tmpArg]);
+					ptrNumber -= 1;
+				}
+				else{
+					printf("List Empty :/");
+				}
+			}
+		} else if (strcmp(cmd, "write") == 0) {
+			if (num == 1){
+				printf("write: write value [pointer index]\n");
+			}
+			else if (num == 2){
+				int len = strlen((const char *) &arg1);
+				strcpy(ptrArray[ptrNumber], (const char *) &arg1);
+				fprintf(stderr, "==> ok, wrote %s\n", ptrArray[ptrNumber]);
+			}
+			else if (num == 3){
+				int len = strlen((const char *) &arg1);
+				int tmpArg2 = atoi((const char *) &arg2);
+				if (tmpArg2 > ptrNumber){
+					strcpy(ptrArray[tmpArg2], (const char *) &arg1);
+					fprintf(stderr, "==> ok, wrote %s\n", ptrArray[tmpArg2]);
+				}
+				else{
+					printf("Invalid Index\n");
+				}
+			}
+		} else if (strcmp(cmd, "listp") == 0) {
+			int tmpIndex = 0;
+			printf("\n");
+			while(ptrArray[tmpIndex]){
+				printf("%d - %p - %s\n", tmpIndex, ptrArray[tmpIndex], ptrArray[tmpIndex]);
+				tmpIndex++;
+			}
 			fprintf(stderr, "==> ok\n");
-		} else if (strcmp(cmd, "show") == 0) {
-			if (num == 2) {
-				arg2 = 1;
+		} else if (strcmp(cmd, "listpall") == 0) {
+			int tmpIndex = 0;
+			printf("\n");
+			for (int i=0; i < maxPtr; i++){
+				printf("%d - %p - %s\n", tmpIndex, ptrArray[tmpIndex], ptrArray[tmpIndex]);
+				tmpIndex++;
 			}
-			long * src = (long*) arg1;
-			for (int i = 0; i < arg2; i++) {
-				fprintf(stderr, "%p: %#16.0lx\n", &src[i], src[i]);
-			}
+			fprintf(stderr, "==> ok\n");
+		} else if (strcmp(cmd, "clearArray") == 0) {
+			ptrNumber = -1;
+			for (int i = 0; i < maxPtr; i++){
+				free(ptrArray[i]);
+				ptrArray[i] = 0;
+		}
+			fprintf(stderr, "==> ok, array cleared\n");
 #ifdef __GLIBC__
 		} else if (strcmp(cmd, "usable") == 0) {
 			fprintf(stderr, "usable size: %zu\n", malloc_usable_size((void*) arg1));
@@ -53,6 +130,7 @@ int main(int argc, char ** argv) {
 			malloc_stats();
 		} else if (strcmp(cmd, "info") == 0) {
 			malloc_info(0, stdout);
+			printf("Ptrptr %d\n", ptrNumber);
 		} else if (strcmp(cmd, "mcheck") == 0) {
 			fprintf(stderr, "==> %s\n", mcheck(report_mcheck_fail) == 0 ? "OK" : "ERROR");
 		} else if (strcmp(cmd, "mcheck_pedantic") == 0) {
@@ -66,7 +144,8 @@ int main(int argc, char ** argv) {
 			}
 #endif
 		} else {
-			puts("Commands: malloc n, free p, show p [n], usable p, stats, info, mprobe [p], mcheck, mcheck_pedantic");
+			puts("Commands: malloc n, free p, usable p, stats, info, mprobe [p], mcheck, mcheck_pedantic, ");
+			puts("Commands: [BETA]  write str, listp, listpall, clearArray\n");
 		}
 	}
 }
