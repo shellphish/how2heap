@@ -9,7 +9,6 @@
 #define SIZE_SZ sizeof(size_t)
 
 #define CHUNK_HDR_SZ (SIZE_SZ*2)
-// same for x86_64 and x86
 #define MALLOC_ALIGN (SIZE_SZ*2)
 #define MALLOC_MASK (-MALLOC_ALIGN)
 
@@ -147,7 +146,7 @@ int main() {
          freed_top_size,
          top_size_ptr - 1 + (CHUNK_FREED_SIZE/SIZE_SZ),
          top_size_ptr - 1 + (new_top_size / SIZE_SZ),
-         new - 2);
+         new - (MALLOC_ALIGN / SIZE_SZ));
 
   puts("...\n");
 
@@ -172,5 +171,5 @@ int main() {
          "-------------------------   <- end of current heap page\n",
          new - 2,
          top_size_ptr - 1 + (CHUNK_FREED_SIZE / SIZE_SZ),
-         old - 2);
+         old - (MALLOC_ALIGN / SIZE_SZ));
 }

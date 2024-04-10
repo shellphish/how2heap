@@ -150,7 +150,7 @@ int main() {
          freed_top_size,
          top_size_ptr - 1 + (CHUNK_FREED_SIZE/SIZE_SZ),
          top_size_ptr - 1 + (new_top_size / SIZE_SZ),
-         new - 2);
+         new - (MALLOC_ALIGN / SIZE_SZ));
 
   puts("...\n");
 
@@ -175,5 +175,5 @@ int main() {
          "-------------------------   <- end of current heap page\n",
          new - 2,
          top_size_ptr - 1 + (CHUNK_FREED_SIZE / SIZE_SZ),
-         old - 2);
+         old - (MALLOC_ALIGN / SIZE_SZ));
 }
