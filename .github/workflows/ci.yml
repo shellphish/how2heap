@@ -152,16 +152,16 @@ jobs:
         with:
           ubuntu: '23.10'
           glibc: '2.38'
-            #  v2_39:
-            #    runs-on: ubuntu-22.04
-            #    name: glibc-v2.39
-            #    steps:
-            #      - name: build how2heap
-            #        uses: shellphish/how2heap/ci/build@master
-            #        with:
-            #          ubuntu: '24.04'
-            #      - name: test how2heap
-            #        uses: shellphish/how2heap/ci/test@master
-            #        with:
-            #          ubuntu: '24.04'
-            #          glibc: '2.39'
+  v2_39:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.39
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '24.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '24.04'
+          glibc: '2.39'
