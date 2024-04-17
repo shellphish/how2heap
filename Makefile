@@ -10,6 +10,7 @@ V2.35 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_int
 V2.36 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water sysmalloc_int_free house_of_tangerine
 V2.37 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water sysmalloc_int_free house_of_tangerine
 V2.38 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water sysmalloc_int_free house_of_tangerine
+V2.39 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water sysmalloc_int_free house_of_tangerine
 
 # turn technique names into paths
 VV2.23 = $(addprefix glibc_2.23/, $(V2.23))
@@ -23,8 +24,9 @@ VV2.35 = $(addprefix glibc_2.35/, $(V2.35))
 VV2.36 = $(addprefix glibc_2.36/, $(V2.36))
 VV2.37 = $(addprefix glibc_2.37/, $(V2.37))
 VV2.38 = $(addprefix glibc_2.38/, $(V2.38))
+VV2.39 = $(addprefix glibc_2.39/, $(V2.39))
 
-PROGRAMS = $(BASE) $(VV2.23) $(VV2.24) $(VV2.27) $(VV2.31) $(VV2.32) $(VV2.33) $(VV2.34) $(VV2.35) $(VV2.36) $(VV2.37) $(VV2.38)
+PROGRAMS = $(BASE) $(VV2.23) $(VV2.24) $(VV2.27) $(VV2.31) $(VV2.32) $(VV2.33) $(VV2.34) $(VV2.35) $(VV2.36) $(VV2.37) $(VV2.38) $(VV2.39)
 CFLAGS += -std=c99 -g -Wno-unused-result -Wno-free-nonheap-object
 LDLIBS += -ldl
 
