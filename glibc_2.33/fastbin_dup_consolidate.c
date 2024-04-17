@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-void main() {
+int main() {
 	// reference: https://valsamaras.medium.com/the-toddlers-introduction-to-heap-exploitation-fastbin-dup-consolidate-part-4-2-ce6d68136aa8
 	puts("This is a powerful technique that bypasses the double free check in tcachebin.");
 	printf("Fill up the tcache list to force the fastbin usage...\n");
@@ -38,4 +38,6 @@ void main() {
 	printf("The double free added the chunk referenced by p1 \n");
 	printf("to the tcache thus the next similar-size malloc will\n");
 	printf("point to p3: p3=%p, p4=%p\n\n",p3, p4);
+
+	return 0;
 }
