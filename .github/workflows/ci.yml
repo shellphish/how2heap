@@ -13,11 +13,11 @@ jobs:
     name: glibc-v2.23
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '16.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '16.04'
           glibc: '2.23'
@@ -27,11 +27,11 @@ jobs:
     name: glibc-v2.24
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '16.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '16.10'
           glibc: '2.24'
@@ -40,11 +40,11 @@ jobs:
     name: glibc-v2.27
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '18.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '18.04'
           glibc: '2.27'
@@ -53,11 +53,11 @@ jobs:
     name: glibc-v2.31
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '20.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '20.04'
           glibc: '2.31'
@@ -66,11 +66,11 @@ jobs:
     name: glibc-v2.32
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '20.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '20.10'
           glibc: '2.32'
@@ -79,11 +79,11 @@ jobs:
     name: glibc-v2.33
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '20.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '21.04'
           glibc: '2.33'
@@ -92,11 +92,11 @@ jobs:
     name: glibc-v2.34
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '20.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '21.10'
           glibc: '2.34'
@@ -105,11 +105,11 @@ jobs:
     name: glibc-v2.35
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '22.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '22.04'
           glibc: '2.35'
@@ -118,11 +118,11 @@ jobs:
     name: glibc-v2.36
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '22.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '22.10'
           glibc: '2.36'
@@ -131,11 +131,11 @@ jobs:
     name: glibc-v2.37
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '22.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '23.04'
           glibc: '2.37'
@@ -144,11 +144,11 @@ jobs:
     name: glibc-v2.38
     steps:
       - name: build how2heap
-        uses: shellphish/how2heap/ci/build@main
+        uses: shellphish/how2heap/ci/build@master
         with:
           ubuntu: '22.04'
       - name: test how2heap
-        uses: shellphish/how2heap/ci/test@main
+        uses: shellphish/how2heap/ci/test@master
         with:
           ubuntu: '23.10'
           glibc: '2.38'
@@ -157,11 +157,11 @@ jobs:
             #    name: glibc-v2.39
             #    steps:
             #      - name: build how2heap
-            #        uses: shellphish/how2heap/ci/build@main
+            #        uses: shellphish/how2heap/ci/build@master
             #        with:
             #          ubuntu: '24.04'
             #      - name: test how2heap
-            #        uses: shellphish/how2heap/ci/test@main
+            #        uses: shellphish/how2heap/ci/test@master
             #        with:
             #          ubuntu: '24.04'
             #          glibc: '2.39'
