@@ -10,7 +10,7 @@
 
 #define CHUNK_HDR_SZ (SIZE_SZ*2)
 // same for x86_64 and x86
-#define MALLOC_ALIGN 0x10L
+#define MALLOC_ALIGN (SIZE_SZ*2)
 #define MALLOC_MASK (-MALLOC_ALIGN)
 
 #define PAGESIZE sysconf(_SC_PAGESIZE)
@@ -27,6 +27,7 @@
 
 /**
  * Tested on:
+ *  + GLIBC 2.23 (x86_64, x86 & aarch64)
  *  + GLIBC 2.39 (x86_64, x86 & aarch64)
  *  + GLIBC 2.34 (x86_64, x86 & aarch64)
  *  + GLIBC 2.31 (x86_64, x86 & aarch64)
