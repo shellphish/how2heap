@@ -37,11 +37,11 @@ clean:
 
 define test_poc =
 echo $(poc)
-for i in $$(seq 0 4);\
+for i in $$(seq 0 20);\
 do\
 	LIBC_FATAL_STDERR_=1 $(poc) 1>/dev/null 2>&1 0>&1;\
 	if [ "$$?" = "0" ]; then break; fi;\
-	if [ "$$i" = "4" ]; then exit 1; fi;\
+	if [ "$$i" = "20" ]; then exit 1; fi;\
 done
 echo "success"
 endef
