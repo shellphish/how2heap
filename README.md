@@ -68,20 +68,19 @@ Notice that it does not work if you compile the target binary (`malloc_playgroun
 
 ## Complete Setup
 
-This uses Docker-based approach to prepare the needed environment
+This uses Docker-based approach to prepare the needed environment with pwndbg
 
 ```shell
 git clone https://github.com/shellphish/how2heap
 cd how2heap
 
-# the next command will prepare the target binary so it runs with
-# the expected libc version
-./glibc_run.sh 2.30 ./malloc_playground -d -p
+docker build -t how2heap-pwndbg .
+docker run --rm -it --cap-add=SYS_PTRACE --security-opt seccomp=unconfined how2heap-pwndbg bash
 
-# now you can play with the binary with glibc-2.30
-# and even debug it with the correct symbols
-readelf -d -W malloc_playground | grep RUNPATH # or use checksec
-readelf -l -W malloc_playground | grep interpreter
+# Inside the docker container
+./glibc_run.sh 2.30 ./malloc_playground
+
+# Debugging with pwndbg
 gdb -q -ex "start" ./malloc_playground
 ```
 
