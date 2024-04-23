@@ -64,31 +64,22 @@ cd how2heap
 make clean all
 ./glibc_run.sh 2.30 ./malloc_playground -u -r
 ```
+Notice that it does not work if you compile the target binary (`malloc_playground`) using glibc >= 2.34 and try to run it on glibc < 2.34 because of glibc's symbol versioning. For details, please refer to [this](https://github.com/shellphish/how2heap/issues/169).
 
 ## Complete Setup
 
-This creates a Docker-based environment to get started with `pwndbg` and `pwntools`.
+This uses Docker-based approach to prepare the needed environment
 
 ```shell
-## on your host
 git clone https://github.com/shellphish/how2heap
 cd how2heap
-git clone https://github.com/pwndbg/pwndbg
-docker build -t how2heap-pwndbg pwndbg 
-docker run -it --rm --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -v $(pwd):/io:Z --name how2heap how2heap-pwndbg
 
-## inside the docker container
-apt update
-apt -y install patchelf zstd python-is-python3 wget
-python -m pip install pwntools
-export PATH="$PATH:$(python -c 'import site; print(site.getsitepackages()[0])')/bin"
-cd /io
-git config --global --add safe.directory "*"
-make clean all
-./glibc_run.sh 2.30 ./malloc_playground -u -r
+# the next command will prepare the target binary so it runs with
+# the expected libc version
+./glibc_run.sh 2.30 ./malloc_playground -d -p
 
-## debugging
-# check modified RUNPATH and interpreter
+# now you can play with the binary with glibc-2.30
+# and even debug it with the correct symbols
 readelf -d -W malloc_playground | grep RUNPATH # or use checksec
 readelf -l -W malloc_playground | grep interpreter
 gdb -q -ex "start" ./malloc_playground
