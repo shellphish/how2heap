@@ -104,8 +104,8 @@ function prep_in_docker () {
 	echo "building the how2heap_docker image!"
 	docker build -t how2heap_docker .
 
-	docker run --rm -it -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make clean >/dev/null
-	docker run --rm -it -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make >/dev/null
+	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make clean >/dev/null
+	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make >/dev/null
 }
 
 GLIBC_VERSION=$1
@@ -196,14 +196,14 @@ if [ -z "$(ls -A $OUTPUT_DIR)" ]; then
 fi
 target_interpreter="$OUTPUT_DIR/$(ls $OUTPUT_DIR | grep ld)"
 
-if [[ $GLIBC_MAJOR != $SYSTEM_GLIBC_MAJOR ]] || [[ $GLIBC_MINOR != $SYSTEM_GLIBC_MINOR ]]; then
-    set_interpreter $target_interpreter
-    set_rpath
-fi
-
 if [ "$DOCKER" == 'X' ];
 then
 	prep_in_docker $GLIBC_VERSION
+fi
+
+if [[ $GLIBC_MAJOR != $SYSTEM_GLIBC_MAJOR ]] || [[ $GLIBC_MINOR != $SYSTEM_GLIBC_MINOR ]]; then
+    set_interpreter $target_interpreter
+    set_rpath
 fi
 
 if [ "$GDB" == 'X' ];

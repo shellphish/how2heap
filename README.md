@@ -76,6 +76,7 @@ cd how2heap
 
 # the next command will prepare the target binary so it runs with
 # the expected libc version
+make
 ./glibc_run.sh 2.30 ./malloc_playground -d -p
 
 # now you can play with the binary with glibc-2.30
