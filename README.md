@@ -85,6 +85,8 @@ readelf -d -W malloc_playground | grep RUNPATH # or use checksec
 readelf -l -W malloc_playground | grep interpreter
 gdb -q -ex "start" ./malloc_playground
 ```
+## Download all libc beforehand
+Run `./glibc_download_all.sh` to download all relevant libc versions.
 
 # Heap Exploitation Tools
 

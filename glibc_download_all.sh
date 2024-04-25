@@ -1,6 +1,6 @@
 #!/bin/bash
-
 # Script to download all glibc libraries
+
 # Import helper functions
 source ./glibc_helper.sh
 
