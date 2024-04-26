@@ -1,0 +1,28 @@
+CC := gcc
+SRC_DIRS := glibc_2.23 glibc_2.24 glibc_2.27 glibc_2.31 glibc_2.32 glibc_2.33 glibc_2.34 glibc_2.35 glibc_2.36 glibc_2.37 glibc_2.38 glibc_2.39
+DIR_CFLAGS_glibc_2.23 := -Xlinker -rpath=glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ld-2.23.so
+DIR_CFLAGS_glibc_2.24 := -Xlinker -rpath=glibc-all-in-one/libs/2.24-3ubuntu1_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.24-3ubuntu1_amd64/ld-2.24.so
+DIR_CFLAGS_glibc_2.27 := -Xlinker -rpath=glibc-all-in-one/libs/2.27-3ubuntu1.5_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.27-3ubuntu1.5_amd64/ld-2.27.so
+DIR_CFLAGS_glibc_2.31 := -Xlinker -rpath=glibc-all-in-one/libs/2.31-0ubuntu9.15_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.31-0ubuntu9.15_amd64/ld-2.31.so
+DIR_CFLAGS_glibc_2.32 := -Xlinker -rpath=glibc-all-in-one/libs/2.32-0ubuntu3.2_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.32-0ubuntu3.2_amd64/ld-2.32.so
+DIR_CFLAGS_glibc_2.33 := -Xlinker -rpath=glibc-all-in-one/libs/2.33-0ubuntu5_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.33-0ubuntu5_amd64/ld-2.33.so
+DIR_CFLAGS_glibc_2.34 := -Xlinker -rpath=glibc-all-in-one/libs/2.34-0ubuntu3.2_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.34-0ubuntu3.2_amd64/ld-linux-x86-64.so.2
+DIR_CFLAGS_glibc_2.35 := -Xlinker -rpath=glibc-all-in-one/libs/2.35-0ubuntu3.7_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.35-0ubuntu3.7_amd64/ld-linux-x86-64.so.2
+DIR_CFLAGS_glibc_2.36 := -Xlinker -rpath=glibc-all-in-one/libs/2.36-0ubuntu4_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.36-0ubuntu4_amd64/ld-linux-x86-64.so.2
+DIR_CFLAGS_glibc_2.37 := -Xlinker -rpath=glibc-all-in-one/libs/2.37-0ubuntu2.2_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.37-0ubuntu2.2_amd64/ld-linux-x86-64.so.2
+DIR_CFLAGS_glibc_2.38 := -Xlinker -rpath=glibc-all-in-one/libs/2.38-1ubuntu6.2_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.38-1ubuntu6.2_amd64/ld-linux-x86-64.so.2
+DIR_CFLAGS_glibc_2.39 := -Xlinker -rpath=glibc-all-in-one/libs/2.39-0ubuntu8_amd64/ -Xlinker -Iglibc-all-in-one/libs/2.39-0ubuntu8_amd64/ld-linux-x86-64.so.2
+CFLAGS += -std=c99 -g -Wno-unused-result -Wno-free-nonheap-object
+LDLIBS += -ldl
+
+SRCS := $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
+BINS := $(patsubst %.c,%,$(SRCS))
+
+$(BINS): % : %.c
+	$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS)
+
+clean: 
+	rm -rf $(BINS)
+
+all: $(BINS)
+.PHONY: all
