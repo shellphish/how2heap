@@ -18,5 +18,5 @@ runs:
 
     - name: test how2heap inside the raw container
       run: |
-        docker run -v /tmp/how2heap:/how2heap ubuntu_test bash -c 'cd /how2heap; ./make test version=${{ inputs.glibc }}'
+        docker run -v /tmp/how2heap:/how2heap ubuntu_test bash -c 'cd /how2heap; CC=gcc ./make test version=${{ inputs.glibc }}'
       shell: bash
