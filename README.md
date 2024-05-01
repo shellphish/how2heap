@@ -61,14 +61,28 @@ Try to inline the whole technique in a single `.c` -- it's a lot easier to learn
 ```shell
 git clone https://github.com/shellphish/how2heap
 cd how2heap
-make clean all
-./glibc_run.sh 2.30 ./malloc_playground -u -r
+make clean base
+./malloc_playground
 ```
-Notice that it does not work if you compile the target binary (`malloc_playground`) using glibc >= 2.34 and try to run it on glibc < 2.34 because of glibc's symbol versioning. For details, please refer to [this](https://github.com/shellphish/how2heap/issues/169).
+Notice that this will link the binaries with your system libc. If you want to play with other libc versions. Please refer to `Complete Setup`.
 
 ## Complete Setup
 
-This uses Docker-based approach to prepare the needed environment
+You will encounter symbol versioning issues (see [this](https://github.com/shellphish/how2heap/issues/169)) if you try to `LD_PRELOAD` libcs to a binary that's compiled on your host machine.
+We have two ways to bypass it.
+
+### Method 1: use linker magic (Experimental)
+This one uses some linker magic to tell the compiler that it needs to link with a libc that may not be the latest.
+```shell
+git clone https://github.com/shellphish/how2heap
+cd how2heap
+H2H_USE_SYSTEM_LIBC=N make v2.23
+```
+This will link all the binaries against corresponding libcs. What's better is that it comes with debug symbols. Now you can play with any libc versions on your host machine.
+In this example, it will compile all glibc-2.23 binaries and link them with libc-2.23. You can change the number to play with other libc versions.
+
+### Method 2: use docker
+This uses Docker-based approach to complie binaries inside an old ubuntu container so it is runnable with the target libc version.
 
 ```shell
 git clone https://github.com/shellphish/how2heap
