@@ -71,8 +71,8 @@ Notice that this will link the binaries with your system libc. If you want to pl
 You will encounter symbol versioning issues (see [this](https://github.com/shellphish/how2heap/issues/169)) if you try to `LD_PRELOAD` libcs to a binary that's compiled on your host machine.
 We have two ways to bypass it.
 
-### Method 1: use linker magic (Experimental)
-This one uses some linker magic to tell the compiler that it needs to link with a libc that may not be the latest.
+### Method 1: link against older libc
+This one tells linker to link the target binary with the target libc.
 ```shell
 git clone https://github.com/shellphish/how2heap
 cd how2heap
