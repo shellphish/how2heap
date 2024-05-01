@@ -8,7 +8,8 @@ Compile: `gcc mmap_overlapping_chunks.c -o mmap_overlapping_chunks -g`
 
 POC written by POC written by Maxwell Dulin (Strikeout) 
 */
-int main(){
+int main()
+{
 	/*
 	A primer on Mmap chunks in GLibC
 	==================================
@@ -137,4 +138,6 @@ int main(){
 	printf("Overlapped chunk value: 0x%llx\n\n", overlapping_chunk[distance]);
 	printf("Boom! The new chunk has been overlapped with a previous mmaped chunk\n");
 	assert(mmap_chunk_2[0] == overlapping_chunk[distance]);
+
+	_exit(0); // exit early just in case we corrupted some libraries
 }
