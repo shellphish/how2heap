@@ -104,8 +104,7 @@ function prep_in_docker () {
 	echo "building the how2heap_docker image!"
 	docker build -t how2heap_docker .
 
-	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make clean >/dev/null
-	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make >/dev/null
+	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make clean all >/dev/null
 }
 
 GLIBC_VERSION=$1
