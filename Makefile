@@ -36,7 +36,7 @@ $(addprefix download_glibc_, $(VERSIONS)): libc_ready
 
 	version=$(patsubst download_glibc_%,%,$@); \
 	libc=$$(cat glibc-all-in-one/list | grep "$$version" | grep "$(ARCH)" | head -n 1); \
-	old_libc=$$(cat glibc-all-in-one/old_list | grep "$(version)" | grep "$(ARCH)" | head -n 1); \
+	old_libc=$$(cat glibc-all-in-one/old_list | grep "$$version" | grep "$(ARCH)" | head -n 1); \
 	if [ -z $$libc ]; then libc=$$old_libc; script="download_old"; else libc=$$libc; script="download"; fi; \
 	cd glibc-all-in-one; \
 	rm -rf libs/$$libc; \
