@@ -49,7 +49,7 @@
  *  *to make the PoC more reliable we need to malloc and probe the current top chunk size,
  *  this should be predictable in an actual exploit and therefore, can be removed to get 5 malloc calls instead
  *
- * Special Thanks to pepsipu for creating the challenge "High Frequency Trading"
+ * Special Thanks to pepsipu for creating the challenge "High Frequency Troubles"
  * from Pico CTF 2024 that inspired this exploitation technique
  */
 int main() {
