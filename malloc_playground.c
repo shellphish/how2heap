@@ -122,11 +122,12 @@ int main(int argc, char ** argv) {
 				tmpIndex++;
 			}
 			fprintf(stderr, "==> ok\n");
-		} else if (strcmp(cmd, "clearArray") == 0) {
+		} else if (strcmp(cmd, "clearlist") == 0) {
 			ptrNumber = -1;
 			for (int i = 0; i < maxPtr; i++){
 				free(ptrArray[i]);
 				ptrArray[i] = 0;
+				memset(sizeTable, 0, maxPtr);
 		}
 			fprintf(stderr, "==> ok, array cleared\n");
 #ifdef __GLIBC__
@@ -151,7 +152,7 @@ int main(int argc, char ** argv) {
 #endif
 		} else {
 			puts("Commands: malloc n, free p, usable p, stats, info, mprobe [p], mcheck, mcheck_pedantic, ");
-			puts("Commands: [BETA]  write str, listp, listpall, clearArray\n");
+			puts("Commands: [BETA]  write str, listp, listpall, clearlist\n");
 		}
 	}
 }
