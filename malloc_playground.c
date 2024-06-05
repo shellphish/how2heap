@@ -27,32 +27,47 @@ void report_mcheck_fail(enum mcheck_status s)
 char **ptrArray;
 
 int main(int argc, char ** argv) {
-
+	int num;
 	int ptrNumber = -1;
 	int maxPtr = MAX_PTR_NUM;
+	char sizeTable[maxPtr];
+
+	char buffer[1000];
+	char cmd[1000];
+	char arg1[100];
+	char arg2[100];
+
+	memset(sizeTable, 0, maxPtr);
+	memset(cmd, 0, 1000);
+	memset(arg1, 0, 100);
+	memset(arg2, 0, 100);
+
 	fprintf(stderr, "pid: %d\n", getpid());
 	ptrArray = malloc(sizeof(char*) * 20);
 	for (int i = 0; i < maxPtr; i++){
 		ptrArray[i] = 0;
 	}
-	char buffer[1000];
 	while (1) {
 		fprintf(stderr, "> ");
 		fgets(buffer, sizeof(buffer), stdin);
-		char cmd[1000];
-		char arg1[100] = {0};
-		char arg2[100] = {0};
-		int num = sscanf(buffer, "%s %s %s\n", cmd, arg1, arg2);
+		num = sscanf(buffer, "%s %s %s\n", cmd, arg1, arg2);
 		if (strcmp(cmd, "malloc") == 0) {
-			int tmpArg = atoi((const char *) &arg1);
-			void *result = malloc(tmpArg);
-			ptrNumber++;
-			ptrArray[ptrNumber] = result;
-			strcpy(result, "none");
-			fprintf(stderr, "==> OK, %p\n", result);
+			if (ptrNumber < maxPtr){
+				int sizeArg = atoi((const char *) &arg1);
+				void *result = malloc(sizeArg);
+				ptrNumber++;
+				sizeTable[ptrNumber] = sizeArg;
+				ptrArray[ptrNumber] = result;
+				strcpy(result, "none");
+				fprintf(stderr, "==> OK, %p\n", result);
+			}
+			else{
+				printf("Max pointer reached, free or restart");
+			}
 		} else if (strcmp(cmd, "free") == 0) {
 			if (num == 1){
 				free((void*) ptrArray[ptrNumber]);
+				ptrArray[ptrNumber] = 0;
 				fprintf(stderr, "==> ok\n");
 				ptrNumber -= 1;
 			}
@@ -79,27 +94,27 @@ int main(int argc, char ** argv) {
 			else if (num == 3){
 				int len = strlen((const char *) &arg1);
 				int tmpArg2 = atoi((const char *) &arg2);
-				if (tmpArg2 > ptrNumber){
+				//if (tmpArg2 > ptrNumber){
 					strcpy(ptrArray[tmpArg2], (const char *) &arg1);
 					fprintf(stderr, "==> ok, wrote %s\n", ptrArray[tmpArg2]);
-				}
-				else{
-					printf("Invalid Index\n");
-				}
+				//}
+				//else{
+				//	printf("Invalid Index\n");
+				//}
 			}
 		} else if (strcmp(cmd, "listp") == 0) {
-			int tmpIndex = 0;
 			printf("\n");
-			while(ptrArray[tmpIndex]){
-				printf("%d - %p - %s\n", tmpIndex, ptrArray[tmpIndex], ptrArray[tmpIndex]);
-				tmpIndex++;
+			for (int i = 0; i < 20; i++){
+				if (ptrArray[i]){
+					printf("%d - %p - %s - %d\n", i, ptrArray[i], ptrArray[i], sizeTable[i]);
+				}
 			}
 			fprintf(stderr, "==> ok\n");
 		} else if (strcmp(cmd, "listpall") == 0) {
 			int tmpIndex = 0;
 			printf("\n");
 			for (int i=0; i < maxPtr; i++){
-				printf("%d - %p - %s\n", tmpIndex, ptrArray[tmpIndex], ptrArray[tmpIndex]);
+				printf("%d - %p - %s - %d\n", tmpIndex, ptrArray[tmpIndex], ptrArray[tmpIndex], sizeTable[i]);
 				tmpIndex++;
 			}
 			fprintf(stderr, "==> ok\n");
