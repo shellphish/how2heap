@@ -30,6 +30,7 @@ int main(int argc, char ** argv) {
 	int num;
 	int ptrNumber = -1;
 	int maxPtr = MAX_PTR_NUM;
+	int sizeArg;
 	char sizeTable[maxPtr];
 
 	char buffer[1000];
@@ -53,7 +54,7 @@ int main(int argc, char ** argv) {
 		num = sscanf(buffer, "%s %s %s\n", cmd, arg1, arg2);
 		if (strcmp(cmd, "malloc") == 0) {
 			if (ptrNumber < maxPtr){
-				int sizeArg = atoi((const char *) &arg1);
+				sizeArg = atoi((const char *) &arg1);
 				void *result = malloc(sizeArg);
 				ptrNumber++;
 				sizeTable[ptrNumber] = sizeArg;
