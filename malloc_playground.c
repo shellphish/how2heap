@@ -65,22 +65,26 @@ int main(int argc, char ** argv) {
 				printf("Max pointer reached, free or restart");
 			}
 		} else if (strcmp(cmd, "free") == 0) {
-			if (num == 1){
-				free((void*) ptrArray[ptrNumber]);
-				ptrArray[ptrNumber] = 0;
-				fprintf(stderr, "==> ok\n");
-				ptrNumber -= 1;
-			}
-			else if (num == 2){
-				if (ptrNumber > -1){
-					int tmpArg = atoi((const char *) &arg1);
-					ptrArray[tmpArg] = 0;
-					free((void *) ptrArray[tmpArg]);
+			if (ptrNumber > -1){
+				if (num == 1){
+					free((void*) ptrArray[ptrNumber]);
+					ptrArray[ptrNumber] = 0;
+					sizeTable[ptrNumber] = 0;
+					fprintf(stderr, "==> ok\n");
 					ptrNumber -= 1;
 				}
-				else{
-					printf("List Empty :/");
+				else if (num == 2){
+					int tmpArg = atoi((const char *) &arg1);
+					ptrArray[tmpArg] = 0;
+					sizeTable[tmpArg] = 0;
+					free((void *) ptrArray[tmpArg]);
+					ptrNumber -= 1;
+					fprintf(stderr, "==> ok\n");
 				}
+			}
+			else{
+				fprintf(stderr, "==> list empty :/\n");
+
 			}
 		} else if (strcmp(cmd, "write") == 0) {
 			if (num == 1){
