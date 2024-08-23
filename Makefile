@@ -56,7 +56,11 @@ endif
 	then \
 		$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS); \
 	else \
-		$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS) -Xlinker -rpath=$$(echo glibc-all-in-one/libs/$$version*) -Xlinker -I$$(echo glibc-all-in-one/libs/$$version*/ld-linux-x86-64.so.2) -Xlinker $$(echo glibc-all-in-one/libs/$$version*/libc.so.6) -Xlinker $$(echo glibc-all-in-one/libs/$$version*/libdl.so.2); \
+		$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS) \
+		-Xlinker -rpath=$$(realpath glibc-all-in-one/libs/$$version*) \
+		-Xlinker -I$$(realpath glibc-all-in-one/libs/$$version*/ld-linux-x86-64.so.2) \
+		-Xlinker $$(realpath glibc-all-in-one/libs/$$version*/libc.so.6) \
+		-Xlinker $$(realpath glibc-all-in-one/libs/$$version*/libdl.so.2); \
 	fi
 
 all: $(BINS)
