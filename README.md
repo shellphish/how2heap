@@ -104,26 +104,6 @@ gdb -q -ex "start" ./malloc_playground
 
 There are some heap exploitation tools floating around.
 
-## shadow
-
-jemalloc exploitation framework: https://github.com/CENSUS/shadow
-
-## libheap
-
-Examine the glibc heap in gdb: https://github.com/cloudburst/libheap
-
-## heap-viewer
-
-Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
-
-## heapinspect
-
-A Python based heap playground with good visualization for educational purposes: https://github.com/matrix1001/heapinspect
-
-## Forkever
-
-Debugger that lets you set "checkpoints" as well as view and edit the heap using a hexeditor: https://github.com/haxkor/forkever
-
 ## Malloc Playground
 
 The `malloc_playground.c` file given is the source for a program that prompts the user for commands to allocate and free memory interactively.
@@ -132,13 +112,25 @@ The `malloc_playground.c` file given is the source for a program that prompts th
 
 Examine the glibc heap in gdb: https://github.com/scwuaptx/Pwngdb
 
+## pwndbg
+
+An exploitation-centric gdb plugin that provides the ability to view/tamper with the glibc heap: https://github.com/pwndbg/pwndbg
+
+## gef
+
+Another excellent gdb plugin that provides the ability to examine the glibc heap: https://github.com/hugsy/gef
+
+## heap-viewer
+
+Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
+
+## Forkever
+
+Debugger that lets you set "checkpoints" as well as view and edit the heap using a hexeditor: https://github.com/haxkor/forkever
+
 ## heaptrace
 
 Helps you visualize heap operations by replacing addresses with symbols: https://github.com/Arinerron/heaptrace
-
-## Heap Search
-
-Search for applicable heap exploitation techniques based on primitive requirements: https://kissprogramming.com/heap/heap-search
 
 # Other resources
 
