@@ -38,9 +38,6 @@ int main() {
 	for(int i = 0; i < 7; i++)
 		ptr[i] = malloc(0x40);
 
-	// We would have to allocate this to be able to do tcache poison later, since we need at least 2 chunks in a bin to do it.
-	// void* ppoison = malloc(CHUNK_SIZE);
-
 	void* p1 = malloc(0x40);
 	printf("Allocate another chunk of the same size p1=%p \n", p1);
 
@@ -58,9 +55,6 @@ int main() {
 
 	printf("p2=%p.\n", p2);
 
-	// We could now free this chunk to put it in the tcache bin for the poison.
-	// free(ppoison);
-
 	printf("\nFirst, malloc_consolidate will merge the fast chunk p1 with top.\n");
 	printf("Then, p2 is allocated from top since there is no free chunk bigger (or equal) than it. Thus, p1 = p2.\n");
 
@@ -71,14 +65,6 @@ int main() {
 	printf("It is now in the tcache (or merged with top if we had initially chosen a chunk size > 0x410).\n");
 
 	printf("So p1 is double freed, and p2 hasn't been freed although it now points to a free chunk.\n");
-
-	// *(long long*)p2 = target;
-	// If we can edit chunk contents after it has been allocated,
-	// that gives us UAF here and allows us to perform tcache poison.
-	//
-	// In reality since double free is usually the result of a dangling pointer,
-	// we likely (depending on the nature of the vulnerability) could have used
-	// the edit functionality on the dangling pointer directly. Oh well :)
 
 	printf("We will request 0x400 bytes. This will give us the 0x410 chunk that's currently in\n");
 	printf("the tcache bin. p2 and p1 will still be pointing to it.\n");
@@ -94,8 +80,6 @@ int main() {
 	printf("have behaved the same, just being taken from the top instead of from the tcache bin.\n");
 	printf("This is pretty cool because it is usually difficult to duplicate large sized chunks\n");
 	printf("because they are resistant to direct double free's due to their PREV_INUSE check.\n");
-
-	// assert(malloc(CHUNK_SIZE) == (void*)target);
 
 	return 0;
 }
