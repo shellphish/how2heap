@@ -1,0 +1,167 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - "**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  v2_23:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.23
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '16.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '16.04'
+          glibc: '2.23'
+
+  v2_24:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.24
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '16.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '16.10'
+          glibc: '2.24'
+  v2_27:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.27
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '18.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '18.04'
+          glibc: '2.27'
+  v2_31:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.31
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '20.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '20.04'
+          glibc: '2.31'
+  v2_32:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.32
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '20.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '20.10'
+          glibc: '2.32'
+  v2_33:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.33
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '20.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '21.04'
+          glibc: '2.33'
+  v2_34:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.34
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '20.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '21.10'
+          glibc: '2.34'
+  v2_35:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.35
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '22.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '22.04'
+          glibc: '2.35'
+  v2_36:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.36
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '22.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '22.10'
+          glibc: '2.36'
+  v2_37:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.37
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '22.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '23.04'
+          glibc: '2.37'
+  v2_38:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.38
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '22.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '23.10'
+          glibc: '2.38'
+  v2_39:
+    runs-on: ubuntu-22.04
+    name: glibc-v2.39
+    steps:
+      - name: build how2heap
+        uses: shellphish/how2heap/ci/build@master
+        with:
+          ubuntu: '24.04'
+      - name: test how2heap
+        uses: shellphish/how2heap/ci/test@master
+        with:
+          ubuntu: '24.04'
+          glibc: '2.39'

@@ -9,17 +9,20 @@ GLIBC_VERSION=''
 TARGET=''
 UPDATE=''
 RELOAD=''
+DOCKER=''
 GDB=''
 RADARE2=''
 NOT_EXECUTION=''
 FORCE_TARGET_INTERPRETER=''
+HOW2HEAP_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Handle arguments
 function show_help {
-    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-gdb | -r2 | -p]"
+    echo "Usage: $0 <version> <target> [-h] [-i686] [-u] [-r] [-d] [-gdb | -r2 | -p]"
     echo "-i686 - use x32 bits libc"
     echo "-u - update libc list in glibc-all-in-one"
     echo "-r - download libc in glibc-all-in-one"
+    echo "-d - build the debugging environment in docker"
     echo "-gdb - start target in GDB"
     echo "-r2 - start target in radare2"
     echo "-p - just set interpreter and rpath in target without execution"
@@ -79,6 +82,31 @@ function set_rpath (){
     fi
 }
 
+function prep_in_docker () {
+	# choose the correct base ubuntu container
+	if (( $(echo "$1 > 2.33" |bc -l) ));
+	then
+		UBUNTU_VERSION="22.04"
+	else
+		UBUNTU_VERSION="20.04"
+	fi
+
+	# make sure we have access to docker
+	docker --version >/dev/null 2>&1
+	if test $? -ne 0;
+	then
+		echo "please make sure docker is installed and you have access to it first"
+		exit -1
+	fi
+
+	# build the docker image
+	sed -i "1s/.*/from ubuntu:$UBUNTU_VERSION/" Dockerfile
+	echo "building the how2heap_docker image!"
+	docker build -t how2heap_docker .
+
+	docker run --rm -it -u $(id -u ${USER}):$(id -g ${USER}) -v $HOW2HEAP_PATH:/root/how2heap how2heap_docker make clean all >/dev/null
+}
+
 GLIBC_VERSION=$1
 GLIBC_MAJOR=$(echo $GLIBC_VERSION | cut -d'.' -f1)
 GLIBC_MINOR=$(echo $GLIBC_VERSION | cut -d'.' -f2)
@@ -111,6 +139,9 @@ while :; do
         ;;
         -r)
             RELOAD='X'
+        ;;
+        -d)
+            DOCKER='X'
         ;;
         -gdb)
             GDB='X'
@@ -163,6 +194,11 @@ if [ -z "$(ls -A $OUTPUT_DIR)" ]; then
     exit
 fi
 target_interpreter="$OUTPUT_DIR/$(ls $OUTPUT_DIR | grep ld)"
+
+if [ "$DOCKER" == 'X' ];
+then
+	prep_in_docker $GLIBC_VERSION
+fi
 
 if [[ $GLIBC_MAJOR != $SYSTEM_GLIBC_MAJOR ]] || [[ $GLIBC_MINOR != $SYSTEM_GLIBC_MINOR ]]; then
     set_interpreter $target_interpreter

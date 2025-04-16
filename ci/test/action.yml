@@ -1,0 +1,22 @@
+name: 'test how2heap'
+description: 'test how2heap on the targeted ubuntu docker'
+inputs:
+  ubuntu:
+    description: 'build it on which ubuntu version'
+    required: true
+  glibc:
+    description: 'test against which glibc'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: pull the target ubuntu image
+      run: |
+        docker pull ubuntu:${{ inputs.ubuntu }}
+        docker tag ubuntu:${{ inputs.ubuntu }} ubuntu_test
+      shell: bash
+
+    - name: test how2heap inside the raw container
+      run: |
+        docker run -v /tmp/how2heap:/how2heap ubuntu_test bash -c 'cd /how2heap; ./make test version=${{ inputs.glibc }}'
+      shell: bash

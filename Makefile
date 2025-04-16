@@ -1,55 +1,89 @@
-BASE = malloc_playground first_fit calc_tcache_idx
-V2.23 = fastbin_dup fastbin_dup_consolidate fastbin_dup_consolidate fastbin_dup_into_stack house_of_einherjar house_of_force house_of_gods house_of_lore house_of_mind_fastbin house_of_orange house_of_roman house_of_spirit house_of_storm large_bin_attack mmap_overlapping_chunks overlapping_chunks overlapping_chunks_2 poison_null_byte unsafe_unlink unsorted_bin_attack unsorted_bin_into_stack
-V2.24 = fastbin_dup fastbin_dup_consolidate fastbin_dup_consolidate fastbin_dup_into_stack house_of_einherjar house_of_force house_of_gods house_of_lore house_of_mind_fastbin house_of_roman house_of_spirit house_of_storm large_bin_attack mmap_overlapping_chunks overlapping_chunks overlapping_chunks_2 poison_null_byte unsafe_unlink unsorted_bin_attack unsorted_bin_into_stack
-V2.27 = fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_force house_of_lore house_of_mind_fastbin house_of_spirit house_of_storm large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink unsorted_bin_attack unsorted_bin_into_stack
-V2.31 = fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink
-V2.32 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.33 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.34 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.35 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.36 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.37 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
-V2.38 = decrypt_safe_linking fastbin_dup fastbin_dup_consolidate fastbin_dup_into_stack fastbin_reverse_into_tcache house_of_botcake house_of_einherjar house_of_lore house_of_mind_fastbin house_of_spirit large_bin_attack mmap_overlapping_chunks overlapping_chunks poison_null_byte tcache_house_of_spirit tcache_poisoning tcache_stashing_unlink_attack unsafe_unlink safe_link_double_protect house_of_water
+.PHONY: help clean distclean all test
 
-# turn technique names into paths
-VV2.23 = $(addprefix glibc_2.23/, $(V2.23))
-VV2.24 = $(addprefix glibc_2.24/, $(V2.24))
-VV2.27 = $(addprefix glibc_2.27/, $(V2.27))
-VV2.31 = $(addprefix glibc_2.31/, $(V2.31))
-VV2.32 = $(addprefix glibc_2.32/, $(V2.32))
-VV2.33 = $(addprefix glibc_2.33/, $(V2.33))
-VV2.34 = $(addprefix glibc_2.34/, $(V2.34))
-VV2.35 = $(addprefix glibc_2.35/, $(V2.35))
-VV2.36 = $(addprefix glibc_2.36/, $(V2.36))
-VV2.37 = $(addprefix glibc_2.37/, $(V2.37))
-VV2.38 = $(addprefix glibc_2.38/, $(V2.38))
+VERSIONS := 2.23 2.24 2.27 2.31 2.32 2.33 2.34 2.35 2.36 2.37 2.38 2.39
+TECH_BINS := $(patsubst %.c,%,$(wildcard glibc_*/*.c))
+BASE_BINS := $(patsubst %.c,%,$(wildcard *.c))
+DOWNLOADED := glibc-all-in-one/libs glibc-all-in-one/debs
+BINS := $(TECH_BINS) $(BASE_BINS)
+ARCH := amd64
 
-PROGRAMS = $(BASE) $(VV2.23) $(VV2.24) $(VV2.27) $(VV2.31) $(VV2.32) $(VV2.33) $(VV2.34) $(VV2.35) $(VV2.36) $(VV2.37) $(VV2.38)
+ifeq ($(H2H_USE_SYSTEM_LIBC),)
+H2H_USE_SYSTEM_LIBC := Y
+endif
+
+help:
+	@echo 'make help                    - show this message'
+	@echo 'make base                    - build all base binaries, namely `malloc_playground`, `first_fit`, `calc_tcache_idx`'
+	@echo 'make <version>               - build all the techniques for a specific version. e.g. `make v2.39`'
+	@echo 'make clean                   - remove all built binaries'
+	@echo 'make distclean               - remove all built binaries and downloaded libcs'
+	@echo 'make all                     - build all binaries'
+	@echo 'make test version=<version>  - test run all techniques for a specific version. e.g. `make test version=2.39`'
+
 CFLAGS += -std=c99 -g -Wno-unused-result -Wno-free-nonheap-object
 LDLIBS += -ldl
 
-# Convenience to auto-call mcheck before the first malloc()
-#CFLAGS += -lmcheck
+base: $(BASE_BINS)
 
-all: $(PROGRAMS)
+# initialize glibc-all-in-one
+libc_ready:
+	git submodule update --init --recursive
+	cd glibc-all-in-one && ./update_list
+
+# populate the download_glibc_<version> rules
+$(addprefix download_glibc_, $(VERSIONS)): libc_ready
+	@echo $@
+
+	version=$(patsubst download_glibc_%,%,$@); \
+	libc=$$(cat glibc-all-in-one/list | grep "$$version" | grep "$(ARCH)" | head -n 1); \
+	old_libc=$$(cat glibc-all-in-one/old_list | grep "$$version" | grep "$(ARCH)" | head -n 1); \
+	if [ -z $$libc ]; then libc=$$old_libc; script="download_old"; else libc=$$libc; script="download"; fi; \
+	cd glibc-all-in-one; \
+	rm -rf libs/$$libc; \
+	./$$script $$libc
+
+# populate the make <version> rules
+ifeq ($(H2H_USE_SYSTEM_LIBC),Y)
+$(foreach version,$(VERSIONS),$(eval v$(version): $(patsubst %.c,%,$(wildcard glibc_$(version)/*.c))))
+else
+$(foreach version,$(VERSIONS),$(eval v$(version): download_glibc_$(version) $(patsubst %.c,%,$(wildcard glibc_$(version)/*.c)) ))
+endif
+
+# the compilation rules
+%: %.c
+	version=$(word 1, $(subst /, ,$(patsubst glibc_%,%,$@))); \
+	if [ "$(H2H_USE_SYSTEM_LIBC)" = "Y" ]; \
+	then \
+		$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS); \
+	else \
+		$(CC) $(CFLAGS) $(DIR_CFLAGS_$(@D)) $^ -o $@ $(LDLIBS) \
+		-Xlinker -rpath=$$(realpath glibc-all-in-one/libs/$$version*) \
+		-Xlinker -I$$(realpath glibc-all-in-one/libs/$$version*/ld-linux-x86-64.so.2) \
+		-Xlinker $$(realpath glibc-all-in-one/libs/$$version*/libc.so.6) \
+		-Xlinker $$(realpath glibc-all-in-one/libs/$$version*/libdl.so.2); \
+	fi
+
+all: $(BINS)
+
 clean:
-	rm -f $(PROGRAMS)
+	@rm -f $(BINS)
+	@echo "all the built binaries are removed."
+
+distclean:
+	@rm -f $(BINS)
+	@rm -rf $(DOWNLOADED)
+	@echo "all the built binaries and all downloaded libcs are removed."
 
 define test_poc =
 echo $(poc)
-for i in $$(seq 0 4);\
+for i in $$(seq 0 20);\
 do\
 	LIBC_FATAL_STDERR_=1 $(poc) 1>/dev/null 2>&1 0>&1;\
 	if [ "$$?" = "0" ]; then break; fi;\
-	if [ "$$i" = "4" ]; then exit 1; fi;\
+	if [ "$$i" = "20" ]; then exit 1; fi;\
 done
 echo "success"
 endef
 
-#if [ "$$i" == "5" ]; then exit 1; fi;\
-
-test: $(PROGRAMS)
-	@if [ -z "$(target)" ] || [ -z "$(VV$(target))" ];\
-	then echo "run 'make test target=<target_version>' to test existing techniques"; exit 1; fi;
-
-	@$(foreach poc,$(VV$(target)),$(call test_poc,$(poc));)
+test: v$(version)
+	@$(foreach poc,$(patsubst %.c,%,$(wildcard glibc_$(version)/*.c)),$(call test_poc,$(poc));)

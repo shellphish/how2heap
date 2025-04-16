@@ -45,7 +45,7 @@ int main()
 	chunk1_hdr[1] &= ~1;
 
 	printf("Now we free chunk1 so that consolidate backward will unlink our fake chunk, overwriting chunk0_ptr.\n");
-	printf("You can find the source of the unlink macro at https://sourceware.org/git/?p=glibc.git;a=blob;f=malloc/malloc.c;h=ef04360b918bceca424482c6db03cc5ec90c3e00;hb=07c18a008c2ed8f5660adba2b778671db159a141#l1344\n\n");
+	printf("You can find the source of the unlink_chunk function at https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=1ecba1fafc160ca70f81211b23f688df8676e612\n\n");
 	free(chunk1_ptr);
 
 	printf("At this point we can use chunk0_ptr to overwrite itself to point to an arbitrary location.\n");
