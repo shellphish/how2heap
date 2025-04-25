@@ -20,9 +20,9 @@ int main()
 	}
 
 
-	unsigned long stack_var[2] __attribute__ ((aligned (0x10)));
+	unsigned long stack_var[4] __attribute__ ((aligned (0x10)));
 
-	fprintf(stderr, "The address we want calloc() to return is %p.\n", stack_var);
+	fprintf(stderr, "The address we want calloc() to return is %p.\n", stack_var + 2);
 
 	fprintf(stderr, "Allocating 3 buffers.\n");
 	int *a = calloc(1,8);
