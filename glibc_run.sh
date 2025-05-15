@@ -68,7 +68,7 @@ function set_interpreter (){
     if [[ $curr_interp != $1 ]];
     then
         patchelf --set-interpreter "$1" "$TARGET"
-        echo "INERPERETER as $1 for $TARGET"
+        echo "INTERPERETER as $1 for $TARGET"
     fi
 }
 
