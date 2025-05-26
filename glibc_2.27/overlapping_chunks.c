@@ -58,7 +58,7 @@ int main(int argc , char* argv[])
 	p4 = malloc(evil_region_size);
 
 	printf("\np4 has been allocated at %p and ends at %p\n", (char *)p4, (char *)p4+evil_region_size);
-	printf("p3 starts at %p and ends at %p\n", (char *)p3, (char *)p3+0x580-8);
+	printf("p3 starts at %p and ends at %p\n", (char *)p3, (char *)p3+0x80-8);
 	printf("p4 should overlap with p3, in this case p4 includes all p3.\n");
 
 	printf("\nNow everything copied inside chunk p4 can overwrites data on\nchunk p3,"
