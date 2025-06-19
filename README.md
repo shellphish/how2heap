@@ -41,9 +41,9 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [decrypt_safe_linking.c](glibc_2.35/decrypt_safe_linking.c) | <a href="https://wargames.ret2.systems/level/how2heap_decrypt_safe_linking_2.34" title="Debug Technique In Browser">:arrow_forward:</a> | Decrypt the poisoned value in linked list to recover the actual pointer | >= 2.32 | | |
 | [safe_link_double_protect.c](glibc_2.36/safe_link_double_protect.c) | | Leakless bypass for PROTECT_PTR by protecting a pointer twice, allowing for arbitrary pointer linking in t-cache | >= 2.32 | | [37c3 Potluck - Tamagoyaki](https://github.com/UDPctf/CTF-challenges/tree/main/Potluck-CTF-2023/Tamagoyaki)|
 | [tcache_dup.c](obsolete/glibc_2.27/tcache_dup.c)(obsolete) | |  Tricking malloc into returning an already-allocated heap pointer by abusing the tcache freelist. | 2.26 - 2.28 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=bcdaad21d4635931d1bd3b54a7894276925d081d) | |
-| [house_of_io_uaf.c](glibc_2.31/house_of_io_uaf.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by UAF in a free'd tcache chunk. | 2.31 - 2.33 | | |
-| [house_of_io_free.c](glibc_2.31/house_of_io_free.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by freeing the management struct. | 2.31 - 2.33 | | |
-| [house_of_io_underflow.c](glibc_2.31/house_of_io_underflow.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by underflowing into the management struct. | 2.31 - 2.33 | | |
+| [house_of_io_uaf.c](glibc_2.31/house_of_io_uaf.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by UAF in a free'd tcache chunk. | 2.29 - 2.33 | | |
+| [house_of_io_free.c](glibc_2.31/house_of_io_free.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by freeing the management struct. | 2.29 - 2.33 | | |
+| [house_of_io_underflow.c](glibc_2.31/house_of_io_underflow.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by underflowing into the management struct. | 2.29 - 2.33 | | |
 
 The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
 Consequently, these checks regularly break some of the techniques and require adjustments to bypass them (if possible).
