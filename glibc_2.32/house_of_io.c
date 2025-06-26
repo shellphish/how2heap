@@ -17,6 +17,15 @@
 // tcache chunk. There are three different versions of this attack and all work
 // even with safe-link enabled, as the tcache-key pointer, and more importantly
 // the pointers in the tcache_perthread_struct, are not protected.
+//
+// House of Io only works in libc versions 2.29 - 2.33, because in these
+// versions the key of a tcache entry is the pointer to the tcache management
+// struct. This can allow an attacker to carry out a tcache_metadata_poisoning
+// attack.
+//
+// However the exploit primitives are very constrained as stated in the source.
+// Negative overflows are very rare and so is the needed order of specific frees
+// for the double free variant. This use after free is a bit more realistic.
 
 unsigned long global_var = 1;
 
