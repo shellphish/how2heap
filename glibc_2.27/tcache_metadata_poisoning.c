@@ -17,7 +17,7 @@
 
 // This is the `tcache_perthread_struct` (or the tcache metadata)
 struct tcache_metadata {
-  uint16_t counts[TCACHE_BINS];
+  char counts[TCACHE_BINS];
   void *entries[TCACHE_BINS];
 };
 
