@@ -1,6 +1,6 @@
 .PHONY: help clean distclean all test
 
-VERSIONS := 2.23 2.24 2.27 2.31 2.32 2.33 2.34 2.35 2.36 2.37 2.38 2.39 2.41
+VERSIONS := 2.23 2.24 2.27 2.31 2.32 2.33 2.34 2.35 2.36 2.37 2.38 2.39 2.40 2.41
 TECH_BINS := $(patsubst %.c,%,$(wildcard glibc_*/*.c))
 BASE_BINS := $(patsubst %.c,%,$(wildcard *.c))
 DOWNLOADED := glibc-all-in-one/libs glibc-all-in-one/debs
