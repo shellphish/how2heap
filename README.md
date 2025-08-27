@@ -126,37 +126,33 @@ Another excellent gdb plugin that provides the ability to examine the glibc heap
 
 Examine the glibc heap in IDA Pro: https://github.com/danigargu/heap-viewer
 
-## Forkever
-
-Debugger that lets you set "checkpoints" as well as view and edit the heap using a hexeditor: https://github.com/haxkor/forkever
-
 ## heaptrace
 
 Helps you visualize heap operations by replacing addresses with symbols: https://github.com/Arinerron/heaptrace
 
 # Other resources
 
-Some good heap exploitation resources, roughly in order of their publication, are:
+Some good heap exploitation resources, roughly in reverse order of their publication, are:
 
-- glibc in-depth tutorial (https://heap-exploitation.dhavalkapil.com/) - book and exploit samples
-- ptmalloc fanzine, a set of resources and examples related to meta-data attacks on ptmalloc (http://tukan.farm/2016/07/26/ptmalloc-fanzine/)
-- A malloc diagram, from libheap (https://raw.githubusercontent.com/cloudburst/libheap/master/heap.png)
-- Glibc Adventures: The Forgotten Chunk (https://go.contextis.com/rs/140-OCV-459/images/Glibc_Adventures-The_Forgotten_Chunks.pdf) - advanced heap exploitation
-- Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html)
-- The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html)
-- Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques
-- Yet another free() exploitation technique (http://phrack.org/issues/66/6.html)
-- Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits
-- The use of set_head to defeat the wilderness (http://phrack.org/issues/64/9.html)
-- The Malloc Maleficarum (http://seclists.org/bugtraq/2005/Oct/118)
-- OS X heap exploitation techniques (http://phrack.org/issues/63/5.html)
-- Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25)
-- Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html)
-- GDB Enhanced Features (GEF) Heap Exploration Tools (https://hugsy.github.io/gef/commands/heap/)
-- pwndbg Heap Commands (https://browserpwndbg.readthedocs.io/en/docs/commands/heap/heap/)
-- Painless intro to the Linux userland heap (https://sensepost.com/blog/2017/painless-intro-to-the-linux-userland-heap/)
-- Heap exploitation techniques that work on glibc-2.31 (https://github.com/StarCross-Tech/heap_exploit_2.31)
-- Overview of GLIBC heap exploitation techniques (https://0x434b.dev/overview-of-glibc-heap-exploitation-techniques/)
+## Useful heap exploitation tutorials
+- Overview of GLIBC heap exploitation techniques (https://0x434b.dev/overview-of-glibc-heap-exploitation-techniques/) <!-- 2022 -->
+- glibc in-depth tutorial (https://heap-exploitation.dhavalkapil.com/) - book and exploit samples <!-- 2022 -->
+- Heap exploitation techniques that work on glibc-2.31 (https://github.com/StarCross-Tech/heap_exploit_2.31) <!-- 2020 -->
+- Painless intro to the Linux userland heap (https://sensepost.com/blog/2017/painless-intro-to-the-linux-userland-heap/) <!-- 2017 -->
+- ptmalloc fanzine, a set of resources and examples related to meta-data attacks on ptmalloc (http://tukan.farm/2016/07/26/ptmalloc-fanzine/) <!-- 2016 -->
+- Glibc Adventures: The Forgotten Chunk (https://github.com/bash-c/slides/blob/master/pwn_heap/Glibc%20Adventures:%20The%20forgotten%20chunks.pdf) - advanced heap exploitation <!-- 2015 -->
+
+## Historical heap exploitation (The History)
+- Pseudomonarchia jemallocum (http://www.phrack.org/issues/68/10.html) <!-- 2012 -->
+- The House Of Lore: Reloaded (http://phrack.org/issues/67/8.html) <!-- 2010 -->
+- Malloc Des-Maleficarum (http://phrack.org/issues/66/10.html) - some malloc exploitation techniques <!-- 2009 -->
+- Yet another free() exploitation technique (http://phrack.org/issues/66/6.html) <!-- 2009 -->
+- The use of set_head to defeat the wilderness (http://phrack.org/issues/64/9.html) <!-- 2007 -->
+- Understanding the heap by breaking it (https://www.blackhat.com/presentations/bh-usa-07/Ferguson/Whitepaper/bh-usa-07-ferguson-WP.pdf) - explains heap implementation and a couple exploits <!-- 2007 -->
+- OS X heap exploitation techniques (http://phrack.org/issues/63/5.html) <!-- 2005 -->
+- The Malloc Maleficarum (http://seclists.org/bugtraq/2005/Oct/118) <!-- 2005 -->
+- Exploiting The Wilderness (http://seclists.org/vuln-dev/2004/Feb/25) <!-- 2004 -->
+- Advanced Doug lea's malloc exploits (http://phrack.org/issues/61/6.html) <!-- 2003 -->
 
 # Hardening
 There are a couple of "hardening" measures embedded in glibc, like `export MALLOC_CHECK_=1` (enables some checks), `export MALLOC_PERTURB_=1` (data is overwritten), `export MALLOC_MMAP_THRESHOLD_=1` (always use mmap()), ...
