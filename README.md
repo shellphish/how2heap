@@ -2,7 +2,7 @@
 
 This repo is for learning various heap exploitation techniques.
 We use Ubuntu's Libc releases as the gold-standard. Each technique is verified to work on corresponding Ubuntu releases.
-You can run `apt source libc6` to download the source code of the Libc your are using on Debian-based operating system. You can also click :arrow_forward: to debug the technique in your browser using gdb.
+You can run `apt source libc6` to download the source code of the Libc you are using on a Debian-based operating system. You can also click :arrow_forward: to debug the technique in your browser using gdb.
 
 We came up with the idea during a hack meeting, and have implemented the following techniques:
 
