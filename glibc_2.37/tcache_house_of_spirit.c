@@ -19,7 +19,7 @@ int main()
 
 	printf("Let's imagine we will overwrite 1 pointer to point to a fake chunk region.\n");
 	unsigned long long *a; //pointer that will be overwritten
-	unsigned long long fake_chunks[10]; //fake chunk region
+	unsigned long long fake_chunks[10] __attribute__((aligned(0x10))); //fake chunk region
 
 	printf("This region contains one fake chunk. It's size field is placed at %p\n", &fake_chunks[1]);
 
