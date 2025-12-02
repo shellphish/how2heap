@@ -10,7 +10,7 @@ int main(void)
      * Reference: https://d4r30.github.io/heap-exploit/2025/11/25/tcache-relative-write.html
      *
      * Objectives: 
-     *   - To write an arbitrary value into an arbitrary location on heap
+     *   - To write a semi-arbitrary (or possibly fully arbitrary) value into an arbitrary location on heap
      *   - To write the pointer of an attacker-controlled chunk into an arbitrary location on heap.
      * 
      * Cause: UAF/Overflow
@@ -33,7 +33,7 @@ int main(void)
      * placed on heap, one can perform a *TCache relative write* on an arbitrary point located after the tcache 
      * metadata chunk (Even on `tcache->entries` list to poison tcache metadata). By writing the new freed tcache 
      * chunk's pointer, we can combine this technique with other techniques like tcache poisoning or fastbin corruption 
-     * and to trigger a heap leak. By writing the new counter, we can poison `tcache->entries`, write arbitrary value 
+     * and to trigger a heap leak. By writing the new counter, we can poison `tcache->entries`, write semi-arbitrary decimals
      * into an arbitrary location of heap, with the right amount of mallocs and frees. With all these combined, one is 
      * able to create impactful chains of exploits, using this technique as their foundation.
      *
@@ -69,6 +69,11 @@ int main(void)
 
     *mp_tcache_bins = 0x7fffffffffff;	// Write a large value into mp_.tcache_bins
     printf("mp_.tcache_bins is now set to a large value. This enables us to pass the only check on tc_idx\n\n");
+
+    // Note: If we're also capable of making mp_.tcache_count a large value along with mp_.tcache_bins, we can
+    // trigger a fully arbitrary decimal writing. In the normal case, with just mp_tcache_bins set to a large value,
+    // what we can write into target is limited to a range of [0,7].  
+    printf("If you're also capable of setting mp_.tcache_count to a large value, you can possibly achieve a *fully* arbitrary write.\n");
 
     /* END VULNERABILITY */
 
