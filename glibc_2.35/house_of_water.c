@@ -176,7 +176,7 @@ int main(void) {
 	"and not at the chunk itself which is common for t-cache.\n");
 	
 	puts("Using a technique like house of botcake or a stronger arb-free primitive, free a");
-	puts("chunk such that it overlaps with the header of unsorted_start and unsorte_end.");
+	puts("chunk such that it overlaps with the header of unsorted_start and unsorted_end.");
 	puts("");
 
 	puts("It should look like the following:");
