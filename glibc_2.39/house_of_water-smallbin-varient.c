@@ -6,20 +6,18 @@
  * into a tcache metadata control primitive, with the additional benefit of obtaining
  * a free libc pointer from within the tcache metadata.
  *
- * This technique is a variant of the original House of Water. Instead of targeting
- * unsorted bins, it targets small bins. 
- * This variant of the technique avoid relying
- * on heap address leaks or brute‑forcing, and removes the need for large chunk
- * allocations.
+ * This technique is a variant of the original House of Water. 
+ * Instead of targeting unsorted bins, it targets small bins. 
+ * This variant of the technique avoid relying on heap address leaks or brute‑forcing, 
+ * and removes the need for large chunk allocations.
  *
- * There is no need to forge a size field inside the tcache structure, since the fake
- * chunk is linked through a small bin.
+ * There is no need to forge a size field inside the tcache structure, 
+ * since the fake chunk is linked through a small bin.
  *
  * First, we craft fake `fd` and `bk` pointers above the 0x320 and 0x330 tcache‑linked chunks. 
  * We then build a fake linked list of three chunks in the 0x90 small bin,
- * such that the second byte of the middle chunk’s address matches the second byte
- * of the tcache end pointer. This alignment allows us to avoid relying on partial
- * heap leaks or brute‑forcing.
+ * such that the second byte of the middle chunk’s address matches the second byte of the tcache end pointer. 
+ * This alignment allows us to avoid relying on partial heap leaks or brute‑forcing.
  *
  * Finally, we link the fake chunk by overwriting the least significant bytes of the
  * `fd` and `bk` pointers of the start and end chunks in the small bin with a single NULL byte, 
