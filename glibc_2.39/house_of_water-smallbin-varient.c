@@ -8,8 +8,7 @@
  *
  * This technique is a variant of the original House of Water. 
  * Instead of targeting unsorted bins, it targets small bins. 
- * This variant of the technique avoid relying on heap address leaks or brute‑forcing, 
- * and removes the need for large chunk allocations.
+ * This variant of the technique avoid relying on heap address leaks or brute‑forcing.
  *
  * There is no need to forge a size field inside the tcache structure, 
  * since the fake chunk is linked through a small bin.
