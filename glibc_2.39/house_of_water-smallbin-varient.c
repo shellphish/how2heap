@@ -307,7 +307,7 @@ int main(void) {
     for(int i = 7; i > 0; i--)
         _ = malloc(0x88);
 
-    // Allocating small_start, and small_end again to remove them from the small bin
+    // Allocating small_start, and small_end again to remove them from the 0x90 t-cache bin
     _ = malloc(0x88);
     _ = malloc(0x88);
 
