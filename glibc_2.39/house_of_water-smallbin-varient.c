@@ -25,10 +25,9 @@
  * then second allocation returns 'end chunk', and final allocation returns fake chunk for tcache_perthread_struct control.
  *
  * An article explaining this variant and its differences from the original House of Water can be found at: 
- * [https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md](https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md)
+ * https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md
  *
- * Original technique: @udp_ctf (Water Paddler / Blue Water). 
- * Small-bin variant: @4f3rg4n (CyberEGGs).
+ * Small-bin variant by @4f3rg4n (CyberEGGs).
  */
 
 
