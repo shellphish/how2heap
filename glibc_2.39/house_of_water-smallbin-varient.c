@@ -93,7 +93,7 @@ int main(void) {
     printf("[+] tcache[0x320/0x330] ready for linking\n\n");
 
 
-    printf("=== PHASE 5: UAF Hijack ===\n");
+    printf("=== PHASE 5: Linking fake chunk ===\n");
     
     /* VULNERABILITY: UAF overwrite */
     printf("[-] UAF: Linking fake chunk into smallbin...\n");
