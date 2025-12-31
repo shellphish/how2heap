@@ -8,26 +8,30 @@
  *
  * This technique is a variant of the original House of Water. 
  * Instead of targeting unsorted bins, it targets small bins. 
- * This variant of the technique avoid relying on heap address leaks or brute‑forcing.
+ * This variant avoids relying on heap address leaks or brute-forcing.
  *
  * There is no need to forge a size field inside the tcache structure, 
  * since the fake chunk is linked through a small bin.
  *
- * First, we craft fake `fd` and `bk` pointers above the 0x320 and 0x330 tcache‑linked chunks. 
- * We then build a fake linked list of three chunks in the 0x90 small bin,
- * such that the second byte of the middle chunk’s address matches the second byte of the tcache end pointer. 
- * This alignment allows us to avoid relying on partial heap leaks or brute‑forcing.
- *
- * Finally, we link the fake chunk by overwriting the least significant bytes of the
- * `fd` and `bk` pointers of the start and end chunks in the small bin with a single NULL byte, 
- * causing them to point to the fake chunk located above the 0x320 and 0x330 tcache bins.
+ * The technique starts by allocating the 'middle chunk' immediately after tcache metadata,
+ * sharing the same ASLR-partially-controlled second byte as the target fake chunk location.
+ * 
+ * Next crafts fake tcache entries in 0x320 & 0x330 bins of two other controlled chunks matching the 'middle chunk' size,
+ * then frees all three chunks into unsorted bin keeping the 'middle chunk' centered.
+ * Large allocation sorts them into the same small bin linked list.
+ * 
+ * UAF overwrites LSB of the 'first chunk' fd and the 'end chunk' bk pointers with 0x00, redirecting both to fake tcache chunk.
+ * Finally drains tcache; next allocation returns 'first chunk' from small bin and moves remaining chunks into tcache,
+ * then second allocation returns 'end chunk', and final allocation returns fake chunk for tcache_perthread_struct control.
  *
  * An article explaining this variant and its differences from the original House of Water can be found at: 
- * https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md
+ * [https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md](https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md)
  *
  * Original technique: @udp_ctf (Water Paddler / Blue Water). 
  * Small-bin variant: @4f3rg4n (CyberEGGs).
  */
+
+
 
 int main(void) {
     void *_ = NULL;
@@ -110,7 +114,7 @@ int main(void) {
 
     printf("=== PHASE 6: Tcache Control ===\n");
     
-    // Drain tcache to force smallbin alloc, then get fake chunk!
+    // Drain tcache to force smallbin alloc, then get the fake chunk!
     for (int i = 7; i > 0; i--) _ = malloc(0x88);
     _ = malloc(0x88);  // Pop start
     _ = malloc(0x88);  // Pop end
