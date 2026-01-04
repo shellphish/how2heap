@@ -2,27 +2,27 @@
 #include <stdlib.h>
 
 /*
+ * """
  * House of Water is a technique for converting a Use-After-Free (UAF) vulnerability
  * into a tcache metadata control primitive, with the additional benefit of obtaining
  * a free libc pointer from within the tcache metadata.
+ * """
  *
- * This technique is a variant of the original House of Water. 
- * Instead of targeting unsorted bins, it targets small bins. 
+ * This technique is a variant of the original House of Water and instead of targeting unsorted bins, it targets small bins. 
  * This variant avoids relying on heap address leaks or brute-forcing.
  *
- * There is no need to forge a size field inside the tcache structure, 
- * since the fake chunk is linked through a small bin.
+ * There is no need to forge a size field inside the tcache structure, since the fake chunk is linked through a small bin.
  *
  * The technique starts by allocating the 'middle chunk' immediately after tcache metadata,
  * sharing the same ASLR-partially-controlled second byte as the target fake chunk location.
  * 
- * Next crafts fake tcache entries in 0x320 & 0x330 bins of two other controlled chunks matching the 'middle chunk' size,
+ * Then crafts fake tcache entries in 0x320 & 0x330 bins of two other controlled chunks matching the 'middle chunk' size,
  * then frees all three chunks into unsorted bin keeping the 'middle chunk' centered.
  * Large allocation sorts them into the same small bin linked list.
  * 
  * UAF overwrites LSB of the 'first chunk' fd and the 'end chunk' bk pointers with 0x00, redirecting both to fake tcache chunk.
  * Finally drains tcache; next allocation returns 'first chunk' from small bin and moves remaining chunks into tcache,
- * then second allocation returns 'end chunk', and final allocation returns fake chunk for tcache_perthread_struct control.
+ * then second allocation returns 'end chunk' and final allocation returns fake chunk for tcache_perthread_struct control.
  *
  * An article explaining this variant and its differences from the original House of Water can be found at: 
  * https://github.com/4f3rg4n/CTF-Events-Writeups/blob/main/Potluck-CTF-2023/House_Of_Water_Smallbin_Variant.md
