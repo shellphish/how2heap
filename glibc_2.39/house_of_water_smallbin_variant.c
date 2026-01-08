@@ -72,7 +72,7 @@ int main(void) {
     printf("=== PHASE 3: Fake Tcache Entries ===\n");
     
     // Craft fake tcache entries at 0x320/0x330 that point to chunk headers.
-    // This simulates Heap Feng Shui where another chunks overlapping the metadata of small_start and small_end.
+    // This simulates a double-free primitive along with heap feng shui where other chunks overlap the metadata of small_start and small_end.    
     printf("[+] Crafting tcache[0x330] FWD -> small_start header:\n");
     *(long*)(small_start-0x18) = 0x331; // Set fake size field for the overlapping small_start size
     free(small_start-0x10);             // Free small_start to the populate tcache[0x330]
