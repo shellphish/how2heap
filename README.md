@@ -44,6 +44,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [tcache_metadata_poisoning.c](glibc_2.27/tcache_metadata_poisoning.c) | | Trick the tcache into providing arbitrary pointers by manipulating the tcache metadata struct | >= 2.26 | | |
 | [house_of_io.c](glibc_2.31/house_of_io.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by UAF in a free'd tcache chunk. | 2.31 - 2.33 | | |
 | [tcache_relative_write.c](glibc_2.41/tcache_relative_write.c) | | Arbitrary decimal value and chunk pointer writing in heap by out-of-bounds tcache metadata writing | 2.30-2.41 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=cbfd7988107b27b9ff1d0b57fa2c8f13a932e508) | |
+| [tcache_metadata_hijacking](glibc_2.42/tcache_metadata_hijacking.c) | | Arbitrary allocation by overflow into tcache metadata | >= 2.42 | | |
 
 The GnuLibc is under constant development and several of the techniques above have let to consistency checks introduced in the malloc/free logic.
 Consequently, these checks regularly break some of the techniques and require adjustments to bypass them (if possible).
