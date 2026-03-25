@@ -28,7 +28,7 @@ base: $(BASE_BINS)
 # initialize glibc-all-in-one
 libc_ready:
 	git submodule update --init --recursive
-	cd glibc-all-in-one && ./update_list
+	cd glibc-all-in-one && python ./update_list
 
 # populate the download_glibc_<version> rules
 $(addprefix download_glibc_, $(VERSIONS)): libc_ready
