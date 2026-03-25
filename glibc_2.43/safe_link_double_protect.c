@@ -93,10 +93,10 @@ int main(void) {
 	puts("by overwriting the LSB of the pointer for 0x30 in the t-cache metadata:");
 	
 	// Calculate the address of the t-cache metadata
-	void *metadata = (void *)((long)(value) & ~(0xfff));
+	void *metadata = (void *)((long)(value) & ~(0xfff)) + 0x70;
 
 	// Overwrite the LSB of the 0x30 t-cache chunk to point to the heap chunk containing the arbitrary value
-	*(unsigned int*)(metadata+0xb0) = (long)(metadata)+((long)(value) & (0xfff));
+	*(unsigned int*)(metadata+0xb0) = (((long)metadata >> 12) << 12)+((long)(value) & (0xfff));
 
 	printf("\t\t> 0x40 t-cache: [%p -> 0x%lx]\n", value, (*(long*)value)^((long)metadata>>12));
 	puts("");
