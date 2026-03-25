@@ -89,7 +89,7 @@ int main()
 
 	// Vulnerability!!! This could be triggered by an improper index or a buffer overflow from a chunk further below.
 	// Additionally, this same attack can be used with the prev_size instead of the size.
-	mmap_chunk_3[-1] = (0xFFFFFFFFFD & mmap_chunk_3[-1]) + (0xFFFFFFFFFD & mmap_chunk_2[-1]) | 2;
+	mmap_chunk_3[-1] = (0xFFFFFFFFFD & mmap_chunk_3[-1]) + (0xFFFFFFFFFD & mmap_chunk_2[-1]) | 2 + 0x10;
 	printf("New size of third mmap chunk: 0x%llx\n", mmap_chunk_3[-1]);
 	printf("Free the third mmap chunk, which munmaps the second and third chunks\n\n");
 
