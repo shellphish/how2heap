@@ -29,7 +29,7 @@ int main()
 
 	printf("Now, we simulate an overflow vulnerability to overwrite the pointer\n");
 	/*Vulnerability*/
-	chunk[0x420/8+21] = (long)&target[0];
+	chunk[0x420/8+25] = (long)&target[0];
 	/*Vulnerability*/
 
 	void *p2 = malloc(0x10);

