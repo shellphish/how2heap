@@ -111,7 +111,7 @@ int main()
 
 	// Now we fill the tcache before we free chunk 'c' to consolidate with our fake chunk
 	printf("\nFill tcache.\n");
-	intptr_t *x[7];
+	intptr_t *x[0x10];
 	for(int i=0; i<sizeof(x)/sizeof(intptr_t*); i++) {
 		x[i] = malloc(0xf8);
 	}
