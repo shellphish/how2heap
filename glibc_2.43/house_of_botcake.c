@@ -31,8 +31,8 @@ int main()
 
     // prepare heap layout
     puts("Preparing heap layout");
-    puts("Allocating 7 chunks(malloc(0x100)) for us to fill up tcache list later.");
-    intptr_t *x[7];
+    puts("Allocating 0x10 chunks(malloc(0x100)) for us to fill up tcache list later.");
+    intptr_t *x[0x10];
     for(int i=0; i<sizeof(x)/sizeof(intptr_t*); i++){
         x[i] = malloc(0x100);
     }
@@ -46,7 +46,7 @@ int main()
     // cause chunk overlapping
     puts("Now we are able to cause chunk overlapping");
     puts("Step 1: fill up tcache list");
-    for(int i=0; i<7; i++){
+    for(int i=0; i<0x10; i++){
         free(x[i]);
     }
     puts("Step 2: free the victim chunk so it will be added to unsorted bin");
