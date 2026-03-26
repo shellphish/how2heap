@@ -14,6 +14,9 @@ int main()
 
 	puts("Some of the implementation details are borrowed from https://github.com/StarCross-Tech/heap_exploit_2.31/blob/master/off_by_null.c\n");
 
+	// step0: force the allocation of tcache metadata to prevent it from messing with us
+	free(malloc(0x30));
+
 	// step1: allocate padding
 	puts("Step1: allocate a large padding so that the fake chunk's addresses's lowest 2nd byte is \\x00");
 	void *tmp = malloc(0x1);
