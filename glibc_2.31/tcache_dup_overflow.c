@@ -52,5 +52,10 @@ int main(void) {
     
     return 0;
 
-    // credit: https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=eff1f680cffb005a5623d1c8a952d095b988d6a2
+    /* credit: https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=eff1f680cffb005a5623d1c8a952d095b988d6a2
+    *
+    * Reason of this hack: the double free check on tcache only examine the freelist
+    * for the exact size of the chunk we freed. By resetting the size of the chunk,
+    * we cheat glibc that the chunk is not freed yet, so we can free it in two freelists.
+    */
 }
