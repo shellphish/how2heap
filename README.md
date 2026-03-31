@@ -41,6 +41,7 @@ We came up with the idea during a hack meeting, and have implemented the followi
 | [decrypt_safe_linking.c](glibc_2.35/decrypt_safe_linking.c) | <a href="https://wargames.ret2.systems/level/how2heap_decrypt_safe_linking_2.34" title="Debug Technique In Browser">:arrow_forward:</a> | Decrypt the poisoned value in linked list to recover the actual pointer | >= 2.32 | | |
 | [safe_link_double_protect.c](glibc_2.36/safe_link_double_protect.c) | | Leakless bypass for PROTECT_PTR by protecting a pointer twice, allowing for arbitrary pointer linking in t-cache | >= 2.32 | | [37c3 Potluck - Tamagoyaki](https://github.com/UDPctf/CTF-challenges/tree/main/Potluck-CTF-2023/Tamagoyaki)|
 | [tcache_dup.c](obsolete/glibc_2.27/tcache_dup.c)(obsolete) | |  Tricking malloc into returning an already-allocated heap pointer by abusing the tcache freelist. | 2.26 - 2.28 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=bcdaad21d4635931d1bd3b54a7894276925d081d) | |
+| [tcache_dup_overflow.c](glibc_2.31/tcache_dup_overflow.c) | |  With UAF on a freed tcache chunk and the ability to overwrite the size of the chunk, the chunk could be put back to freelist. | 2.26 - 2.41 | [patch](https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=eff1f680cffb005a5623d1c8a952d095b988d6a2) | |
 | [tcache_metadata_poisoning.c](glibc_2.27/tcache_metadata_poisoning.c) | | Trick the tcache into providing arbitrary pointers by manipulating the tcache metadata struct | >= 2.26 | | |
 | [house_of_io.c](glibc_2.31/house_of_io.c) | | Tricking malloc into return a pointer to arbitrary memory by manipulating the tcache management struct by UAF in a free'd tcache chunk. | 2.31 - 2.33 | | |
 | [tcache_relative_write.c](glibc_2.41/tcache_relative_write.c) | | Arbitrary decimal value and chunk pointer writing in heap by out-of-bounds tcache metadata writing | 2.30-2.41 | [patch](https://sourceware.org/git/?p=glibc.git;a=commit;h=cbfd7988107b27b9ff1d0b57fa2c8f13a932e508) | |
@@ -162,4 +163,3 @@ There are a couple of "hardening" measures embedded in glibc, like `export MALLO
 More info: [mcheck()](http://www.gnu.org/software/libc/manual/html_node/Heap-Consistency-Checking.html), [mallopt()](http://www.gnu.org/software/libc/manual/html_node/Malloc-Tunable-Parameters.html).
 
 There's also some tracing support as [mtrace()](http://manpages.ubuntu.com/mtrace), [malloc_stats()](http://manpages.ubuntu.com/malloc_stats), [malloc_info()](http://manpages.ubuntu.com/malloc_info), [memusage](http://manpages.ubuntu.com/memusage), and in other functions in this family.
-
