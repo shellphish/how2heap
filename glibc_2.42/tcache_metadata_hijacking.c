@@ -10,13 +10,17 @@ int main()
 
 	// introduction
 	puts("This file demonstrates an interesting feature of glibc-2.42: the `tcache_perthread_struct`");
-	puts("may not be at the top of the heap, which makes it easy to turn a heap overflow into arbitrary allocation.\n");
+	puts("may not be at the top of the heap, which makes it easy to turn a heap corruption into arbitrary allocation.\n");
 
 
 	puts("In the past, before using the heap, libc will initialize tcache using `MAYBE_INIT_TCACHE`.");
 	puts("But this patch removes the call in the non-tcache path: https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=cbfd7988107b27b9ff1d0b57fa2c8f13a932e508");
 	puts("As a result, we can put many large chunks before tcache_perthread_struct");
 	puts("and use a heap overflow primitive (or chunk overlapping) to hijack `tcache_perthread_struct`\n");
+	
+	puts("The structure's hijack is also possible through the use of a UAF primitive.");
+	puts("If you have a UAF on a large free chunk before `tcache_perthread_struct`'s initialization, ");
+	puts("you can control the split chunk which is the allocated `tcache_perthread_struct`\n");
 
 	long target[0x4] __attribute__ ((aligned (0x10)));
 
@@ -24,7 +28,7 @@ int main()
 	printf("first, allocate a large chunk at the top of the heap: %p\n", chunk);
 	void *p1 = malloc(0x10);
 	free(p1);
-	printf("now, allocate a chunk and free it to initialize tcache_perthread_struct and put it right before our chunk\n");
+	printf("now, allocate a chunk and free it to initialize tcache_perthread_struct and put it right after our chunk\n");
 	printf("the tcache_perthread_struct->tcache_entry[0] should be initialized with %p\n", p1);
 
 	printf("Now, we simulate an overflow vulnerability to overwrite the pointer\n");
