@@ -24,7 +24,7 @@ int main()
 	printf("first, allocate a large chunk at the top of the heap: %p\n", chunk);
 	void *p1 = malloc(0x10);
 	free(p1);
-	printf("now, allocate a chunk and free it to initialize tcache_perthread_struct and put it right before our chunk\n");
+	printf("now, allocate a chunk and free it to initialize tcache_perthread_struct and put it right after our chunk\n");
 	printf("the tcache_perthread_struct->tcache_entry[0] should be initialized with %p\n", p1);
 
 	printf("Now, we simulate an overflow vulnerability to overwrite the pointer\n");
