@@ -31,16 +31,17 @@ int main(){
     }
 
     //put 7 chunks into tcache
-    printf("Then we free 7 of them in order to put them into tcache. Carefully we didn't free a serial of chunks like chunk2 to chunk9, because an unsorted bin next to another will be merged into one after another malloc.\n\n");
+    printf("Then we free 7 of them in order to put them into tcache. we also leave two non-contiguous chunks to be inserted in the unsorted bin , as contiguous chunks in the unsorted bin get consolidated on the first malloc that triggers the unsorted bin mechanism\n\n");
 
+    //leave 0
+    free(chunk_lis[1]);
+    //leave 2
     for(int i = 3;i < 9;i++){
         free(chunk_lis[i]);
     }
 
     printf("As you can see, chunk1 & [chunk3,chunk8] are put into tcache bins while chunk0 and chunk2 will be put into unsorted bin.\n\n");
 
-    //last tcache bin
-    free(chunk_lis[1]);
     //now they are put into unsorted bin
     free(chunk_lis[0]);
     free(chunk_lis[2]);
