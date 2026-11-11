@@ -4,6 +4,7 @@
  * PoC and technique by Imrane Haddaji (@tabacc0)
  *
  * Works on common builds of libc versions 2.26 to 2.41
+ * note : does not work on ubuntu builds for versions 2.31 to 2.34
  *
  * detailed explanation of the stashing unlink attack 
  * the core mechanism behind this , along with how this
