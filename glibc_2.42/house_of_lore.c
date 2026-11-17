@@ -102,7 +102,7 @@ int main(int argc, char * argv[]){
     fake_freelist[i][3] = (char*) fake_freelist[i+1];
   }
 
-  printf("\nNow we have fake list of size 16\n");
+  printf("\nNow we have fake list of size 7\n");
   printf( "fake free-list at %p\n", fake_freelist);
 
   printf("\nMake the last element of the fake list point to target_chunk\n");
